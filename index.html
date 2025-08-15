@@ -134,6 +134,17 @@
       .btn, .headline-gold{animation:none}
       .float-heart{animation:none}
     }
+
+    /* -------- Mobile Friendly Tweaks -------- */
+    @media (max-width: 768px) {
+      .nav { flex-wrap: wrap; justify-content: center; }
+      .btn, button.btn { font-size: 14px; padding: 8px 12px; }
+      .hero { padding: 60px 12px 30px; text-align: center; }
+      .row { flex-direction: column; align-items: stretch; }
+      .grid.cards { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: 1fr; }
+      .media img, .media video { height: auto; }
+    }
   </style>
 </head>
 <body>
