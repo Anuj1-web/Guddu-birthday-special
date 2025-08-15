@@ -1,158 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Personalised Message 💌</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personal Message</title>
   <style>
-    /* Google Font */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
+    /* === Theme copied from index page === */
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #0d0d0d, #1a001f, #000000);
+      background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
       color: #fff;
     }
-
-    /* Navbar */
-    nav {
-      background: rgba(0, 0, 0, 0.8);
-      padding: 15px 30px;
+    header {
+      background: rgba(0,0,0,0.85);
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
-    nav h1 {
-      font-size: 20px;
-      background: linear-gradient(to right, #ff66cc, #ff3399);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    header h1 {
       margin: 0;
+      font-size: 1.5rem;
+      color: #ffcc00;
     }
     nav a {
+      color: #fff;
       text-decoration: none;
-      color: white;
-      background: #ff4da6;
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      transition: background 0.3s;
+      margin-left: 1rem;
+      font-weight: 500;
     }
     nav a:hover {
-      background: #e60073;
+      color: #ffcc00;
     }
-
-    /* Container */
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
+    main {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
     }
-
-    /* Card */
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      margin-bottom: 30px;
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
     .card h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
+      margin-top: 0;
+      color: #ffcc00;
     }
-    .card p {
-      font-size: 16px;
-      line-height: 1.6;
-    }
-
-    /* Gallery */
     .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
     }
-    .gallery-item {
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      padding: 10px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    }
-    .gallery-item img, 
-    .gallery-item video {
+    .gallery img, .gallery video {
       width: 100%;
-      border-radius: 10px;
+      border-radius: 8px;
+      display: block;
     }
-    .caption {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #ccc;
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #888;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Special Message</h1>
+    <nav>
+      <a href="index.html">Home</a>
+    </nav>
+  </header>
 
-  <!-- Navbar -->
-  <nav>
-    <h1>💖 Special Message</h1>
-    <a href="index.html">🏠 Home</a>
-  </nav>
+  <main>
+    <section class="card">
+      <h2>My Personal Message to You</h2>
+      <p>Here’s a special collection of memories and moments, just for you.</p>
+    </section>
 
-  <div class="container">
-    
-    <!-- Special Message Card -->
-    <div class="card">
-      <h2>From the Heart 💌</h2>
-      <p>Dear Guddu,</p>
-      <p>
-        You mean the world to me. These moments are just a glimpse of the joy you bring into my life. 
-        May your days be filled with love, laughter, and endless happiness. 💫
-      </p>
-    </div>
-
-    <!-- Memories Section -->
-    <div class="card">
-      <h2>Memories 📸</h2>
+    <section class="card">
+      <h2>Memories</h2>
       <div class="gallery">
-        <div class="gallery-item">
-          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/image1.jpg" alt="Memory 1">
-          <div class="caption">That smile that lights up the day 🌞</div>
-        </div>
-        <div class="gallery-item">
-          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/video1.mp4" controls></video>
-          <div class="caption">A moment to remember 🎥</div>
-        </div>
-        <div class="gallery-item">
-          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/image2.jpg" alt="Memory 2">
-          <div class="caption">Unforgettable day 🌙</div>
-        </div>
-        <div class="gallery-item">
-          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/video2.mp4" controls></video>
-          <div class="caption">Laughs and love 💗</div>
-        </div>
+        <!-- Replace src with your GitHub image links -->
+        <img src="https://via.placeholder.com/400x250?text=Image+1" alt="Memory 1">
+        <img src="https://via.placeholder.com/400x250?text=Image+2" alt="Memory 2">
+        <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls></video>
+        <img src="https://via.placeholder.com/400x250?text=Image+3" alt="Memory 3">
+        <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls></video>
       </div>
-    </div>
+    </section>
+  </main>
 
-  </div>
+  <footer>
+    &copy; 2025 Your Name. All rights reserved.
+  </footer>
 
-  <!-- Background Music -->
-  <audio id="bgMusic" src="https://aac.saavncdn.com/308/96c2e41f7b8c296e6e29f31d6cf04e4b_320.mp4" autoplay loop></audio>
+  <!-- Hidden background audio -->
+  <audio id="bgMusic"
+         src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Full%20Video_Tu%20Hi%20Yaar%20Mera%20%20Pati%20Patni%20Aur%20Woh%20%20Kartik%20A,Bhumi%20P,Ananya%20P%20Rochak,Arijit%20S,Neha%20K.mp3"
+         preload="auto"
+         loop
+         playsinline></audio>
+
+  <!-- Autoplay script -->
   <script>
-    const music = document.getElementById('bgMusic');
-    music.volume = 0.5; // Set softer volume
-
-    // Retry autoplay if blocked
-    document.addEventListener('click', () => {
-      if (music.paused) {
-        music.play().catch(err => console.log('Autoplay blocked:', err));
+    /* personal-message.js inline */
+    (function () {
+      const audio = document.getElementById('bgMusic');
+      if (!audio) return;
+      audio.setAttribute('preload', 'auto');
+      audio.setAttribute('playsinline', '');
+      audio.loop = true;
+      const TARGET_VOL = 0.7;
+      audio.volume = 0.0;
+      const STORAGE_KEY = 'pm_audio_ok';
+      let userApprovedBefore = localStorage.getItem(STORAGE_KEY) === '1';
+      let trying = false;
+      let fadeTimer = null;
+      let retryTimer = null;
+      function fadeTo(target = TARGET_VOL, ms = 800) {
+        clearInterval(fadeTimer);
+        const steps = Math.max(8, Math.floor(ms / 40));
+        const delta = (target - audio.volume) / steps;
+        let i = 0;
+        fadeTimer = setInterval(() => {
+          i++;
+          audio.volume = Math.max(0, Math.min(1, audio.volume + delta));
+          if (i >= steps) clearInterval(fadeTimer);
+        }, 40);
       }
-    });
+      function markApproved() { try { localStorage.setItem(STORAGE_KEY, '1'); } catch {} }
+      function onPlayedOk() { markApproved(); detachGestureArming(); fadeTo(TARGET_VOL, 900); }
+      async function tryPlay(reason = 'attempt') {
+        if (trying) return;
+        trying = true;
+        try {
+          if (userApprovedBefore) {
+            await audio.play(); onPlayedOk(); trying = false; return;
+          }
+          await audio.play(); onPlayedOk();
+        } catch (e1) {
+          try {
+            audio.muted = true;
+            await audio.play();
+            armForUnmute();
+            markApproved();
+          } catch (e2) {
+            armForPlay();
+            scheduleRetry();
+          }
+        } finally { trying = false; }
+      }
+      function scheduleRetry() { clearTimeout(retryTimer); retryTimer = setTimeout(() => tryPlay('retry'), 2500); }
+      function armForPlay() {
+        window.addEventListener('pointerdown', gesturePlayOnce, { passive: true, once: true });
+        window.addEventListener('touchstart', gesturePlayOnce, { passive: true, once: true });
+        window.addEventListener('keydown', gesturePlayOnce, { passive: true, once: true });
+        document.addEventListener('visibilitychange', visPlayOnce, { passive: true });
+      }
+      function detachGestureArming() {
+        window.removeEventListener('pointerdown', gesturePlayOnce);
+        window.removeEventListener('touchstart', gesturePlayOnce);
+        window.removeEventListener('keydown', gesturePlayOnce);
+        document.removeEventListener('visibilitychange', visPlayOnce);
+        document.removeEventListener('visibilitychange', visUnmuteOnce);
+        window.removeEventListener('pointerdown', unmuteOnce);
+        window.removeEventListener('touchstart', unmuteOnce);
+        window.removeEventListener('keydown', unmuteOnce);
+      }
+      function gesturePlayOnce() { tryPlay('gesture'); }
+      function visPlayOnce() { if (document.visibilityState === 'visible') { tryPlay('visible'); } }
+      function armForUnmute() {
+        window.addEventListener('pointerdown', unmuteOnce, { passive: true, once: true });
+        window.addEventListener('touchstart', unmuteOnce, { passive: true, once: true });
+        window.addEventListener('keydown', unmuteOnce, { passive: true, once: true });
+        document.addEventListener('visibilitychange', visUnmuteOnce, { passive: true });
+      }
+      function unmuteOnce() {
+        if (!audio.paused) {
+          audio.muted = false; fadeTo(TARGET_VOL, 700); detachGestureArming(); markApproved();
+        } else { tryPlay('unmute-gesture'); }
+      }
+      function visUnmuteOnce() {
+        if (document.visibilityState !== 'visible') return;
+        if (!audio.paused) {
+          audio.muted = false; fadeTo(TARGET_VOL, 700); detachGestureArming(); markApproved();
+        } else { tryPlay('unmute-visible'); }
+      }
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const ac = new AudioCtx();
+          if (ac.state === 'suspended') {
+            const resumeAC = () => { ac.resume().catch(() => {}); window.removeEventListener('pointerdown', resumeAC); window.removeEventListener('touchstart', resumeAC); window.removeEventListener('keydown', resumeAC); };
+            window.addEventListener('pointerdown', resumeAC, { passive: true });
+            window.addEventListener('touchstart', resumeAC, { passive: true });
+            window.addEventListener('keydown', resumeAC, { passive: true });
+          }
+        }
+      } catch {}
+      audio.addEventListener('ended', () => { audio.currentTime = 0; tryPlay('ended'); });
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        tryPlay('init');
+      } else {
+        window.addEventListener('load', () => tryPlay('load'));
+      }
+    })();
   </script>
-
 </body>
 </html>
