@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Personal Message</title>
   <style>
-    /* === Theme copied from index page === */
+    /* === Consistent Theme with Index === */
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
       color: #fff;
+      overflow-x: hidden;
     }
     header {
       background: rgba(0,0,0,0.85);
@@ -18,6 +19,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: relative;
+      z-index: 10;
     }
     header h1 {
       margin: 0;
@@ -37,9 +40,11 @@
       max-width: 1100px;
       margin: 2rem auto;
       padding: 0 1rem;
+      position: relative;
+      z-index: 5;
     }
     .card {
-      background: #1f1f1f;
+      background: rgba(31, 31, 31, 0.9);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 2rem;
@@ -64,10 +69,23 @@
       padding: 1rem;
       font-size: 0.9rem;
       color: #888;
+      position: relative;
+      z-index: 5;
+    }
+    /* Canvas for particles */
+    #particlesCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
     }
   </style>
 </head>
 <body>
+  <canvas id="particlesCanvas"></canvas>
+
   <header>
     <h1>Special Message</h1>
     <nav>
@@ -84,7 +102,7 @@
     <section class="card">
       <h2>Memories</h2>
       <div class="gallery">
-        <!-- Replace src with your GitHub image links -->
+        <!-- Replace src with your GitHub image/video links -->
         <img src="https://via.placeholder.com/400x250?text=Image+1" alt="Memory 1">
         <img src="https://via.placeholder.com/400x250?text=Image+2" alt="Memory 2">
         <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls></video>
@@ -105,110 +123,73 @@
          loop
          playsinline></audio>
 
-  <!-- Autoplay script -->
+  <!-- Autoplay Script -->
   <script>
-    /* personal-message.js inline */
     (function () {
       const audio = document.getElementById('bgMusic');
       if (!audio) return;
-      audio.setAttribute('preload', 'auto');
-      audio.setAttribute('playsinline', '');
       audio.loop = true;
-      const TARGET_VOL = 0.7;
-      audio.volume = 0.0;
-      const STORAGE_KEY = 'pm_audio_ok';
-      let userApprovedBefore = localStorage.getItem(STORAGE_KEY) === '1';
-      let trying = false;
-      let fadeTimer = null;
-      let retryTimer = null;
-      function fadeTo(target = TARGET_VOL, ms = 800) {
-        clearInterval(fadeTimer);
-        const steps = Math.max(8, Math.floor(ms / 40));
-        const delta = (target - audio.volume) / steps;
-        let i = 0;
-        fadeTimer = setInterval(() => {
-          i++;
-          audio.volume = Math.max(0, Math.min(1, audio.volume + delta));
-          if (i >= steps) clearInterval(fadeTimer);
-        }, 40);
-      }
-      function markApproved() { try { localStorage.setItem(STORAGE_KEY, '1'); } catch {} }
-      function onPlayedOk() { markApproved(); detachGestureArming(); fadeTo(TARGET_VOL, 900); }
-      async function tryPlay(reason = 'attempt') {
-        if (trying) return;
-        trying = true;
-        try {
-          if (userApprovedBefore) {
-            await audio.play(); onPlayedOk(); trying = false; return;
-          }
-          await audio.play(); onPlayedOk();
-        } catch (e1) {
-          try {
-            audio.muted = true;
-            await audio.play();
-            armForUnmute();
-            markApproved();
-          } catch (e2) {
-            armForPlay();
-            scheduleRetry();
-          }
-        } finally { trying = false; }
-      }
-      function scheduleRetry() { clearTimeout(retryTimer); retryTimer = setTimeout(() => tryPlay('retry'), 2500); }
-      function armForPlay() {
-        window.addEventListener('pointerdown', gesturePlayOnce, { passive: true, once: true });
-        window.addEventListener('touchstart', gesturePlayOnce, { passive: true, once: true });
-        window.addEventListener('keydown', gesturePlayOnce, { passive: true, once: true });
-        document.addEventListener('visibilitychange', visPlayOnce, { passive: true });
-      }
-      function detachGestureArming() {
-        window.removeEventListener('pointerdown', gesturePlayOnce);
-        window.removeEventListener('touchstart', gesturePlayOnce);
-        window.removeEventListener('keydown', gesturePlayOnce);
-        document.removeEventListener('visibilitychange', visPlayOnce);
-        document.removeEventListener('visibilitychange', visUnmuteOnce);
-        window.removeEventListener('pointerdown', unmuteOnce);
-        window.removeEventListener('touchstart', unmuteOnce);
-        window.removeEventListener('keydown', unmuteOnce);
-      }
-      function gesturePlayOnce() { tryPlay('gesture'); }
-      function visPlayOnce() { if (document.visibilityState === 'visible') { tryPlay('visible'); } }
-      function armForUnmute() {
-        window.addEventListener('pointerdown', unmuteOnce, { passive: true, once: true });
-        window.addEventListener('touchstart', unmuteOnce, { passive: true, once: true });
-        window.addEventListener('keydown', unmuteOnce, { passive: true, once: true });
-        document.addEventListener('visibilitychange', visUnmuteOnce, { passive: true });
-      }
-      function unmuteOnce() {
-        if (!audio.paused) {
-          audio.muted = false; fadeTo(TARGET_VOL, 700); detachGestureArming(); markApproved();
-        } else { tryPlay('unmute-gesture'); }
-      }
-      function visUnmuteOnce() {
-        if (document.visibilityState !== 'visible') return;
-        if (!audio.paused) {
-          audio.muted = false; fadeTo(TARGET_VOL, 700); detachGestureArming(); markApproved();
-        } else { tryPlay('unmute-visible'); }
-      }
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          const ac = new AudioCtx();
-          if (ac.state === 'suspended') {
-            const resumeAC = () => { ac.resume().catch(() => {}); window.removeEventListener('pointerdown', resumeAC); window.removeEventListener('touchstart', resumeAC); window.removeEventListener('keydown', resumeAC); };
-            window.addEventListener('pointerdown', resumeAC, { passive: true });
-            window.addEventListener('touchstart', resumeAC, { passive: true });
-            window.addEventListener('keydown', resumeAC, { passive: true });
-          }
-        }
-      } catch {}
-      audio.addEventListener('ended', () => { audio.currentTime = 0; tryPlay('ended'); });
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        tryPlay('init');
-      } else {
-        window.addEventListener('load', () => tryPlay('load'));
-      }
+      audio.volume = 0.7;
+      audio.play().catch(() => {
+        document.body.addEventListener('click', () => audio.play(), { once: true });
+      });
     })();
+  </script>
+
+  <!-- Particle Celebration Script -->
+  <script>
+    const canvas = document.getElementById('particlesCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createParticle() {
+      const colors = ['#ffcc00', '#ff6699', '#66ff66', '#66ccff', '#ffffff'];
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 4 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedX: (Math.random() - 0.5) * 2,
+        speedY: (Math.random() - 0.5) * 2
+      };
+    }
+
+    for (let i = 0; i < 100; i++) {
+      particles.push(createParticle());
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+    }
+
+    function updateParticles() {
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+      });
+    }
+
+    function animate() {
+      drawParticles();
+      updateParticles();
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>
