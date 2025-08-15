@@ -50,13 +50,17 @@
       background:var(--card); border-radius:22px; box-shadow:var(--shadow); position:relative; overflow:hidden;
     }
 
-    /* Cake board */
-    #cakeBoard{width:100%; height:100%; display:block; background:radial-gradient(circle at 50% 30%, #2b2231, #1a1520 60%, #120f18)}
+    /* Canvases (board draws cake, fx draws sparkles/hearts) */
+    #cakePanel{position:relative}
+    #cakeBoard, #fxBoard{width:100%; height:100%; display:block;}
+    #cakeBoard{background:radial-gradient(circle at 50% 30%, #2b2231, #1a1520 60%, #120f18)}
+    #fxBoard{position:absolute; inset:0; pointer-events:none}
+
     .overlayNote{
-      position:absolute; left:16px; top:16px; padding:8px 12px; border-radius:12px; background:rgba(0,0,0,.35); font-size:14px
+      position:absolute; left:16px; top:16px; padding:8px 12px; border-radius:12px; background:rgba(0,0,0,.35); font-size:14px; z-index:10;
     }
     .legend{
-      position:absolute; left:16px; bottom:16px; background:rgba(0,0,0,.35); padding:10px 12px; border-radius:14px; font-size:13px
+      position:absolute; left:16px; bottom:16px; background:rgba(0,0,0,.35); padding:10px 12px; border-radius:14px; font-size:13px; z-index:10;
     }
     .legend span{display:inline-flex; align-items:center; gap:6px; margin-right:10px}
     .dot{width:10px; height:10px; border-radius:50%}
@@ -65,7 +69,7 @@
     #knife{
       position:absolute; width:min(180px,22vw); transform-origin:80% 40%; user-select:none; touch-action:none; display:none;
       filter: drop-shadow(0 12px 28px rgba(0,0,0,.45));
-      z-index:5;
+      z-index:12;
     }
     #knife.grab{cursor:grabbing}
 
@@ -86,6 +90,10 @@
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .dialog input{width:100%; border:1px solid rgba(255,255,255,.08); background:#0f0b12; color:var(--text); padding:12px; border-radius:12px}
     .hint{font-size:12px; color:var(--muted)}
+
+    /* Small control row in header */
+    .ctrls{display:flex; gap:8px; align-items:center}
+    .tiny{font-size:12px; opacity:.85}
   </style>
 </head>
 <body>
@@ -96,8 +104,11 @@
         <span>Guddu's Day</span>
       </a>
       <div class="spacer"></div>
-      <a class="btn btn-ghost" href="index.html">🏠 Home</a>
-      <a class="btn btn-primary" id="celebrateBtn">🎉 Celebrate</a>
+      <div class="ctrls">
+        <button class="btn btn-ghost tiny" id="resetBtn" title="Clear cuts (Guddu only)">♻️ Reset</button>
+        <a class="btn btn-ghost" href="index.html">🏠 Home</a>
+        <a class="btn btn-primary" id="celebrateBtn">🎉 Celebrate</a>
+      </div>
     </div>
   </header>
 
@@ -105,12 +116,18 @@
     <!-- Cake & Knife -->
     <section class="panel" id="cakePanel">
       <canvas id="cakeBoard"></canvas>
+      <canvas id="fxBoard"></canvas>
       <img id="knife" alt="knife" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?> <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'> <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%23cfcfcf'/><stop offset='1' stop-color='%239e9e9e'/></linearGradient></defs> <path d='M30 120 C 180 40, 380 10, 560 50 C 574 52, 575 70, 561 73 L 320 128 C 220 150, 120 150, 40 140 Z' fill='url(%23g)' stroke='%23888888' stroke-width='2'/> <rect x='10' y='110' width='50' height='28' rx='10' fill='%236c4a2e'/> </svg>"/>
       <div class="overlayNote">🎂 Drag the knife to cut (only Guddu). Everyone sees it live.</div>
       <div class="legend">
         <span><span class="dot" style="background: var(--pink)"></span> cut lines</span>
         <span><span class="dot" style="background: var(--gold)"></span> slice marks</span>
       </div>
+      <!-- Optional birthday music (starts muted; unmutes after any click) -->
+      <audio id="music" loop muted>
+        <!-- replace with your own hosted mp3/ogg if you like -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3b1e8e6df9.mp3?filename=happy-birthday-112653.mp3" type="audio/mpeg">
+      </audio>
     </section>
 
     <!-- Chat -->
@@ -169,19 +186,25 @@
      *********************/
     const board = document.getElementById('cakeBoard');
     const ctx = board.getContext('2d');
+    const fx = document.getElementById('fxBoard');
+    const fxc = fx.getContext('2d');
     const knife = document.getElementById('knife');
     const roleBadge = document.getElementById('roleBadge');
     const presenceCount = document.getElementById('presenceCount');
+    const music = document.getElementById('music');
+    const celebrateBtn = document.getElementById('celebrateBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
     let cake = { cx: 0, cy: 0, rTop: 0, rMid: 0, rBot: 0, yTop: 0, yMid: 0, yBot: 0 };
-    const cuts = [];
+    const cuts = []; // each: {x1,y1,x2,y2,w,t}
 
     function fitCanvas(){
       const rect = board.parentElement.getBoundingClientRect();
       board.width = Math.floor(rect.width);
       board.height = Math.floor(rect.height);
-      drawScene(true);
-      cuts.forEach(c => drawCut(c, false));
+      fx.width = board.width;
+      fx.height = board.height;
+      drawFrame(); // refresh
     }
     window.addEventListener('resize', fitCanvas);
 
@@ -189,7 +212,7 @@
      * DRAW CAKE (3 layers + cream drip animation)
      *********************/
     let t = 0; // animation time
-    function drawScene(withPlate){
+    function drawCake(withPlate){
       const w = board.width, h = board.height;
       ctx.clearRect(0,0,w,h);
 
@@ -221,7 +244,7 @@
         ctx.fill();
       };
 
-      // draw bottom/middle/top layers (strawberry tones)
+      // bottom/middle/top layers (strawberry tones)
       layer(cake.cx, cake.yBot, cake.rBot, '#ff9fbf', '#ff5b8a');
       layer(cake.cx, cake.yMid, cake.rMid, '#ffb3c6', '#ff6fa0');
       layer(cake.cx, cake.yTop, cake.rTop, '#ffc1d1', '#ff78a8');
@@ -262,7 +285,23 @@
       ctx.restore();
     }
 
-    function drawCut(cut, withGlow=true){
+    function eraseCutPath(seg){
+      // Erase cake pixels along the cut so the slice "disappears"
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = seg.w || 20;
+      ctx.lineCap = 'round';
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(seg.x1, seg.y1);
+      ctx.lineTo(seg.x2, seg.y2);
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCutOverlay(seg, withGlow=true){
+      // pretty overlay (pink line + gold dash) on top of everything
       ctx.save();
       ctx.lineWidth = 6;
       ctx.strokeStyle = 'rgba(255,91,138,0.95)'; // pink
@@ -270,29 +309,100 @@
       ctx.shadowColor = 'rgba(255,91,138,.6)';
       ctx.shadowBlur = withGlow ? 16 : 0;
       ctx.beginPath();
-      ctx.moveTo(cut.x1, cut.y1);
-      ctx.lineTo(cut.x2, cut.y2);
+      ctx.moveTo(seg.x1, seg.y1);
+      ctx.lineTo(seg.x2, seg.y2);
       ctx.stroke();
       ctx.restore();
 
-      // gold dashed highlight
       ctx.save();
       ctx.setLineDash([10,8]);
       ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(255,212,94,.9)';
+      ctx.strokeStyle = 'rgba(255,212,94,.9)'; // gold
       ctx.beginPath();
-      ctx.moveTo(cut.x1, cut.y1);
-      ctx.lineTo(cut.x2, cut.y2);
+      ctx.moveTo(seg.x1, seg.y1);
+      ctx.lineTo(seg.x2, seg.y2);
       ctx.stroke();
       ctx.restore();
     }
 
-    // animation loop (cream)
+    // FX layer (subtle sparkles + hearts)
+    const fxHearts = [];
+    const fxStars = [];
+    function seedFX(){
+      fxHearts.length = 0; fxStars.length = 0;
+      const H = 14, S = 60;
+      for(let i=0;i<H;i++){
+        fxHearts.push({
+          x: Math.random()*fx.width,
+          y: fx.height + Math.random()*fx.height*0.6,
+          s: 0.6 + Math.random()*1.2,
+          v: 0.2 + Math.random()*0.5,
+          a: Math.random()*Math.PI*2
+        });
+      }
+      for(let i=0;i<S;i++){
+        fxStars.push({
+          x: Math.random()*fx.width,
+          y: Math.random()*fx.height,
+          r: Math.random()*1.6 + 0.6,
+          tw: Math.random()*1000
+        });
+      }
+    }
+
+    function drawHeart(ctx,x,y,size){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.scale(size,size);
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.bezierCurveTo(2, -4, 6, -2, 6, 2);
+      ctx.bezierCurveTo(6, 6, 2, 8, 0, 10);
+      ctx.bezierCurveTo(-2, 8, -6, 6, -6, 2);
+      ctx.bezierCurveTo(-6, -2, -2, -4, 0, -2);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,91,138,0.18)';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawFX(){
+      fxc.clearRect(0,0,fx.width,fx.height);
+      // stars twinkle
+      fxStars.forEach(s=>{
+        const tw = (Math.sin((Date.now()+s.tw)/1000)+1)/2; // 0..1
+        fxc.beginPath();
+        fxc.arc(s.x,s.y,s.r*(0.6+tw*0.8),0,Math.PI*2);
+        fxc.fillStyle='rgba(255,255,255,'+(0.15+tw*0.35)+')';
+        fxc.fill();
+      });
+      // hearts float up
+      fxHearts.forEach(h=>{
+        h.y -= h.v;
+        h.x += Math.sin(h.a += 0.02)*0.3;
+        if(h.y < -12) { h.y = fx.height + 20; h.x = Math.random()*fx.width; }
+        drawHeart(fxc,h.x,h.y,h.s);
+      });
+    }
+
+    function drawFrame(){
+      drawCake(true);
+      // apply all erasures then overlays
+      cuts.forEach(seg=>eraseCutPath(seg));
+      cuts.forEach(seg=>drawCutOverlay(seg, false));
+    }
+
+    // animation loops
     function animate(){
-      drawScene(false);
-      // redraw existing cuts over animation
-      cuts.forEach(c => drawCut(c, false));
+      // redraw cake (with animated cream) then re-apply cuts & overlays
+      drawCake(false);
+      cuts.forEach(seg=>eraseCutPath(seg));
+      cuts.forEach(seg=>drawCutOverlay(seg, false));
       requestAnimationFrame(animate);
+    }
+    function animateFX(){
+      drawFX();
+      requestAnimationFrame(animateFX);
     }
 
     /*********************
@@ -313,7 +423,6 @@
       return { x: px - rect.left, y: py - rect.top };
     }
     function pointInsideAnyLayer(p){
-      // allow cutting across any layer area (top/mid/bot)
       const inside = (cx, cy, r) => {
         const dx=p.x-cx, dy=p.y-cy;
         return (dx*dx+dy*dy) <= (r*r);
@@ -343,9 +452,11 @@
         const a = worldFromClient(dragPrev.x, dragPrev.y);
         const b = worldFromClient(cx, cy);
         if(pointInsideAnyLayer(a) || pointInsideAnyLayer(b)){
-          const seg = { x1:a.x, y1:a.y, x2:b.x, y2:b.y, t:Date.now() };
+          const seg = { x1:a.x, y1:a.y, x2:b.x, y2:b.y, w: 22, t:Date.now() };
           cuts.push(seg);
-          drawCut(seg);
+          // broadcast the new cut segment (both erase + overlay will be re-applied in loops)
+          drawCutOverlay(seg); // immediate feedback
+          eraseCutPath(seg);   // immediate erase
           channel && channel.publish('cut', seg);
         }
         dragPrev = { x: cx, y: cy };
@@ -354,7 +465,7 @@
     function pointerUp(){
       if(!isController) return;
       dragging = false; knife.classList.remove('grab');
-      celebrate(); // confetti burst
+      celebrate(true); // confetti burst (broadcast)
     }
 
     /*********************
@@ -384,7 +495,7 @@
       updatePresence();
 
       // receive cuts
-      channel.subscribe('cut', msg => { cuts.push(msg.data); drawCut(msg.data); });
+      channel.subscribe('cut', msg => { cuts.push(msg.data); drawFrame(); });
       // knife position for spectators
       channel.subscribe('knifeMove', msg => {
         if(isController) return;
@@ -394,16 +505,23 @@
         knife.style.left = (x - knife.width*0.75) + 'px';
         knife.style.top  = (y - knife.height*0.45) + 'px';
       });
-      // optional reset event
-      channel.subscribe('reset', () => { cuts.length = 0; drawScene(true); });
+      // reset
+      channel.subscribe('reset', () => { cuts.length = 0; drawFrame(); });
+      // confetti trigger
+      channel.subscribe('confetti', () => celebrate(false));
 
       // chat
       chatChannel.subscribe('chat', msg => pushMsg(msg.clientId, msg.data.text));
       document.getElementById('sendBtn').onclick = sendChat;
       document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
 
+      // music: unmute on first interaction after join
+      window.addEventListener('pointerdown', tryStartMusic, { once:true });
+      window.addEventListener('keydown', tryStartMusic, { once:true });
+
       // ready UI
       fitCanvas();
+      seedFX();
       if(isController) enableKnife();
 
       // hide join modal
@@ -436,9 +554,10 @@
     function escapeHTML(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[c])); }
 
     /*********************
-     * CONFETTI (on cut)
+     * CONFETTI (on cut) + broadcast option
      *********************/
-    function celebrate(){
+    function celebrate(broadcast=false){
+      if(broadcast && channel){ channel.publish('confetti', {}); }
       const N = 120; const pieces = [];
       for(let i=0;i<N;i++){
         pieces.push({
@@ -462,6 +581,28 @@
     }
 
     /*********************
+     * CONTROLS
+     *********************/
+    celebrateBtn.addEventListener('click', ()=>{
+      celebrate(true); // everyone celebrates
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if(!isController){ pushMsg('System','Only Guddu can reset the cake.'); return; }
+      cuts.length = 0;
+      drawFrame();
+      channel && channel.publish('reset', {});
+    });
+
+    function tryStartMusic(){
+      if(!music) return;
+      // browsers often allow autoplay if muted; we unmute after user action
+      music.muted = false;
+      music.volume = 0.35;
+      music.play().catch(()=>{ /* ignore */ });
+    }
+
+    /*********************
      * WIRE POINTERS
      *********************/
     knife.addEventListener('pointerdown', pointerDown, { passive:true });
@@ -476,7 +617,9 @@
      *********************/
     window.addEventListener('load', ()=>{
       fitCanvas();
-      animate(); // start cream animation
+      seedFX();
+      animate();   // cake + cream + erasure re-apply
+      animateFX(); // sparkles + hearts
     });
   </script>
 </body>
