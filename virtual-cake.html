@@ -622,5 +622,27 @@
       animateFX(); // sparkles + hearts
     });
   </script>
+<!-- Birthday Tune Smooth Autoplay -->
+<audio id="birthdayTune" autoplay loop muted>
+  <source src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/happy-birthday-334876.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+<script>
+  const tune = document.getElementById('birthdayTune');
+  
+  // Try to start muted audio on page load
+  window.addEventListener('load', () => {
+    const playPromise = tune.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // Unmute after a short delay for smooth start
+        setTimeout(() => { tune.muted = false; }, 300);
+      }).catch(err => {
+        console.warn("Autoplay might still be blocked:", err);
+      });
+    }
+  });
+</script>
+
 </body>
 </html>
