@@ -466,9 +466,15 @@
 
       <!-- VIDEO -->
       <figure class="media">
-        <video src="assets/guddu-video.mp4" controls preload="metadata" poster="assets/guddu-cover.jpg"></video>
-        <figcaption class="cap">A little video memory 🎥</figcaption>
-      </figure>
+  <video id="gudduVideo" 
+         src="https://www.dropbox.com/scl/fi/tjogp3cj90bmpg7fdkmc9/video_20250815_234506_edit.mp4?rlkey=26kqoffdmojtkap3spth1eb94&raw=1" 
+         controls 
+         preload="metadata" 
+         poster="assets/guddu-cover.jpg">
+  </video>
+  <figcaption class="cap">A little video memory 🎥</figcaption>
+</figure>
+
     </div>
   </section>
 
@@ -892,5 +898,18 @@ style.textContent = `
 }`;
 document.head.appendChild(style);
 </script>
+<script>
+// Make sure to match the ID of your autoplay background audio element
+const bgMusic = document.getElementById('bgMusic'); // Example: <audio id="bgMusic" ...>
+
+document.querySelectorAll('video').forEach(video => {
+  video.addEventListener('play', () => {
+    if (bgMusic && !bgMusic.paused) {
+      bgMusic.pause();
+    }
+  });
+});
+</script>
+
 </body>
 </html>
