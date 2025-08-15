@@ -510,5 +510,37 @@
     function shareLink(){ const text = encodeURIComponent(document.getElementById('loveNote').value || `Happy Birthday, ${FRIEND_NAME}!`); const url = location.origin+location.pathname+`?wish=${text}`; navigator.clipboard.writeText(url); alert('Link copied!'); }
     (function readWishFromURL(){ const wish = new URLSearchParams(location.search).get('wish'); if(wish){ document.getElementById('loveNote').value = decodeURIComponent(wish); } })();
   </script>
+<!-- Cake Cutting Banner -->
+<style>
+  #cakeCutBanner {
+    background: linear-gradient(90deg, #ff69b4, #ff99cc);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    position: fixed;
+    top: 70px; /* Adjust if your header height changes */
+    left: 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 999;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #cakeCutBanner:hover {
+    background: linear-gradient(90deg, #ff99cc, #ff69b4);
+  }
+  #cakeCutBanner span {
+    margin-left: 10px;
+  }
+</style>
+
+<div id="cakeCutBanner" onclick="window.location.href='virtual-cake.html'">
+  🎂 <span>Let's cut the cake →</span>
+</div>
 </body>
 </html>
