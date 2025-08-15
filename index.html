@@ -804,7 +804,7 @@
       if(wish){ document.getElementById('loveNote').value = decodeURIComponent(wish); }
     })();
   </script>
-<!-- Background Song Smooth Autoplay -->
+<!-- Background Song Bulletproof Autoplay -->
 <audio id="bgSong" autoplay loop muted>
   <source src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Kaun%20Tujhe%20M.s.%20Dhoni%20The%20Untold%20Story%20320%20Kbps.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
@@ -812,17 +812,28 @@
 <script>
   const bgSong = document.getElementById('bgSong');
 
-  window.addEventListener('load', () => {
+  function tryPlay(unmute = false) {
+    if (unmute) bgSong.muted = false;
     const playPromise = bgSong.play();
     if (playPromise !== undefined) {
-      playPromise.then(() => {
-        // Unmute after a short delay for smooth start
-        setTimeout(() => { bgSong.muted = false; }, 300);
-      }).catch(err => {
-        console.warn("Autoplay might still be blocked:", err);
+      playPromise.catch(err => {
+        console.warn("Autoplay blocked, waiting for user action...");
       });
     }
+  }
+
+  // Try muted autoplay on load
+  window.addEventListener('load', () => {
+    tryPlay(false);
+    // Unmute after short delay
+    setTimeout(() => { bgSong.muted = false; }, 300);
   });
+
+  // Fallback: unmute & play when user clicks/taps anywhere
+  document.addEventListener('click', () => {
+    if (bgSong.paused) tryPlay(true);
+    else if (bgSong.muted) bgSong.muted = false;
+  }, { once: true });
 </script>
 </body>
 </html>
