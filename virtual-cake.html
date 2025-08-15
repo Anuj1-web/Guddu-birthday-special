@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Virtual Cake Cutting 🎂 | Guddu's Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: radial-gradient(1200px 800px at 10% 10%, #2a1730 0%, #0f0b12 55%, #0f0b12 100%);
+      --text:#f3f3f3; --muted:#b7b7b7;
+      --primary:#ff5b8a; --accent:#9d7cff; --gold:#ffd45e;
+      --card:#16131aeb; --shadow:0 10px 30px rgba(0,0,0,.5);
+      --pink:#ff5b8a;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text); background:var(--bg); min-height:100vh; overflow:hidden;
+    }
+    header{
+      position:sticky; top:0; z-index:30; backdrop-filter:saturate(180%) blur(8px);
+      background:linear-gradient(180deg, rgba(22,19,26,.65), rgba(22,19,26,.25));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; gap:14px; align-items:center}
+    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text)}
+    .brand .logo{width:36px; height:36px; border-radius:50%; background:conic-gradient(from 90deg, var(--primary), var(--accent)); box-shadow:0 6px 16px rgba(124,77,255,.35)}
+    .brand span{font-weight:800; letter-spacing:.3px}
+    .spacer{flex:1}
+    .btn{appearance:none; border:0; padding:10px 14px; border-radius:14px; cursor:pointer; font-weight:600; box-shadow:var(--shadow); transition:transform .12s ease; text-decoration:none; display:inline-flex; align-items:center; gap:8px}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg, var(--primary), var(--accent)); color:#fff}
+    .btn-ghost{background:var(--card); color:var(--text)}
+    .muted{color:var(--muted)}
+
+    /* Layout */
+    .stage{
+      max-width:1200px; margin:16px auto; padding:0 18px;
+      display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; height:calc(100vh - 80px);
+    }
+    @media (max-width: 980px){
+      .stage{grid-template-columns:1fr; grid-template-rows:auto 44vh}
+    }
+    .panel{
+      background:var(--card); border-radius:22px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+    }
+    /* Cake board */
+    #cakeBoard{width:100%; height:100%; display:block; background:radial-gradient(circle at 50% 30%, #2b2231, #1a1520 60%, #120f18)}
+    .overlayNote{
+      position:absolute; left:16px; top:16px; padding:8px 12px; border-radius:12px; background:rgba(0,0,0,.35); font-size:14px
+    }
+    .legend{
+      position:absolute; left:16px; bottom:16px; background:rgba(0,0,0,.35); padding:10px 12px; border-radius:14px; font-size:13px
+    }
+    .legend span{display:inline-flex; align-items:center; gap:6px; margin-right:10px}
+    .dot{width:10px; height:10px; border-radius:50%}
+
+    /* Knife */
+    #knife{
+      position:absolute; width:min(180px,22vw); transform-origin:80% 40%; user-select:none; touch-action:none; display:none;
+      filter: drop-shadow(0 12px 28px rgba(0,0,0,.45));
+      z-index:5;
+    }
+    #knife.grab{cursor:grabbing}
+    #knifeTip{
+      position:absolute; width:10px; height:10px; border-radius:50%; background:var(--gold); right:12%; top:28%; opacity:.0; /* debug tip if needed */
+    }
+
+    /* Chat */
+    .chat{display:flex; flex-direction:column; height:100%}
+    .chatHeader{padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:10px}
+    .badge{background:rgba(255,255,255,.08); padding:4px 8px; border-radius:999px; font-size:12px}
+    .chatBody{flex:1; overflow:auto; padding:12px}
+    .msg{background:rgba(255,255,255,.06); padding:10px 12px; border-radius:12px; margin:8px 0; max-width:86%}
+    .msg.me{background:linear-gradient(135deg, var(--primary), var(--accent)); color:#fff; margin-left:auto}
+    .chatFoot{display:flex; gap:8px; padding:12px; border-top:1px solid rgba(255,255,255,.06)}
+    .chatFoot input{flex:1; border:0; border-radius:12px; padding:12px; background:#0f0b12; color:var(--text)}
+    .chatFoot button{white-space:nowrap}
+
+    /* Join modal */
+    .modal{position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.55); z-index:40}
+    .dialog{background:var(--card); padding:20px; border-radius:18px; box-shadow:var(--shadow); width:min(520px,92vw)}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .dialog input{width:100%; border:1px solid rgba(255,255,255,.08); background:#0f0b12; color:var(--text); padding:12px; border-radius:12px}
+    .hint{font-size:12px; color:var(--muted)}
+
+    /* Celebration particles */
+    .sparkles{position:absolute; inset:0; pointer-events:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="home">
+        <span class="logo" aria-hidden="true"></span>
+        <span>Guddu's Day</span>
+      </a>
+      <div class="spacer"></div>
+      <a class="btn btn-ghost" href="index.html">🏠 Home</a>
+      <a class="btn btn-primary" id="celebrateBtn">🎉 Celebrate</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- Cake & Knife -->
+    <section class="panel" id="cakePanel">
+      <canvas id="cakeBoard"></canvas>
+      <img id="knife" alt="knife" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?> <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'> <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%23cfcfcf'/><stop offset='1' stop-color='%239e9e9e'/></linearGradient></defs> <path d='M30 120 C 180 40, 380 10, 560 50 C 574 52, 575 70, 561 73 L 320 128 C 220 150, 120 150, 40 140 Z' fill='url(%23g)' stroke='%23888888' stroke-width='2'/> <rect x='10' y='110' width='50' height='28' rx='10' fill='%236c4a2e'/> </svg>"/>
+      <div id="knifeTip"></div>
+      <div class="overlayNote">🎂 Drag the knife to cut (only Guddu). Everyone sees it live.</div>
+      <div class="legend">
+        <span><span class="dot" style="background: var(--pink)"></span> cut lines</span>
+        <span><span class="dot" style="background: var(--gold)"></span> slice marks</span>
+      </div>
+      <canvas id="sparkleCanvas" class="sparkles" aria-hidden="true"></canvas>
+    </section>
+
+    <!-- Chat -->
+    <aside class="panel chat">
+      <div class="chatHeader">
+        <strong>Party Chat</strong>
+        <span class="badge" id="roleBadge">Viewer</span>
+        <span class="badge" id="presenceCount">0 online</span>
+      </div>
+      <div class="chatBody" id="chatLog" aria-live="polite"></div>
+      <div class="chatFoot">
+        <input id="chatInput" placeholder="Type a wish…"/>
+        <button class="btn btn-primary" id="sendBtn">Send</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Join modal -->
+  <div class="modal" id="joinModal">
+    <div class="dialog">
+      <h3 style="margin:0 0 8px">Join the Party 🎉</h3>
+      <p class="muted" style="margin:0 0 14px">Enter your name. Guddu can unlock the knife with her secret passcode.</p>
+      <div class="row" style="margin-bottom:10px">
+        <input id="displayName" placeholder="Your name (e.g., Anuj)"/>
+      </div>
+      <details style="margin:10px 0 6px">
+        <summary><strong>I'm Guddu</strong> — I have the passcode 🔒</summary>
+        <div class="row" style="margin-top:8px">
+          <input id="passcode" placeholder="Enter passcode"/>
+        </div>
+        <p class="hint">Only Guddu should know this code. Others leave this blank.</p>
+      </details>
+      <div class="row" style="justify-content:flex-end; margin-top:12px">
+        <button class="btn btn-ghost" id="joinCancel" onclick="document.getElementById('displayName').value='Guest'; document.getElementById('joinBtn').click();">Join as Guest</button>
+        <button class="btn btn-primary" id="joinBtn">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ably SDK -->
+  <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+
+  <script>
+    /*********************
+     * CONFIG
+     *********************/
+    const CONFIG = {
+      ABLY_KEY: "Lw16iw.m-MKww:LYlcdHLZEdFs8nGr6ZXDoMh3zxRy9EprdsGKIdiOp4M", // provided by you
+      CHANNEL: "guddu-cake-room-1",
+      CHAT_CHANNEL: "guddu-cake-chat-1",
+      BDAY_PASSCODE: "GUDDU-ONLY-2025" // change if you like
+    };
+
+    /*********************
+     * CANVAS & DRAW
+     *********************/
+    const board = document.getElementById('cakeBoard');
+    const ctx = board.getContext('2d');
+    const knife = document.getElementById('knife');
+    const roleBadge = document.getElementById('roleBadge');
+    const presenceCount = document.getElementById('presenceCount');
+
+    function fitCanvas(){
+      const rect = board.parentElement.getBoundingClientRect();
+      board.width = Math.floor(rect.width);
+      board.height = Math.floor(rect.height);
+      drawCakeBase();
+      // redraw existing cuts
+      cuts.forEach(c => drawCut(c, false));
+    }
+    window.addEventListener('resize', fitCanvas);
+
+    // cake geometry in canvas space
+    let cake = { cx: 0, cy: 0, r: 0 };
+    function drawCakeBase(){
+      const { width:w, height:h } = board;
+      ctx.clearRect(0,0,w,h);
+
+      // cake plate
+      ctx.beginPath();
+      ctx.arc(w/2, h*0.55, Math.min(w,h)*0.36 + 18, 0, Math.PI*2);
+      ctx.fillStyle = '#0c0a11';
+      ctx.fill();
+
+      // cake body
+      cake.cx = w/2; cake.cy = h*0.52; cake.r = Math.min(w,h)*0.34;
+      const grd = ctx.createRadialGradient(cake.cx, cake.cy - cake.r*0.4, cake.r*0.2, cake.cx, cake.cy, cake.r);
+      grd.addColorStop(0, '#ffb3c6');  // strawberry top light
+      grd.addColorStop(1, '#ff5b8a');  // pink edge
+      ctx.beginPath();
+      ctx.arc(cake.cx, cake.cy, cake.r, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // frosting shine
+      ctx.beginPath();
+      ctx.ellipse(cake.cx - cake.r*0.2, cake.cy - cake.r*0.35, cake.r*0.45, cake.r*0.18, -0.25, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,.22)';
+      ctx.fill();
+
+      // candle (decor)
+      ctx.fillStyle = '#ffd45e';
+      ctx.fillRect(cake.cx-4, cake.cy - cake.r - 26, 8, 26);
+      ctx.beginPath();
+      ctx.arc(cake.cx, cake.cy - cake.r - 30, 8, 0, Math.PI*2);
+      ctx.fillStyle = '#ff8a00';
+      ctx.fill();
+    }
+
+    // store cuts (each is {x1,y1,x2,y2, t})
+    const cuts = [];
+    function drawCut(cut, withGlow=true){
+      // main cut line
+      ctx.save();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(255,91,138,0.95)'; // pink
+      ctx.lineCap = 'round';
+      ctx.shadowColor = 'rgba(255,91,138,.6)';
+      ctx.shadowBlur = withGlow ? 16 : 0;
+      ctx.beginPath();
+      ctx.moveTo(cut.x1, cut.y1);
+      ctx.lineTo(cut.x2, cut.y2);
+      ctx.stroke();
+      ctx.restore();
+
+      // subtle slice mark (gold dash)
+      ctx.save();
+      ctx.setLineDash([10,8]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255,212,94,.9)';
+      ctx.beginPath();
+      ctx.moveTo(cut.x1, cut.y1);
+      ctx.lineTo(cut.x2, cut.y2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    /*********************
+     * KNIFE DRAG (controller only)
+     *********************/
+    let isController = false;
+    let dragging = false;
+    let dragPrev = null;
+
+    function enableKnife(){
+      knife.style.display = 'block';
+      // position near bottom-left
+      knife.style.left = '12%';
+      knife.style.top  = '68%';
+    }
+    function worldFromClient(px, py){
+      const rect = board.getBoundingClientRect();
+      return { x: px - rect.left, y: py - rect.top };
+    }
+    function pointInsideCake(p){ const dx=p.x-cake.cx, dy=p.y-cake.cy; return (dx*dx+dy*dy) <= (cake.r*cake.r); }
+
+    function pointerDown(e){
+      if(!isController) return;
+      dragging = true;
+      knife.classList.add('grab');
+      dragPrev = { x: (e.touches?e.touches[0].clientX:e.clientX), y:(e.touches?e.touches[0].clientY:e.clientY) };
+    }
+    function pointerMove(e){
+      if(!isController) return;
+      const cx = (e.touches?e.touches[0].clientX:e.clientX);
+      const cy = (e.touches?e.touches[0].clientY:e.clientY);
+      // move knife element
+      knife.style.left = (cx - knife.width*0.75) + 'px';
+      knife.style.top  = (cy - knife.height*0.45) + 'px';
+
+      // broadcast knife position for spectators
+      channel && channel.publish('knifeMove', { x: cx, y: cy });
+
+      if(dragging && dragPrev){
+        const a = worldFromClient(dragPrev.x, dragPrev.y);
+        const b = worldFromClient(cx, cy);
+        // if stroke passes through cake, draw a segment clipped to cake
+        if(pointInsideCake(a) || pointInsideCake(b)){
+          cuts.push({ x1:a.x, y1:a.y, x2:b.x, y2:b.y, t: Date.now() });
+          drawCut(cuts[cuts.length-1]);
+          // sync this cut
+          channel && channel.publish('cut', cuts[cuts.length-1]);
+        }
+        dragPrev = { x: cx, y: cy };
+      }
+    }
+    function pointerUp(){
+      if(!isController) return;
+      dragging = false; knife.classList.remove('grab');
+      celebrate(); // small confetti on every finished stroke
+    }
+
+    /*********************
+     * ABLY REALTIME
+     *********************/
+    let ably, channel, chatChannel, meName='Guest';
+    const joinModal = document.getElementById('joinModal');
+    const joinBtn = document.getElementById('joinBtn');
+
+    joinBtn.addEventListener('click', async () => {
+      const name = (document.getElementById('displayName').value || 'Guest').trim().slice(0,32);
+      const code = (document.getElementById('passcode').value || '').trim();
+      meName = name || 'Guest';
+      isController = (code === CONFIG.BDAY_PASSCODE);
+      roleBadge.textContent = isController ? 'Guddu (Knife)' : 'Viewer';
+
+      // init Ably
+      ably = new Ably.Realtime.Promise({ key: CONFIG.ABLY_KEY, clientId: meName });
+      await ably.connection.once('connected');
+      channel = ably.channels.get(CONFIG.CHANNEL);
+      chatChannel = ably.channels.get(CONFIG.CHAT_CHANNEL);
+
+      // presence
+      await channel.presence.enter({ role: isController?'controller':'viewer' });
+      channel.presence.subscribe('enter', updatePresence);
+      channel.presence.subscribe('leave', updatePresence);
+      updatePresence();
+
+      // receive cuts
+      channel.subscribe('cut', msg => { cuts.push(msg.data); drawCut(msg.data); });
+      // knife position for spectators
+      channel.subscribe('knifeMove', msg => {
+        if(isController) return; // controller doesn't mirror
+        const { x, y } = msg.data || {};
+        if(x==null) return;
+        // position a ghost knife for viewers
+        knife.style.display = 'block';
+        knife.style.left = (x - knife.width*0.75) + 'px';
+        knife.style.top  = (y - knife.height*0.45) + 'px';
+      });
+      // reset
+      channel.subscribe('reset', () => { cuts.length = 0; drawCakeBase(); });
+
+      // chat
+      chatChannel.subscribe('chat', msg => pushMsg(msg.clientId, msg.data.text));
+      document.getElementById('sendBtn').onclick = sendChat;
+      document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+
+      // ready UI
+      fitCanvas();
+      if(isController) enableKnife();
+
+      // hide join modal
+      joinModal.style.display = 'none';
+      pushMsg('System', `🎉 ${meName} joined as ${isController?'Guddu (knife)':'viewer'}.`);
+    });
+
+    async function updatePresence(){
+      if(!channel) return;
+      const members = await channel.presence.get();
+      presenceCount.textContent = members.length + ' online';
+    }
+
+    function sendChat(){
+      const inp = document.getElementById('chatInput');
+      const text = inp.value.trim();
+      if(!text) return;
+      chatChannel.publish('chat', { text });
+      inp.value=''; pushMsg(meName, text, true);
+    }
+
+    const chatLog = document.getElementById('chatLog');
+    function pushMsg(name, text, mine=false){
+      const el = document.createElement('div');
+      el.className = 'msg' + (mine?' me':'');
+      el.innerHTML = `<strong>${escapeHTML(name)}:</strong> ${escapeHTML(text)}`;
+      chatLog.appendChild(el);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    function escapeHTML(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[c])); }
+
+    /*********************
+     * PARTICLES / CELEBRATE
+     *********************/
+    const sp = document.getElementById('sparkleCanvas');
+    const spx = sp.getContext('2d');
+    let particles = [];
+    function initSparkles(){
+      sp.width = sp.offsetWidth = board.clientWidth;
+      sp.height = sp.offsetHeight = board.clientHeight;
+      particles = Array.from({length: 60}, () => ({
+        x: Math.random()*sp.width, y: Math.random()*sp.height,
+        r: Math.random()*2+0.5, s: Math.random()*0.8+0.2,
+      }));
+    }
+    function sparkleLoop(){
+      spx.clearRect(0,0,sp.width,sp.height);
+      particles.forEach(p=>{
+        p.y += p.s; if(p.y>sp.height) p.y = -10;
+        spx.beginPath(); spx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        spx.fillStyle = 'rgba(255,255,255,.7)'; spx.fill();
+      });
+      requestAnimationFrame(sparkleLoop);
+    }
+    function celebrate(){
+      // simple confetti burst over the cake center
+      const N = 120; const pieces = [];
+      for(let i=0;i<N;i++){
+        pieces.push({
+          x:cake.cx, y:cake.cy-20, a:Math.random()*Math.PI*2,
+          v:2+Math.random()*5, g:0.12+Math.random()*0.1,
+          c:`hsl(${Math.random()*360}, 90%, 60%)`, life: 80+Math.random()*40
+        });
+      }
+      (function anim(){
+        ctx.save();
+        ctx.globalCompositeOperation='source-over';
+        pieces.forEach((p,i)=>{
+          p.x += Math.cos(p.a)*p.v; p.y += Math.sin(p.a)*p.v + p.g*p.v;
+          p.v *= 0.98; p.life--;
+          ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,5,5);
+          if(p.life<=0) pieces.splice(i,1);
+        });
+        ctx.restore();
+        if(pieces.length) requestAnimationFrame(anim); else drawCakeBase(), cuts.forEach(c=>drawCut(c,false));
+      })();
+    }
+    document.getElementById('celebrateBtn').addEventListener('click', celebrate);
+
+    /*********************
+     * POINTER LISTENERS
+     *********************/
+    knife.addEventListener('pointerdown', pointerDown, { passive:true });
+    window.addEventListener('pointermove', pointerMove, { passive:true });
+    window.addEventListener('pointerup', pointerUp, { passive:true });
+    knife.addEventListener('touchstart', pointerDown, { passive:true });
+    window.addEventListener('touchmove', pointerMove, { passive:true });
+    window.addEventListener('touchend', pointerUp, { passive:true });
+
+    /*********************
+     * BOOT
+     *********************/
+    window.addEventListener('load', ()=>{
+      fitCanvas();
+      initSparkles(); sparkleLoop();
+    });
+
+  </script>
+</body>
+</html>
