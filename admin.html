@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Control Panel</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+    h1 { text-align: center; }
+    .section { background: var(--card-bg); padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 600px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    label { font-weight: bold; margin-top: 10px; display: block; }
+    input, textarea { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ccc; border-radius: 5px; }
+    button { background: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .preview { margin-top: 15px; padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; }
+  </style>
+</head>
+<body>
+
+<h1>Admin Control Panel</h1>
+
+<div class="section">
+  <h2>Homepage</h2>
+  <label>Title</label>
+  <input type="text" id="homeTitle" placeholder="Enter homepage title">
+  
+  <label>Subtitle</label>
+  <input type="text" id="homeSubtitle" placeholder="Enter homepage subtitle">
+  
+  <label>Background Video URL</label>
+  <input type="text" id="homeVideo" placeholder="Enter video URL">
+  
+  <button onclick="saveHomepage()">Save Homepage</button>
+  <div class="preview" id="homePreview"></div>
+</div>
+
+<div class="section">
+  <h2>About Page</h2>
+  <label>About Text</label>
+  <textarea id="aboutText" rows="4" placeholder="Enter about page content"></textarea>
+  <button onclick="saveAbout()">Save About Page</button>
+  <div class="preview" id="aboutPreview"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "ID",
+    appId: "APP_ID"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function saveHomepage() {
+    const title = document.getElementById('homeTitle').value;
+    const subtitle = document.getElementById('homeSubtitle').value;
+    const video = document.getElementById('homeVideo').value;
+    
+    await setDoc(doc(db, "siteContent", "homepage"), { title, subtitle, video });
+    document.getElementById('homePreview').innerHTML = `<h3>${title}</h3><p>${subtitle}</p><video src="${video}" controls width="200"></video>`;
+    alert("Homepage updated successfully!");
+  }
+
+  async function saveAbout() {
+    const about = document.getElementById('aboutText').value;
+    await setDoc(doc(db, "siteContent", "about"), { about });
+    document.getElementById('aboutPreview').innerText = about;
+    alert("About page updated successfully!");
+  }
+
+  async function loadData() {
+    const homeSnap = await getDoc(doc(db, "siteContent", "homepage"));
+    if (homeSnap.exists()) {
+      const data = homeSnap.data();
+      document.getElementById('homeTitle').value = data.title || "";
+      document.getElementById('homeSubtitle').value = data.subtitle || "";
+      document.getElementById('homeVideo').value = data.video || "";
+    }
+    const aboutSnap = await getDoc(doc(db, "siteContent", "about"));
+    if (aboutSnap.exists()) {
+      document.getElementById('aboutText').value = aboutSnap.data().about || "";
+    }
+  }
+
+  loadData();
+</script>
+</body>
+</html>
