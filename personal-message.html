@@ -1,89 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   <title>Personalised Message 💌</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css"> <!-- same CSS as index -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0d0d0d, #1a001f, #000000);
+      color: #fff;
+    }
+
+    /* Navbar */
+    nav {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav h1 {
+      font-size: 20px;
+      background: linear-gradient(to right, #ff66cc, #ff3399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+    }
+    nav a {
+      text-decoration: none;
+      color: white;
+      background: #ff4da6;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    nav a:hover {
+      background: #e60073;
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      margin-bottom: 30px;
+    }
+    .card h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .card p {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .gallery-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .gallery-item img, 
+    .gallery-item video {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .caption {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
-  <!-- HEADER -->
-  <header>
-    <div class="wrap nav">
-      <a class="brand" href="index.html" aria-label="home">
-        <span class="logo" aria-hidden="true"></span>
-        <span>Guddu's Day</span>
-      </a>
-      <div class="spacer"></div>
-      <button id="themeBtn" class="btn btn-ghost" aria-label="Toggle theme">🌓</button>
-    </div>
-  </header>
 
-  <!-- MAIN CONTENT -->
-  <main class="section wrap">
-    <h1 class="script" style="font-size:40px; margin-bottom:10px;">A Special Message for You 💖</h1>
-    <p class="muted">This page is just for you — with words from the heart, cherished memories, and your favourite tune.</p>
+  <!-- Navbar -->
+  <nav>
+    <h1>💖 Special Message</h1>
+    <a href="index.html">🏠 Home</a>
+  </nav>
 
-    <!-- HIDDEN AUDIO (AUTOPLAY + LOOP) -->
-    <audio id="song" src="https://www.jiosaavn.com/song/tu-hi-yaar-mera/Rzk7cABnZGk" preload="auto" autoplay loop></audio>
-
-    <!-- PERSONAL MESSAGE -->
-    <article class="card mt-4">
-      <h3>From the Heart 💌</h3>
+  <div class="container">
+    
+    <!-- Special Message Card -->
+    <div class="card">
+      <h2>From the Heart 💌</h2>
+      <p>Dear Guddu,</p>
       <p>
-        Dear Guddu,<br><br>
-        You mean the world to me. These moments are just a glimpse of the joy you bring into my life.  
+        You mean the world to me. These moments are just a glimpse of the joy you bring into my life. 
         May your days be filled with love, laughter, and endless happiness. 💫
       </p>
-    </article>
+    </div>
 
-    <!-- GALLERY -->
-    <section class="mt-4">
-      <h2 class="script" style="font-size:36px;">Memories 📸</h2>
-      <div class="gallery mt-3">
-        <figure class="media">
-          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/guddu-1.jpg" alt="Memory 1">
-          <figcaption class="cap">That smile that lights up the day ☀️</figcaption>
-        </figure>
-        <figure class="media">
-          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/video1.mp4" controls></video>
-          <figcaption class="cap">A moment to remember 🎥</figcaption>
-        </figure>
-        <figure class="media">
-          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/guddu-2.jpg" alt="Memory 2">
-          <figcaption class="cap">Unforgettable day 💫</figcaption>
-        </figure>
-        <figure class="media">
-          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/video2.mp4" controls></video>
-          <figcaption class="cap">Laughs and love ❤️</figcaption>
-        </figure>
+    <!-- Memories Section -->
+    <div class="card">
+      <h2>Memories 📸</h2>
+      <div class="gallery">
+        <div class="gallery-item">
+          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/image1.jpg" alt="Memory 1">
+          <div class="caption">That smile that lights up the day 🌞</div>
+        </div>
+        <div class="gallery-item">
+          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/video1.mp4" controls></video>
+          <div class="caption">A moment to remember 🎥</div>
+        </div>
+        <div class="gallery-item">
+          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/image2.jpg" alt="Memory 2">
+          <div class="caption">Unforgettable day 🌙</div>
+        </div>
+        <div class="gallery-item">
+          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/video2.mp4" controls></video>
+          <div class="caption">Laughs and love 💗</div>
+        </div>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <!-- FOOTER -->
-  <footer class="mt-4">
-    Made with 💖 for <strong>Guddu</strong>.
-  </footer>
+  </div>
 
-  <!-- SCRIPTS -->
-  <script src="script.js"></script> <!-- same JS as index for theme toggle -->
-
+  <!-- Background Music -->
+  <audio id="bgMusic" src="https://aac.saavncdn.com/308/96c2e41f7b8c296e6e29f31d6cf04e4b_320.mp4" autoplay loop></audio>
   <script>
-    const song = document.getElementById('song');
+    const music = document.getElementById('bgMusic');
+    music.volume = 0.5; // Set softer volume
 
-    // Try autoplay when page loads
-    window.addEventListener('load', () => {
-      song.play().catch(() => {
-        console.log("Autoplay blocked. Will play on first click.");
-      });
-    });
-
-    // Loop forever if needed (extra safety)
-    song.addEventListener('ended', () => {
-      song.play();
+    // Retry autoplay if blocked
+    document.addEventListener('click', () => {
+      if (music.paused) {
+        music.play().catch(err => console.log('Autoplay blocked:', err));
+      }
     });
   </script>
+
 </body>
 </html>
