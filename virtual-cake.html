@@ -456,5 +456,131 @@
     });
 
   </script>
+<!-- Role Gate (Birthday-girl passcode) -->
+<style>
+  /* Pink theme gate overlay */
+  #roleGate {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: rgba(0,0,0,.55); z-index: 9999; font-family: Poppins, sans-serif;
+  }
+  #roleGate .panel {
+    width: min(92vw, 420px); background: #1f1f1f; color: #fff; border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4); padding: 20px;
+    border: 2px solid #ff69b4;
+  }
+  #roleGate h3 { margin: 0 0 10px; color: #ff69b4; }
+  #roleGate p { margin: 6px 0 12px; color: #cfcfcf; }
+  #roleGate .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  #roleGate .btn {
+    appearance: none; border: 0; border-radius: 12px; padding: 10px 14px;
+    font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg,#ff69b4,#ff99cc); color: #fff;
+  }
+  #roleGate .btn.ghost { background: #2a2a2a; color: #fff; border: 1px solid #444; }
+  #roleGate input {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #444;
+    background: #121212; color: #fff; outline: none;
+  }
+  #gateSwitch {
+    position: fixed; right: 8px; bottom: 8px; z-index: 9999;
+    font-size: 12px; color: #ff69b4; opacity: .9; cursor: pointer;
+    background: rgba(31,31,31,.8); padding: 6px 9px; border-radius: 10px;
+    border: 1px solid #ff69b4;
+  }
+</style>
+
+<div id="roleGate" hidden>
+  <div class="panel">
+    <h3>🎂 Who’s here?</h3>
+    <p>Select your role. Only the birthday girl can use the knife—everyone else can watch & chat.</p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn" id="imGuddu">I’m Guddu</button>
+      <button class="btn ghost" id="imGuest">I’m a Guest</button>
+    </div>
+    <div id="codeWrap" style="display:none">
+      <label for="bcode" style="font-weight:700; display:block; margin-bottom:6px;">Enter passcode</label>
+      <input id="bcode" type="text" placeholder="Enter your secret code"/>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="submitCode">Unlock</button>
+        <button class="btn ghost" id="cancelCode">Cancel</button>
+      </div>
+      <small id="codeErr" style="color:#ff99cc; display:none; margin-top:8px">Code didn’t match. Try again.</small>
+    </div>
+  </div>
+</div>
+<a id="gateSwitch" title="Switch role">Switch</a>
+
+<script>
+(function(){
+  // === CONFIG ===
+  const BDAY_CODE = 'GUDDU2025'; // <- change if you want
+  const STORAGE_KEY = 'cake_role_v1'; // 'cutter' or 'viewer'
+
+  // === helpers ===
+  const norm = (s) => (s||'').toString().trim().replace(/\s+/g,'').toUpperCase();
+  const qs = new URLSearchParams(location.search);
+  const gate = document.getElementById('roleGate');
+  const codeWrap = document.getElementById('codeWrap');
+  const codeInput = document.getElementById('bcode');
+  const codeErr = document.getElementById('codeErr');
+
+  function setRole(role){
+    try { localStorage.setItem(STORAGE_KEY, role); } catch(e){}
+    document.body.dataset.role = role; // your knife/chat code can read this
+    // Example: if (document.body.dataset.role==='cutter') enableKnife(); else disableKnife();
+    gate.hidden = true;
+    console.log('[cake] role =', role);
+  }
+  function openGate(){ gate.hidden = false; codeWrap.style.display='none'; codeErr.style.display='none'; }
+  function resetRole(){
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    openGate();
+  }
+
+  // If URL has ?code=..., auto-check
+  const urlCode = norm(qs.get('code'));
+  if (urlCode && urlCode === norm(BDAY_CODE)) {
+    setRole('cutter');
+    return;
+  }
+
+  // If already chosen, keep it
+  const saved = (localStorage.getItem(STORAGE_KEY)||'').trim();
+  if (saved === 'cutter' || saved === 'viewer') {
+    document.body.dataset.role = saved;
+    return;
+  }
+
+  // Otherwise, show gate
+  openGate();
+
+  // UI wiring
+  document.getElementById('imGuddu').addEventListener('click', () => {
+    codeWrap.style.display = 'block';
+    codeInput.focus();
+  });
+  document.getElementById('imGuest').addEventListener('click', () => setRole('viewer'));
+  document.getElementById('cancelCode').addEventListener('click', () => {
+    codeWrap.style.display = 'none';
+    codeErr.style.display = 'none';
+    codeInput.value = '';
+  });
+  document.getElementById('submitCode').addEventListener('click', submit);
+  codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+
+  function submit(){
+    const ok = norm(codeInput.value) === norm(BDAY_CODE);
+    if (ok) setRole('cutter');
+    else { codeErr.style.display = 'inline-block'; }
+  }
+
+  // Small “Switch” link to clear role quickly
+  document.getElementById('gateSwitch').addEventListener('click', (e)=>{
+    e.preventDefault();
+    resetRole();
+  });
+})();
+</script>
+
 </body>
 </html>
