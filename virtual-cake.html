@@ -49,6 +49,7 @@
     .panel{
       background:var(--card); border-radius:22px; box-shadow:var(--shadow); position:relative; overflow:hidden;
     }
+
     /* Cake board */
     #cakeBoard{width:100%; height:100%; display:block; background:radial-gradient(circle at 50% 30%, #2b2231, #1a1520 60%, #120f18)}
     .overlayNote{
@@ -67,9 +68,6 @@
       z-index:5;
     }
     #knife.grab{cursor:grabbing}
-    #knifeTip{
-      position:absolute; width:10px; height:10px; border-radius:50%; background:var(--gold); right:12%; top:28%; opacity:.0; /* debug tip if needed */
-    }
 
     /* Chat */
     .chat{display:flex; flex-direction:column; height:100%}
@@ -88,9 +86,6 @@
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .dialog input{width:100%; border:1px solid rgba(255,255,255,.08); background:#0f0b12; color:var(--text); padding:12px; border-radius:12px}
     .hint{font-size:12px; color:var(--muted)}
-
-    /* Celebration particles */
-    .sparkles{position:absolute; inset:0; pointer-events:none}
   </style>
 </head>
 <body>
@@ -111,13 +106,11 @@
     <section class="panel" id="cakePanel">
       <canvas id="cakeBoard"></canvas>
       <img id="knife" alt="knife" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?> <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160'> <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%23cfcfcf'/><stop offset='1' stop-color='%239e9e9e'/></linearGradient></defs> <path d='M30 120 C 180 40, 380 10, 560 50 C 574 52, 575 70, 561 73 L 320 128 C 220 150, 120 150, 40 140 Z' fill='url(%23g)' stroke='%23888888' stroke-width='2'/> <rect x='10' y='110' width='50' height='28' rx='10' fill='%236c4a2e'/> </svg>"/>
-      <div id="knifeTip"></div>
       <div class="overlayNote">🎂 Drag the knife to cut (only Guddu). Everyone sees it live.</div>
       <div class="legend">
         <span><span class="dot" style="background: var(--pink)"></span> cut lines</span>
         <span><span class="dot" style="background: var(--gold)"></span> slice marks</span>
       </div>
-      <canvas id="sparkleCanvas" class="sparkles" aria-hidden="true"></canvas>
     </section>
 
     <!-- Chat -->
@@ -165,14 +158,14 @@
      * CONFIG
      *********************/
     const CONFIG = {
-      ABLY_KEY: "Lw16iw.m-MKww:LYlcdHLZEdFs8nGr6ZXDoMh3zxRy9EprdsGKIdiOp4M", // provided by you
+      ABLY_KEY: "Lw16iw.m-MKww:LYlcdHLZEdFs8nGr6ZXDoMh3zxRy9EprdsGKIdiOp4M", // your key
       CHANNEL: "guddu-cake-room-1",
       CHAT_CHANNEL: "guddu-cake-chat-1",
-      BDAY_PASSCODE: "GUDDU-ONLY-2025" // change if you like
+      BDAY_PASSCODE: "guddu123" // <- change if you want
     };
 
     /*********************
-     * CANVAS & DRAW
+     * CANVAS SETUP
      *********************/
     const board = document.getElementById('cakeBoard');
     const ctx = board.getContext('2d');
@@ -180,57 +173,96 @@
     const roleBadge = document.getElementById('roleBadge');
     const presenceCount = document.getElementById('presenceCount');
 
+    let cake = { cx: 0, cy: 0, rTop: 0, rMid: 0, rBot: 0, yTop: 0, yMid: 0, yBot: 0 };
+    const cuts = [];
+
     function fitCanvas(){
       const rect = board.parentElement.getBoundingClientRect();
       board.width = Math.floor(rect.width);
       board.height = Math.floor(rect.height);
-      drawCakeBase();
-      // redraw existing cuts
+      drawScene(true);
       cuts.forEach(c => drawCut(c, false));
     }
     window.addEventListener('resize', fitCanvas);
 
-    // cake geometry in canvas space
-    let cake = { cx: 0, cy: 0, r: 0 };
-    function drawCakeBase(){
-      const { width:w, height:h } = board;
+    /*********************
+     * DRAW CAKE (3 layers + cream drip animation)
+     *********************/
+    let t = 0; // animation time
+    function drawScene(withPlate){
+      const w = board.width, h = board.height;
       ctx.clearRect(0,0,w,h);
 
-      // cake plate
-      ctx.beginPath();
-      ctx.arc(w/2, h*0.55, Math.min(w,h)*0.36 + 18, 0, Math.PI*2);
-      ctx.fillStyle = '#0c0a11';
-      ctx.fill();
+      // plate
+      if(withPlate){
+        ctx.beginPath();
+        ctx.arc(w/2, h*0.74, Math.min(w,h)*0.38, 0, Math.PI*2);
+        ctx.fillStyle = '#0c0a11';
+        ctx.fill();
+      }
 
-      // cake body
-      cake.cx = w/2; cake.cy = h*0.52; cake.r = Math.min(w,h)*0.34;
-      const grd = ctx.createRadialGradient(cake.cx, cake.cy - cake.r*0.4, cake.r*0.2, cake.cx, cake.cy, cake.r);
-      grd.addColorStop(0, '#ffb3c6');  // strawberry top light
-      grd.addColorStop(1, '#ff5b8a');  // pink edge
-      ctx.beginPath();
-      ctx.arc(cake.cx, cake.cy, cake.r, 0, Math.PI*2);
-      ctx.fillStyle = grd;
-      ctx.fill();
+      // layer geometry
+      cake.cx = w/2;
+      cake.yBot = h*0.62;  cake.rBot = Math.min(w,h)*0.33;
+      cake.yMid = cake.yBot - Math.min(w,h)*0.12; cake.rMid = cake.rBot*0.8;
+      cake.yTop = cake.yMid - Math.min(w,h)*0.12; cake.rTop = cake.rMid*0.8;
 
-      // frosting shine
-      ctx.beginPath();
-      ctx.ellipse(cake.cx - cake.r*0.2, cake.cy - cake.r*0.35, cake.r*0.45, cake.r*0.18, -0.25, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,255,255,.22)';
-      ctx.fill();
+      // helper to draw one layer (with glossy top)
+      const layer = (cx, cy, r, col1, col2) => {
+        const g = ctx.createRadialGradient(cx, cy - r*0.35, r*0.2, cx, cy, r);
+        g.addColorStop(0, col1);
+        g.addColorStop(1, col2);
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fillStyle = g; ctx.fill();
 
-      // candle (decor)
+        // shine
+        ctx.beginPath();
+        ctx.ellipse(cx - r*0.25, cy - r*0.35, r*0.48, r*0.18, -0.25, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,.22)';
+        ctx.fill();
+      };
+
+      // draw bottom/middle/top layers (strawberry tones)
+      layer(cake.cx, cake.yBot, cake.rBot, '#ff9fbf', '#ff5b8a');
+      layer(cake.cx, cake.yMid, cake.rMid, '#ffb3c6', '#ff6fa0');
+      layer(cake.cx, cake.yTop, cake.rTop, '#ffc1d1', '#ff78a8');
+
+      // animated cream drip around top edge
+      drawCreamDrip(cake.cx, cake.yTop, cake.rTop);
+
+      // candle
       ctx.fillStyle = '#ffd45e';
-      ctx.fillRect(cake.cx-4, cake.cy - cake.r - 26, 8, 26);
+      ctx.fillRect(cake.cx-4, cake.yTop - cake.rTop - 28, 8, 28);
       ctx.beginPath();
-      ctx.arc(cake.cx, cake.cy - cake.r - 30, 8, 0, Math.PI*2);
+      ctx.arc(cake.cx, cake.yTop - cake.rTop - 34, 9, 0, Math.PI*2);
       ctx.fillStyle = '#ff8a00';
       ctx.fill();
     }
 
-    // store cuts (each is {x1,y1,x2,y2, t})
-    const cuts = [];
+    function drawCreamDrip(cx, cy, r){
+      t += 0.02;
+      const waves = 26;
+      ctx.save();
+      ctx.beginPath();
+      for(let i=0;i<=waves;i++){
+        const a = (i/waves)*Math.PI*2;
+        const yWobble = Math.sin(a*2 + t)*3;
+        const rr = r + 6 + Math.max(0, Math.sin(a*3 + t)*10);
+        const x = cx + Math.cos(a)*rr;
+        const y = cy + Math.sin(a)*rr + yWobble;
+        (i===0) ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      const g = ctx.createLinearGradient(cx, cy-r-20, cx, cy+r+20);
+      g.addColorStop(0, 'rgba(255,255,255,.95)');
+      g.addColorStop(1, 'rgba(255,255,255,.75)');
+      ctx.fillStyle = g;
+      ctx.shadowColor = 'rgba(255,255,255,.35)';
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.restore();
+    }
+
     function drawCut(cut, withGlow=true){
-      // main cut line
       ctx.save();
       ctx.lineWidth = 6;
       ctx.strokeStyle = 'rgba(255,91,138,0.95)'; // pink
@@ -243,7 +275,7 @@
       ctx.stroke();
       ctx.restore();
 
-      // subtle slice mark (gold dash)
+      // gold dashed highlight
       ctx.save();
       ctx.setLineDash([10,8]);
       ctx.lineWidth = 2;
@@ -255,8 +287,16 @@
       ctx.restore();
     }
 
+    // animation loop (cream)
+    function animate(){
+      drawScene(false);
+      // redraw existing cuts over animation
+      cuts.forEach(c => drawCut(c, false));
+      requestAnimationFrame(animate);
+    }
+
     /*********************
-     * KNIFE DRAG (controller only)
+     * KNIFE (controller only)
      *********************/
     let isController = false;
     let dragging = false;
@@ -264,15 +304,24 @@
 
     function enableKnife(){
       knife.style.display = 'block';
-      // position near bottom-left
       knife.style.left = '12%';
       knife.style.top  = '68%';
     }
+
     function worldFromClient(px, py){
       const rect = board.getBoundingClientRect();
       return { x: px - rect.left, y: py - rect.top };
     }
-    function pointInsideCake(p){ const dx=p.x-cake.cx, dy=p.y-cake.cy; return (dx*dx+dy*dy) <= (cake.r*cake.r); }
+    function pointInsideAnyLayer(p){
+      // allow cutting across any layer area (top/mid/bot)
+      const inside = (cx, cy, r) => {
+        const dx=p.x-cx, dy=p.y-cy;
+        return (dx*dx+dy*dy) <= (r*r);
+      };
+      return inside(cake.cx, cake.yTop, cake.rTop) ||
+             inside(cake.cx, cake.yMid, cake.rMid) ||
+             inside(cake.cx, cake.yBot, cake.rBot);
+    }
 
     function pointerDown(e){
       if(!isController) return;
@@ -281,25 +330,23 @@
       dragPrev = { x: (e.touches?e.touches[0].clientX:e.clientX), y:(e.touches?e.touches[0].clientY:e.clientY) };
     }
     function pointerMove(e){
-      if(!isController) return;
       const cx = (e.touches?e.touches[0].clientX:e.clientX);
       const cy = (e.touches?e.touches[0].clientY:e.clientY);
-      // move knife element
-      knife.style.left = (cx - knife.width*0.75) + 'px';
-      knife.style.top  = (cy - knife.height*0.45) + 'px';
 
-      // broadcast knife position for spectators
-      channel && channel.publish('knifeMove', { x: cx, y: cy });
+      if(isController){
+        knife.style.left = (cx - knife.width*0.75) + 'px';
+        knife.style.top  = (cy - knife.height*0.45) + 'px';
+        channel && channel.publish('knifeMove', { x: cx, y: cy });
+      }
 
-      if(dragging && dragPrev){
+      if(isController && dragging && dragPrev){
         const a = worldFromClient(dragPrev.x, dragPrev.y);
         const b = worldFromClient(cx, cy);
-        // if stroke passes through cake, draw a segment clipped to cake
-        if(pointInsideCake(a) || pointInsideCake(b)){
-          cuts.push({ x1:a.x, y1:a.y, x2:b.x, y2:b.y, t: Date.now() });
-          drawCut(cuts[cuts.length-1]);
-          // sync this cut
-          channel && channel.publish('cut', cuts[cuts.length-1]);
+        if(pointInsideAnyLayer(a) || pointInsideAnyLayer(b)){
+          const seg = { x1:a.x, y1:a.y, x2:b.x, y2:b.y, t:Date.now() };
+          cuts.push(seg);
+          drawCut(seg);
+          channel && channel.publish('cut', seg);
         }
         dragPrev = { x: cx, y: cy };
       }
@@ -307,7 +354,7 @@
     function pointerUp(){
       if(!isController) return;
       dragging = false; knife.classList.remove('grab');
-      celebrate(); // small confetti on every finished stroke
+      celebrate(); // confetti burst
     }
 
     /*********************
@@ -340,16 +387,15 @@
       channel.subscribe('cut', msg => { cuts.push(msg.data); drawCut(msg.data); });
       // knife position for spectators
       channel.subscribe('knifeMove', msg => {
-        if(isController) return; // controller doesn't mirror
+        if(isController) return;
         const { x, y } = msg.data || {};
         if(x==null) return;
-        // position a ghost knife for viewers
         knife.style.display = 'block';
         knife.style.left = (x - knife.width*0.75) + 'px';
         knife.style.top  = (y - knife.height*0.45) + 'px';
       });
-      // reset
-      channel.subscribe('reset', () => { cuts.length = 0; drawCakeBase(); });
+      // optional reset event
+      channel.subscribe('reset', () => { cuts.length = 0; drawScene(true); });
 
       // chat
       chatChannel.subscribe('chat', msg => pushMsg(msg.clientId, msg.data.text));
@@ -390,34 +436,13 @@
     function escapeHTML(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[c])); }
 
     /*********************
-     * PARTICLES / CELEBRATE
+     * CONFETTI (on cut)
      *********************/
-    const sp = document.getElementById('sparkleCanvas');
-    const spx = sp.getContext('2d');
-    let particles = [];
-    function initSparkles(){
-      sp.width = sp.offsetWidth = board.clientWidth;
-      sp.height = sp.offsetHeight = board.clientHeight;
-      particles = Array.from({length: 60}, () => ({
-        x: Math.random()*sp.width, y: Math.random()*sp.height,
-        r: Math.random()*2+0.5, s: Math.random()*0.8+0.2,
-      }));
-    }
-    function sparkleLoop(){
-      spx.clearRect(0,0,sp.width,sp.height);
-      particles.forEach(p=>{
-        p.y += p.s; if(p.y>sp.height) p.y = -10;
-        spx.beginPath(); spx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        spx.fillStyle = 'rgba(255,255,255,.7)'; spx.fill();
-      });
-      requestAnimationFrame(sparkleLoop);
-    }
     function celebrate(){
-      // simple confetti burst over the cake center
       const N = 120; const pieces = [];
       for(let i=0;i<N;i++){
         pieces.push({
-          x:cake.cx, y:cake.cy-20, a:Math.random()*Math.PI*2,
+          x:cake.cx, y:cake.yTop-10, a:Math.random()*Math.PI*2,
           v:2+Math.random()*5, g:0.12+Math.random()*0.1,
           c:`hsl(${Math.random()*360}, 90%, 60%)`, life: 80+Math.random()*40
         });
@@ -432,13 +457,12 @@
           if(p.life<=0) pieces.splice(i,1);
         });
         ctx.restore();
-        if(pieces.length) requestAnimationFrame(anim); else drawCakeBase(), cuts.forEach(c=>drawCut(c,false));
+        if(pieces.length) requestAnimationFrame(anim);
       })();
     }
-    document.getElementById('celebrateBtn').addEventListener('click', celebrate);
 
     /*********************
-     * POINTER LISTENERS
+     * WIRE POINTERS
      *********************/
     knife.addEventListener('pointerdown', pointerDown, { passive:true });
     window.addEventListener('pointermove', pointerMove, { passive:true });
@@ -452,135 +476,8 @@
      *********************/
     window.addEventListener('load', ()=>{
       fitCanvas();
-      initSparkles(); sparkleLoop();
+      animate(); // start cream animation
     });
-
   </script>
-<!-- Role Gate (Birthday-girl passcode) -->
-<style>
-  /* Pink theme gate overlay */
-  #roleGate {
-    position: fixed; inset: 0; display: grid; place-items: center;
-    background: rgba(0,0,0,.55); z-index: 9999; font-family: Poppins, sans-serif;
-  }
-  #roleGate .panel {
-    width: min(92vw, 420px); background: #1f1f1f; color: #fff; border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.4); padding: 20px;
-    border: 2px solid #ff69b4;
-  }
-  #roleGate h3 { margin: 0 0 10px; color: #ff69b4; }
-  #roleGate p { margin: 6px 0 12px; color: #cfcfcf; }
-  #roleGate .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  #roleGate .btn {
-    appearance: none; border: 0; border-radius: 12px; padding: 10px 14px;
-    font-weight: 700; cursor: pointer;
-    background: linear-gradient(135deg,#ff69b4,#ff99cc); color: #fff;
-  }
-  #roleGate .btn.ghost { background: #2a2a2a; color: #fff; border: 1px solid #444; }
-  #roleGate input {
-    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #444;
-    background: #121212; color: #fff; outline: none;
-  }
-  #gateSwitch {
-    position: fixed; right: 8px; bottom: 8px; z-index: 9999;
-    font-size: 12px; color: #ff69b4; opacity: .9; cursor: pointer;
-    background: rgba(31,31,31,.8); padding: 6px 9px; border-radius: 10px;
-    border: 1px solid #ff69b4;
-  }
-</style>
-
-<div id="roleGate" hidden>
-  <div class="panel">
-    <h3>🎂 Who’s here?</h3>
-    <p>Select your role. Only the birthday girl can use the knife—everyone else can watch & chat.</p>
-    <div class="row" style="margin-bottom:12px">
-      <button class="btn" id="imGuddu">I’m Guddu</button>
-      <button class="btn ghost" id="imGuest">I’m a Guest</button>
-    </div>
-    <div id="codeWrap" style="display:none">
-      <label for="bcode" style="font-weight:700; display:block; margin-bottom:6px;">Enter passcode</label>
-      <input id="bcode" type="text" placeholder="Enter your secret code"/>
-      <div class="row" style="margin-top:10px">
-        <button class="btn" id="submitCode">Unlock</button>
-        <button class="btn ghost" id="cancelCode">Cancel</button>
-      </div>
-      <small id="codeErr" style="color:#ff99cc; display:none; margin-top:8px">Code didn’t match. Try again.</small>
-    </div>
-  </div>
-</div>
-<a id="gateSwitch" title="Switch role">Switch</a>
-
-<script>
-(function(){
-  // === CONFIG ===
-  const BDAY_CODE = 'GUDDU2025'; // <- change if you want
-  const STORAGE_KEY = 'cake_role_v1'; // 'cutter' or 'viewer'
-
-  // === helpers ===
-  const norm = (s) => (s||'').toString().trim().replace(/\s+/g,'').toUpperCase();
-  const qs = new URLSearchParams(location.search);
-  const gate = document.getElementById('roleGate');
-  const codeWrap = document.getElementById('codeWrap');
-  const codeInput = document.getElementById('bcode');
-  const codeErr = document.getElementById('codeErr');
-
-  function setRole(role){
-    try { localStorage.setItem(STORAGE_KEY, role); } catch(e){}
-    document.body.dataset.role = role; // your knife/chat code can read this
-    // Example: if (document.body.dataset.role==='cutter') enableKnife(); else disableKnife();
-    gate.hidden = true;
-    console.log('[cake] role =', role);
-  }
-  function openGate(){ gate.hidden = false; codeWrap.style.display='none'; codeErr.style.display='none'; }
-  function resetRole(){
-    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
-    openGate();
-  }
-
-  // If URL has ?code=..., auto-check
-  const urlCode = norm(qs.get('code'));
-  if (urlCode && urlCode === norm(BDAY_CODE)) {
-    setRole('cutter');
-    return;
-  }
-
-  // If already chosen, keep it
-  const saved = (localStorage.getItem(STORAGE_KEY)||'').trim();
-  if (saved === 'cutter' || saved === 'viewer') {
-    document.body.dataset.role = saved;
-    return;
-  }
-
-  // Otherwise, show gate
-  openGate();
-
-  // UI wiring
-  document.getElementById('imGuddu').addEventListener('click', () => {
-    codeWrap.style.display = 'block';
-    codeInput.focus();
-  });
-  document.getElementById('imGuest').addEventListener('click', () => setRole('viewer'));
-  document.getElementById('cancelCode').addEventListener('click', () => {
-    codeWrap.style.display = 'none';
-    codeErr.style.display = 'none';
-    codeInput.value = '';
-  });
-  document.getElementById('submitCode').addEventListener('click', submit);
-  codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
-
-  function submit(){
-    const ok = norm(codeInput.value) === norm(BDAY_CODE);
-    if (ok) setRole('cutter');
-    else { codeErr.style.display = 'inline-block'; }
-  }
-
-  // Small “Switch” link to clear role quickly
-  document.getElementById('gateSwitch').addEventListener('click', (e)=>{
-    e.preventDefault();
-    resetRole();
-  });
-})();
-</script>
-
 </body>
 </html>
