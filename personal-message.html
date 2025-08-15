@@ -263,5 +263,35 @@
     }
     setInterval(createHeart, 1000);
   </script>
+<!-- Your other HTML content here -->
+
+<audio id="bgMusic" autoplay loop>
+  <source src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Kaun%20Tujhe%20M.s.%20Dhoni%20The%20Untold%20Story%20320%20Kbps.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Select the background music element
+const bgMusic = document.getElementById('bgMusic');
+
+// Find all videos on the page
+document.querySelectorAll('video').forEach(video => {
+  // When a video starts playing, pause/mute background music
+  video.addEventListener('play', () => {
+    if (!bgMusic.paused) {
+      bgMusic.pause();
+    }
+  });
+
+  // Optional: resume music when video is paused
+  video.addEventListener('pause', () => {
+    if (bgMusic.paused) {
+      bgMusic.play().catch(err => {
+        console.log('Autoplay blocked until user interacts', err);
+      });
+    }
+  });
+});
+</script>
+
 </body>
 </html>
