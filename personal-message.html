@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personalised Message 💌</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"> <!-- same CSS as index -->
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="index.html" aria-label="home">
+        <span class="logo" aria-hidden="true"></span>
+        <span>Guddu's Day</span>
+      </a>
+      <div class="spacer"></div>
+      <button id="themeBtn" class="btn btn-ghost" aria-label="Toggle theme">🌓</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="section wrap">
+    <h1 class="script" style="font-size:40px; margin-bottom:10px;">A Special Message for You 💖</h1>
+    <p class="muted">This page is just for you — with words from the heart, cherished memories, and your favourite tune.</p>
+
+    <!-- HIDDEN AUDIO (AUTOPLAY + LOOP) -->
+    <audio id="song" src="https://www.jiosaavn.com/song/tu-hi-yaar-mera/Rzk7cABnZGk" preload="auto" autoplay loop></audio>
+
+    <!-- PERSONAL MESSAGE -->
+    <article class="card mt-4">
+      <h3>From the Heart 💌</h3>
+      <p>
+        Dear Guddu,<br><br>
+        You mean the world to me. These moments are just a glimpse of the joy you bring into my life.  
+        May your days be filled with love, laughter, and endless happiness. 💫
+      </p>
+    </article>
+
+    <!-- GALLERY -->
+    <section class="mt-4">
+      <h2 class="script" style="font-size:36px;">Memories 📸</h2>
+      <div class="gallery mt-3">
+        <figure class="media">
+          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/guddu-1.jpg" alt="Memory 1">
+          <figcaption class="cap">That smile that lights up the day ☀️</figcaption>
+        </figure>
+        <figure class="media">
+          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/video1.mp4" controls></video>
+          <figcaption class="cap">A moment to remember 🎥</figcaption>
+        </figure>
+        <figure class="media">
+          <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/guddu-2.jpg" alt="Memory 2">
+          <figcaption class="cap">Unforgettable day 💫</figcaption>
+        </figure>
+        <figure class="media">
+          <video src="https://raw.githubusercontent.com/yourusername/yourrepo/main/assets/video2.mp4" controls></video>
+          <figcaption class="cap">Laughs and love ❤️</figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-4">
+    Made with 💖 for <strong>Guddu</strong>.
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="script.js"></script> <!-- same JS as index for theme toggle -->
+
+  <script>
+    const song = document.getElementById('song');
+
+    // Try autoplay when page loads
+    window.addEventListener('load', () => {
+      song.play().catch(() => {
+        console.log("Autoplay blocked. Will play on first click.");
+      });
+    });
+
+    // Loop forever if needed (extra safety)
+    song.addEventListener('ended', () => {
+      song.play();
+    });
+  </script>
+</body>
+</html>
