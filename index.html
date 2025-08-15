@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff3d77" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f0b12" media="(prefers-color-scheme: dark)">
   <title>Happy Birthday, Guddu! 🎂💖</title>
   <meta name="description" content="A lovingly crafted birthday surprise for Guddu—messages, memories, photos, videos, and lots of sparkle."/>
   <meta property="og:title" content="Happy Birthday, Guddu!"/>
@@ -13,6 +15,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
+    /* =========================
+       Core Theme Variables
+       ========================= */
     :root{
       --bg: radial-gradient(1200px 800px at 10% 10%, #ffe6f2 0%, #fff 55%, #fff 100%);
       --text:#1a1a1a;
@@ -21,163 +26,357 @@
       --accent:#7c4dff;  /* purple */
       --gold:#ffb800;
       --card:#ffffffeb;
+      --border: rgba(0,0,0,.08);
       --shadow: 0 10px 30px rgba(0,0,0,.07);
+      --header-h: 64px;   /* updated at runtime */
+      --banner-h: 0px;    /* updated at runtime */
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
     }
     [data-theme="dark"]{
       --bg: radial-gradient(1200px 800px at 10% 10%, #2a1730 0%, #0f0b12 55%, #0f0b12 100%);
-      --text:#f3f3f3; --muted:#b7b7b7; --card:#16131aeb; --shadow: 0 10px 30px rgba(0,0,0,.5);
-      --primary:#ff5b8a; --accent:#9d7cff; --gold:#ffd45e;
+      --text:#f3f3f3;
+      --muted:#b7b7b7;
+      --card:#16131aeb;
+      --border: rgba(255,255,255,.08);
+      --shadow: 0 10px 30px rgba(0,0,0,.5);
+      --primary:#ff5b8a;
+      --accent:#9d7cff;
+      --gold:#ffd45e;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0}
+
+    /* Box sizing + base resets */
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
     body{
       font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      color:var(--text); background:var(--bg); min-height:100vh;
+      color:var(--text);
+      background:var(--bg);
+      min-height:100vh;
       overflow-x:hidden;
+      line-height:1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    /* Header */
+    img, video{ max-width:100%; height:auto; display:block; }
+    a{ color:inherit; }
+    button{ font-family:inherit; }
+    :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+    /* =========================
+       Header / Navigation
+       ========================= */
     header{
-      position:sticky; top:0; z-index:50; backdrop-filter:saturate(180%) blur(8px);
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(180%) blur(8px);
       background:linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.25));
-      border-bottom:1px solid rgba(0,0,0,.06);
+      border-bottom:1px solid var(--border);
     }
-    [data-theme="dark"] header{background:linear-gradient(180deg, rgba(22,19,26,.65), rgba(22,19,26,.25)); border-color:rgba(255,255,255,.06)}
-    .wrap{max-width:1100px; margin:0 auto; padding:14px 18px;}
-    .nav{display:flex; align-items:center; gap:14px;}
-    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text)}
-    .brand .logo{width:36px; height:36px; border-radius:50%; background:conic-gradient(from 90deg, var(--primary), var(--accent)); box-shadow:0 6px 16px rgba(124,77,255,.35)}
-    .brand span{font-weight:800; letter-spacing:.3px}
-    .spacer{flex:1}
-    .btn, button.btn{appearance:none; border:0; padding:10px 14px; border-radius:14px; cursor:pointer; font-weight:600; box-shadow:var(--shadow); transition:transform .12s ease, box-shadow .2s ease; text-decoration:none; display:inline-flex; align-items:center; gap:8px}
-    .btn-primary{background:linear-gradient(135deg, var(--primary), var(--accent)); color:#fff}
-    .btn-ghost{background:var(--card); color:var(--text);}
-    .btn:hover{transform:translateY(-1px)}
+    [data-theme="dark"] header{
+      background:linear-gradient(180deg, rgba(22,19,26,.65), rgba(22,19,26,.25));
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px 18px; }
+    .nav{ display:flex; align-items:center; gap:14px; min-height:var(--header-h); }
+    .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text) }
+    .brand .logo{
+      width:36px; height:36px; border-radius:50%;
+      background:conic-gradient(from 90deg, var(--primary), var(--accent));
+      box-shadow:0 6px 16px rgba(124,77,255,.35);
+      flex:0 0 auto;
+    }
+    .brand span{ font-weight:800; letter-spacing:.3px; }
+    .spacer{ flex:1; }
 
-    /* Hero */
-    .hero{position:relative; padding:80px 18px 40px}
-    .hero h1{font-size:clamp(36px, 5vw, 64px); line-height:1.05; margin:0 0 10px; font-weight:800}
-    .script{font-family:"Great Vibes", cursive; font-size:clamp(28px, 4vw, 48px); color:var(--primary); filter:drop-shadow(0 8px 18px rgba(255,61,119,.2));}
-    .tag{color:var(--muted); font-weight:400}
+    /* Buttons */
+    .btn, button.btn{
+      appearance:none; border:0; padding:10px 14px; border-radius:14px;
+      cursor:pointer; font-weight:600; box-shadow:var(--shadow);
+      transition:transform .12s ease, box-shadow .2s ease, background .2s ease;
+      text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+      background:var(--card); color:var(--text);
+    }
+    .btn-primary{ background:linear-gradient(135deg, var(--primary), var(--accent)); color:#fff; }
+    .btn-ghost{ background:var(--card); color:var(--text); }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn:active{ transform:translateY(0); }
 
-    .sparkles{position:absolute; inset:0; pointer-events:none}
+    /* Desktop nav links */
+    .nav-links{ display:flex; align-items:center; gap:10px; }
+    #menuToggle{
+      display:none;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:8px 10px;
+      line-height:1;
+    }
 
-    /* Sections */
-    section{scroll-margin-top:90px}
-    .section{padding:32px 18px}
-    .grid{display:grid; gap:18px}
-    .grid.cards{grid-template-columns:repeat(auto-fit, minmax(240px, 1fr))}
-    .card{background:var(--card); border-radius:22px; padding:18px; box-shadow:var(--shadow)}
-    .card h3{margin:6px 0 10px}
-    .muted{color:var(--muted)}
+    /* Mobile menu panel */
+    @media (max-width: 860px){
+      #menuToggle{ display:inline-flex; }
+      .nav-links{
+        position:fixed;
+        left:0; right:0;
+        top:calc(var(--header-h) + var(--banner-h));
+        background:var(--card);
+        border-bottom:1px solid var(--border);
+        box-shadow:var(--shadow);
+        padding:12px 18px;
+        display:none;
+        flex-direction:column;
+        gap:10px;
+        z-index:49;
+      }
+      .nav-links.open{ display:flex; }
+      .nav-links a, .nav-links button{ width:100%; justify-content:center; }
+    }
+
+    /* =========================
+       Hero
+       ========================= */
+    .hero{ position:relative; padding:80px 18px 40px; }
+    .hero h1{
+      font-size:clamp(36px, 5vw, 64px);
+      line-height:1.05;
+      margin:0 0 10px; font-weight:800;
+    }
+    .script{
+      font-family:"Great Vibes", cursive;
+      font-size:clamp(28px, 4vw, 48px);
+      color:var(--primary);
+      filter:drop-shadow(0 8px 18px rgba(255,61,119,.2));
+      white-space:nowrap;
+    }
+    .tag{ color:var(--muted); font-weight:400; max-width:80ch; }
+
+    .sparkles{ position:absolute; inset:0; pointer-events:none; }
+
+    /* =========================
+       Sections / Cards
+       ========================= */
+    section{ scroll-margin-top:calc(var(--header-h) + var(--banner-h) + 16px); }
+    .section{ padding:32px 18px; }
+    .grid{ display:grid; gap:18px; }
+    .grid.cards{ grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); }
+    .card{
+      background:var(--card); border-radius:22px; padding:18px;
+      box-shadow:var(--shadow); border:1px solid var(--border);
+    }
+    .card h3{ margin:6px 0 10px; }
+    .muted{ color:var(--muted); }
 
     /* Gallery */
-    .gallery{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px}
-    .media{position:relative; border-radius:18px; overflow:hidden; box-shadow:var(--shadow)}
-    .media img, .media video{width:100%; height:260px; object-fit:cover; display:block}
-    .media .cap{position:absolute; left:0; right:0; bottom:0; padding:10px 12px; background:linear-gradient(180deg, transparent, rgba(0,0,0,.45)); color:#fff; font-size:14px}
+    .gallery{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px; }
+    .media{ position:relative; border-radius:18px; overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--border); }
+    .media img, .media video{ width:100%; aspect-ratio: 4/3; object-fit:cover; }
+    .media .cap{
+      position:absolute; left:0; right:0; bottom:0; padding:10px 12px;
+      background:linear-gradient(180deg, transparent, rgba(0,0,0,.55));
+      color:#fff; font-size:14px;
+    }
 
-    /* Message cards (variety) */
-    .gcard{position:relative; border-radius:22px; padding:20px; overflow:hidden; box-shadow:var(--shadow); color:#fff}
-    .gcard h4{margin:0 0 8px}
-    .gcard p{margin:0}
-    .gcard.glow::before{content:""; position:absolute; inset:-2px; background:conic-gradient(var(--primary), var(--accent), var(--gold), var(--primary)); filter:blur(16px); opacity:.45}
-    .gcard.glow > *{position:relative}
-    .gcard.soft{background:linear-gradient(135deg, #ff6fa1, #7c4dff)}
-    .gcard.sunset{background:linear-gradient(135deg, #ffb347, #ff3d77)}
-    .gcard.ocean{background:linear-gradient(135deg, #38bdf8, #7c4dff)}
+    /* Message gradient cards */
+    .gcard{ position:relative; border-radius:22px; padding:20px; overflow:hidden; box-shadow:var(--shadow); color:#fff }
+    .gcard h4{ margin:0 0 8px }
+    .gcard p{ margin:0 }
+    .gcard::after{ content:""; position:absolute; inset:0; border-radius:inherit; border:1px solid rgba(255,255,255,.15); pointer-events:none; }
+    .gcard.glow::before{
+      content:""; position:absolute; inset:-2px;
+      background:conic-gradient(var(--primary), var(--accent), var(--gold), var(--primary));
+      filter:blur(16px); opacity:.45;
+    }
+    .gcard.glow > *{ position:relative }
+    .gcard.soft{ background:linear-gradient(135deg, #ff6fa1, #7c4dff) }
+    .gcard.sunset{ background:linear-gradient(135deg, #ffb347, #ff3d77) }
+    .gcard.ocean{ background:linear-gradient(135deg, #38bdf8, #7c4dff) }
 
     /* Timeline */
-    .timeline{position:relative; margin:10px 0}
-    .timeline::before{content:""; position:absolute; left:12px; top:0; bottom:0; width:3px; background:linear-gradient(var(--accent), var(--primary))}
-    .titem{display:grid; grid-template-columns:28px 1fr; gap:12px; align-items:start; margin:12px 0}
-    .dot{width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--accent)); box-shadow:0 6px 14px rgba(0,0,0,.2)}
-    .tcontent{background:var(--card); padding:12px 14px; border-radius:16px; box-shadow:var(--shadow)}
+    .timeline{ position:relative; margin:10px 0 }
+    .timeline::before{ content:""; position:absolute; left:12px; top:0; bottom:0; width:3px; background:linear-gradient(var(--accent), var(--primary)) }
+    .titem{ display:grid; grid-template-columns:28px 1fr; gap:12px; align-items:start; margin:12px 0 }
+    .dot{ width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--accent)); box-shadow:0 6px 14px rgba(0,0,0,.2) }
+    .tcontent{ background:var(--card); padding:12px 14px; border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--border) }
 
     /* Footer */
-    footer{padding:60px 18px; text-align:center; color:var(--muted)}
+    footer{ padding:60px 18px; text-align:center; color:var(--muted) }
 
     /* Floating hearts */
-    .float-heart{position:fixed; pointer-events:none; z-index:9999; font-size:18px; animation:floatUp 3.5s ease-in forwards}
-    @keyframes floatUp{0%{opacity:0; transform:translateY(0) scale(.8)} 10%{opacity:1} 100%{opacity:0; transform:translateY(-160px) scale(1.6)}}
+    .float-heart{ position:fixed; pointer-events:none; z-index:9999; font-size:18px; animation:floatUp 3.5s ease-in forwards }
+    @keyframes floatUp{
+      0%{opacity:0; transform:translateY(0) scale(.8)}
+      10%{opacity:1}
+      100%{opacity:0; transform:translateY(-160px) scale(1.6)}
+    }
 
-    /* Modal music prompt */
-    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60}
-    .modal .dialog{background:var(--card); padding:20px; border-radius:18px; text-align:center; box-shadow:var(--shadow)}
+    /* Modal */
+    .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60; padding:20px }
+    .modal .dialog{ background:var(--card); padding:20px; border-radius:18px; text-align:center; box-shadow:var(--shadow); border:1px solid var(--border) }
 
     /* Utility */
-    .center{display:flex; align-items:center; justify-content:center}
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .hidden{display:none}
-    .mt-2{margin-top:8px} .mt-3{margin-top:14px} .mt-4{margin-top:22px}
+    .center{ display:flex; align-items:center; justify-content:center }
+    .row{ display:flex; gap:10px; flex-wrap:wrap }
+    .hidden{ display:none }
+    .mt-2{ margin-top:8px } .mt-3{ margin-top:14px } .mt-4{ margin-top:22px }
 
-    /* Professional birthday reveal bits */
+    /* Reveal headline */
     .headline-gold{
       background:linear-gradient(90deg,#ffb800,#ff6fa1,#7c4dff,#ffb800);
-      -webkit-background-clip:text;background-clip:text;color:transparent;
+      -webkit-background-clip:text; background-clip:text; color:transparent;
       font-weight:800; letter-spacing:.5px; filter:drop-shadow(0 6px 16px rgba(124,77,255,.25));
       animation:shine 3.2s linear infinite;
     }
     @keyframes shine{
-      0%{background-position:0% 50%}100%{background-position:200% 50%}
+      0%{background-position:0% 50%}
+      100%{background-position:200% 50%}
     }
 
     /* Lock cards until reveal */
-    #cards{
-      transition:opacity .6s ease, transform .6s ease;
-    }
-    #cards.locked{
-      opacity:.0; transform:translateY(10px); pointer-events:none;
-    }
+    #cards{ transition:opacity .6s ease, transform .6s ease; }
+    #cards.locked{ opacity:.0; transform:translateY(10px); pointer-events:none; }
 
     /* Reduce motion */
     @media (prefers-reduced-motion: reduce){
-      .btn, .headline-gold{animation:none}
-      .float-heart{animation:none}
+      .btn, .headline-gold{ animation:none }
+      .float-heart{ animation:none }
     }
 
-    /* -------- Mobile Friendly Tweaks -------- */
+    /* ============ Mobile Tweaks ============ */
     @media (max-width: 768px) {
-      .nav { flex-wrap: wrap; justify-content: center; }
-      .btn, button.btn { font-size: 14px; padding: 8px 12px; }
-      .hero { padding: 60px 12px 30px; text-align: center; }
+      .wrap { padding: 14px 14px; }
+      .nav { gap:10px; }
+      .btn, button.btn { font-size: 14px; padding: 10px 12px; border-radius:14px; }
+      .hero { padding: 60px 14px 24px; text-align: center; }
+      .script { white-space:normal; }
       .row { flex-direction: column; align-items: stretch; }
       .grid.cards { grid-template-columns: 1fr; }
       .gallery { grid-template-columns: 1fr; }
-      .media img, .media video { height: auto; }
+      .media img, .media video { aspect-ratio: 16/9; }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 420px){
+      .brand span { font-size: 16px; }
+      .brand .logo { width:30px; height:30px; }
+      .hero { padding-top: 48px; }
+      .btn, button.btn { padding: 9px 11px; }
+    }
+
+    /* Safe-area aware bottom spacing for sticky elements */
+    .sticky-bottom-pad{ padding-bottom: max(16px, calc(16px + var(--safe-bottom))); }
+
+    /* =========================
+       Cake Cutting Banner
+       ========================= */
+    #cakeCutBanner{
+      background: linear-gradient(90deg, #ff69b4, #ff99cc);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      padding: 0.8rem 1.2rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+      position: fixed;
+      top: calc(var(--header-h)); /* updated via JS to add banner offset when needed */
+      left: 0;
+      width: 100%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+      z-index: 49;
+      cursor: pointer;
+      display: flex; justify-content: center; align-items: center;
+      gap:.5rem;
+      border-bottom:1px solid rgba(255,255,255,.25);
+    }
+    #cakeCutBanner:hover { background: linear-gradient(90deg, #ff99cc, #ff69b4); }
+    #cakeCutBanner span { margin-left: 2px; }
+
+    /* =========================
+       Extra Media Queries used by other pages (safe, won't break)
+       ========================= */
+    @media (max-width: 980px){
+      body { overflow:auto !important; }
+      .stage {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto;
+        gap: 12px !important;
+        height: auto !important;
+        padding: 0 12px !important;
+      }
+      img, canvas, video { max-width: 100% !important; height: auto !important; }
+    }
+    @media (max-width: 640px){
+      .chat { height: auto !important; max-height: none !important; }
+      .chatBody {
+        padding: 10px !important;
+        max-height: 48vh !important;
+        overflow:auto !important;
+      }
+      .chatFoot {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: rgba(15,11,18,.75) !important;
+        backdrop-filter: blur(6px) saturate(140%) !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+      .chatFoot input {
+        padding: 12px !important;
+        min-height: 44px !important;
+        font-size: 16px !important;
+      }
+      #knife { width: clamp(110px, 34vw, 160px) !important; z-index: 12 !important; }
+      .overlayNote { font-size: 12px !important; padding: 6px 10px !important; }
+      .legend { font-size: 12px !important; padding: 8px 10px !important; }
     }
   </style>
 </head>
 <body>
-  <header>
+  <!-- Skip link for accessibility -->
+  <a href="#welcome" class="btn btn-ghost" style="position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;">
+    Skip to content
+  </a>
+
+  <header id="siteHeader">
     <div class="wrap nav">
       <a class="brand" href="#top" aria-label="home">
         <span class="logo" aria-hidden="true"></span>
         <span>Guddu's Day</span>
       </a>
       <div class="spacer"></div>
-      <a class="btn btn-ghost" href="#welcome">Welcome</a>
-      <a class="btn btn-ghost" href="#messages">Messages</a>
-      <a class="btn btn-ghost" href="#gallery">Photos & Videos</a>
-      <a class="btn btn-ghost" href="#cards">Greeting Cards</a>
-      <button id="themeBtn" class="btn btn-ghost" aria-label="Toggle theme">🌓</button>
-      <button id="confettiBtn" class="btn btn-primary" aria-label="Confetti">🎉 Celebrate</button>
+
+      <!-- Mobile toggle -->
+      <button id="menuToggle" class="btn btn-ghost" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">☰</button>
+
+      <!-- Links group -->
+      <nav id="navLinks" class="nav-links" aria-label="Primary">
+        <a class="btn btn-ghost" href="#welcome">Welcome</a>
+        <a class="btn btn-ghost" href="#messages">Messages</a>
+        <a class="btn btn-ghost" href="#gallery">Photos &amp; Videos</a>
+        <a class="btn btn-ghost" href="#cards">Greeting Cards</a>
+        <button id="themeBtn" class="btn btn-ghost" aria-label="Toggle theme">🌓</button>
+        <button id="confettiBtn" class="btn btn-primary" aria-label="Confetti">🎉 Celebrate</button>
+      </nav>
     </div>
   </header>
 
+  <!-- Cake Cutting Banner -->
+  <div id="cakeCutBanner" onclick="window.location.href='virtual-cake.html'" role="button" aria-label="Go to virtual cake page">
+    🎂 <span>Let's cut the cake →</span>
+  </div>
+
   <!-- HERO / WELCOME -->
-  <main id="top" class="hero wrap">
+  <main id="top" class="hero wrap" role="main" aria-labelledby="h1">
     <canvas id="sparkleCanvas" class="sparkles" aria-hidden="true"></canvas>
-    <h1><span class="script">Happy Birthday,</span><br> dearest <span id="friendName">Guddu</span>! 🌸</h1>
+    <h1 id="h1"><span class="script">Happy Birthday,</span><br> dearest <span id="friendName">Guddu</span>! 🌸</h1>
     <p class="tag">Today is all about you. May your smile outshine the stars, your dreams soar high, and your heart stay forever happy. — With love, <span id="yourName">Your Friend</span> 💖</p>
     <div class="row mt-3">
       <a href="#messages" class="btn btn-primary">Read My Wishes ✨</a>
       <a href="#gallery" class="btn btn-ghost">Memories Gallery 📷</a>
-      <button id="musicBtn" class="btn btn-ghost">▶️ Play Birthday Tune</button>
+      <button id="musicBtn" class="btn btn-ghost" aria-haspopup="dialog" aria-controls="musicModal">▶️ Play Birthday Tune</button>
     </div>
   </main>
 
   <!-- WELCOME SECTION -->
-  <section id="welcome" class="section wrap">
+  <section id="welcome" class="section wrap" aria-labelledby="welcome-title">
+    <h2 id="welcome-title" class="visually-hidden" style="position:absolute;left:-999px;">Welcome</h2>
     <div class="grid cards">
       <article class="card">
         <h3>To My Favorite Person, <span class="script" style="font-size:1.4em">Guddu</span> 🎀</h3>
@@ -187,24 +386,26 @@
           <button class="btn btn-ghost" onclick="typeOutMessage()">Reveal a Secret ✍️</button>
         </div>
       </article>
+
       <article class="card">
         <h3>Countdown to 28 Aug ⏳</h3>
         <p class="muted">Tick-tock to midnight magic (12:00 AM, 28 Aug). When it hits zero, surprises appear.</p>
         <div id="countdown" class="mt-3" aria-live="polite" style="font-weight:800; font-size:24px"></div>
       </article>
-      <article class="card" style="cursor:pointer" onclick="window.location.href='personal-message.html'">
-  <h3>Personalised Message 💌</h3>
-  <p class="muted">A heartfelt note, just for you. Click to open your surprise message.</p>
-  <div class="mt-3 btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
-    💖 Read Message
-  </div>
-</article>
+
+      <article class="card" style="cursor:pointer" onclick="window.location.href='personal-message.html'" aria-label="Open personal message card">
+        <h3>Personalised Message 💌</h3>
+        <p class="muted">A heartfelt note, just for you. Click to open your surprise message.</p>
+        <div class="mt-3 btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
+          💖 Read Message
+        </div>
+      </article>
     </div>
   </section>
 
   <!-- MESSAGES -->
-  <section id="messages" class="section wrap">
-    <h2 class="script" style="font-size:40px; margin:0 0 12px">Wishes & Words</h2>
+  <section id="messages" class="section wrap" aria-labelledby="messages-title">
+    <h2 id="messages-title" class="script" style="font-size:40px; margin:0 0 12px">Wishes &amp; Words</h2>
     <div class="grid cards">
       <article class="gcard soft">
         <h4>For Your Heart</h4>
@@ -216,7 +417,7 @@
       </article>
       <article class="gcard ocean">
         <h4>For Your Laugh</h4>
-        <p>Your laughter is my favorite sound. Remembering about you always gives me a inner smile. 🌊</p>
+        <p>Your laughter is my favorite sound. Remembering about you always gives me an inner smile. 🌊</p>
       </article>
       <article class="gcard glow">
         <h4>Promise</h4>
@@ -227,36 +428,48 @@
     <div class="card mt-4">
       <h3>Mini Memory Timeline ⏱️</h3>
       <div class="timeline">
-        <div class="titem"><span class="dot"></span><div class="tcontent"><strong>First hello</strong> — The day the world got better for me. 🌟</div></div>
-        <div class="titem"><span class="dot"></span><div class="tcontent"><strong>First Face to Face meeting</strong> — The best day for me.💫</div></div>
-        <div class="titem"><span class="dot"></span><div class="tcontent"><strong>Today</strong> — A whole website just for you. 🎁</div></div>
+        <div class="titem"><span class="dot" aria-hidden="true"></span><div class="tcontent"><strong>First hello</strong> — The day the world got better for me. 🌟</div></div>
+        <div class="titem"><span class="dot" aria-hidden="true"></span><div class="tcontent"><strong>First Face to Face meeting</strong> — The best day for me.💫</div></div>
+        <div class="titem"><span class="dot" aria-hidden="true"></span><div class="tcontent"><strong>Today</strong> — A whole website just for you. 🎁</div></div>
       </div>
     </div>
   </section>
 
   <!-- GALLERY -->
-  <section id="gallery" class="section wrap">
-    <h2 class="script" style="font-size:40px; margin:0 0 12px">Photos & Videos</h2>
+  <section id="gallery" class="section wrap" aria-labelledby="gallery-title">
+    <h2 id="gallery-title" class="script" style="font-size:40px; margin:0 0 12px">Photos &amp; Videos</h2>
     <p class="muted">Replace the media files in <code>assets/</code> and captions below with your real memories. (Examples shown.)</p>
     <div class="gallery mt-3">
       <!-- IMAGES -->
-      <figure class="media"><img src="assets/guddu-1.jpg" alt="Guddu smiling"><figcaption class="cap">That sunshine smile ☀️</figcaption></figure>
-      <figure class="media"><img src="assets/guddu-2.jpg" alt="Birthday vibes"><figcaption class="cap">Pre-birthday glow ✨</figcaption></figure>
-      <figure class="media"><img src="assets/guddu-3.jpg" alt="Candid moment"><figcaption class="cap">My favorite candid 📸</figcaption></figure>
+      <figure class="media">
+        <img src="assets/guddu-1.jpg" alt="Guddu smiling" loading="lazy">
+        <figcaption class="cap">That sunshine smile ☀️</figcaption>
+      </figure>
+      <figure class="media">
+        <img src="assets/guddu-2.jpg" alt="Birthday vibes" loading="lazy">
+        <figcaption class="cap">Pre-birthday glow ✨</figcaption>
+      </figure>
+      <figure class="media">
+        <img src="assets/guddu-3.jpg" alt="Candid moment" loading="lazy">
+        <figcaption class="cap">My favorite candid 📸</figcaption>
+      </figure>
       <!-- VIDEO -->
-      <figure class="media"><video src="assets/guddu-video.mp4" controls poster="assets/guddu-cover.jpg"></video><figcaption class="cap">A little video memory 🎥</figcaption></figure>
+      <figure class="media">
+        <video src="assets/guddu-video.mp4" controls preload="metadata" poster="assets/guddu-cover.jpg"></video>
+        <figcaption class="cap">A little video memory 🎥</figcaption>
+      </figure>
     </div>
   </section>
 
   <!-- GREETING CARDS -->
-  <section id="cards" class="section wrap locked">
-    <h2 class="script" style="font-size:40px; margin:0 0 12px">Open Your Cards 💌</h2>
+  <section id="cards" class="section wrap locked" aria-labelledby="cards-title">
+    <h2 id="cards-title" class="script" style="font-size:40px; margin:0 0 12px">Open Your Cards 💌</h2>
     <div class="grid cards">
       <article class="card">
         <h3>Classic Card</h3>
         <p class="muted">A simple, elegant wish you can screenshot or share.</p>
         <div class="center mt-3" style="padding:10px">
-          <div id="cardClassic" style="width:100%; max-width:420px; aspect-ratio:4/5; border-radius:22px; background:linear-gradient(135deg, #ffe8f1, #e9ddff); display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; position:relative; box-shadow:var(--shadow)">
+          <div id="cardClassic" style="width:100%; max-width:420px; aspect-ratio:4/5; border-radius:22px; background:linear-gradient(135deg, #ffe8f1, #e9ddff); display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; position:relative; box-shadow:var(--shadow); overflow:hidden">
             <div style="position:absolute; inset:12px; border:2px dashed rgba(0,0,0,.1); border-radius:18px"></div>
             <div>
               <div style="font-family:'Great Vibes', cursive; font-size:42px; color:#ff3d77">Happy Birthday</div>
@@ -289,48 +502,88 @@
           <button class="btn btn-primary" onclick="saveNote()">💾 Save Note</button>
           <button class="btn btn-ghost" onclick="shareLink()">🔗 Share Link</button>
         </div>
-        <small class="muted">(We save only in your browser storage; for public sharing, commit this page to GitHub Pages.)</small>
+        <small class="muted">(Saved only in your browser; to share publicly, host this page.)</small>
       </article>
     </div>
   </section>
 
   <footer>
-    Made with 💖 by <span id="yourNameFoot">Your Friend Anuj</span>  just for <strong> My dearest Guddu</strong>. <br>
+    Made with 💖 by <span id="yourNameFoot">Your Friend Anuj</span> just for <strong>My dearest Guddu</strong>.
   </footer>
 
+  <!-- Hidden audio (added to avoid JS errors) -->
+  <audio id="song" preload="auto" hidden loop>
+    <source src="assets/happy-birthday.mp3" type="audio/mpeg">
+    <source src="assets/happy-birthday.ogg" type="audio/ogg">
+  </audio>
+
   <!-- Music Modal (for autoplay prompt) -->
-  <div id="musicModal" class="modal">
+  <div id="musicModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="musicTitle">
     <div class="dialog">
-      <h3>Start the birthday tune?</h3>
+      <h3 id="musicTitle">Start the birthday tune?</h3>
       <p class="muted">Tap play to add music to the celebration.</p>
       <div class="mt-3"><button class="btn btn-primary" onclick="playSongAndClose()">▶️ Play</button></div>
     </div>
   </div>
 
   <script>
-    /**
-     * Quick personalization
-     * Change these two values and commit to GitHub Pages.
-     */
+    /* =========================
+       Personalization
+       ========================= */
     const FRIEND_NAME = "Guddu";     // her name
     const YOUR_NAME   = "Your Friend"; // your name shown on site
 
-    // Apply names
     document.querySelectorAll('#friendName, #nameOnCard').forEach(el => el.textContent = FRIEND_NAME);
     document.querySelectorAll('#yourName, #yourNameFoot').forEach(el => el.textContent = YOUR_NAME);
 
-    /** Theme toggle (saved in localStorage) */
+    /* =========================
+       Theme toggle (saved)
+       ========================= */
     const themeBtn = document.getElementById('themeBtn');
     const current = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     if(current==='dark') document.documentElement.setAttribute('data-theme','dark');
-    themeBtn.addEventListener('click',()=>{
+    themeBtn?.addEventListener('click',()=>{
       const d = document.documentElement;
       const dark = d.getAttribute('data-theme')==='dark';
       d.setAttribute('data-theme', dark? 'light':'dark');
       localStorage.setItem('theme', dark? 'light':'dark');
     });
 
-    /** Sparkle background in hero */
+    /* =========================
+       Mobile menu toggle
+       ========================= */
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    menuToggle?.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    // Close menu after clicking a link (mobile)
+    navLinks?.addEventListener('click', (e)=>{
+      if(e.target.tagName === 'A' || e.target.tagName === 'BUTTON'){
+        navLinks.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded','false');
+      }
+    });
+
+    /* =========================
+       Layout helpers (header & banner heights)
+       ========================= */
+    const header = document.getElementById('siteHeader');
+    const cakeBanner = document.getElementById('cakeCutBanner');
+    function updateLayoutVars(){
+      const h = header?.getBoundingClientRect().height || 64;
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+      const b = cakeBanner?.getBoundingClientRect().height || 0;
+      document.documentElement.style.setProperty('--banner-h', b + 'px');
+    }
+    window.addEventListener('resize', updateLayoutVars);
+    window.addEventListener('load', updateLayoutVars);
+    updateLayoutVars();
+
+    /* =========================
+       Sparkle background in hero
+       ========================= */
     const sp = document.getElementById('sparkleCanvas');
     const spx = sp.getContext('2d');
     let particles = [];
@@ -341,7 +594,7 @@
         r: Math.random()*2+0.5, s: Math.random()*0.8+0.2,
       }));
     }
-    window.addEventListener('resize', initSparkles);
+    window.addEventListener('resize', initSparkles, {passive:true});
     initSparkles();
     (function loop(){
       spx.clearRect(0,0,sp.width,sp.height);
@@ -353,36 +606,32 @@
       requestAnimationFrame(loop);
     })();
 
-    /** Floating hearts burst */
+    /* =========================
+       Floating hearts
+       ========================= */
     function burstHearts(){
       for(let i=0;i<16;i++) setTimeout(()=>{
         const span = document.createElement('span');
         span.className='float-heart';
         span.textContent = ['💖','💗','💓','💕','💞'][Math.floor(Math.random()*5)];
         span.style.left = (Math.random()*80+10)+'vw';
+        span.style.bottom = '12px';
         document.body.appendChild(span);
         setTimeout(()=>span.remove(), 3600);
       }, i*80);
     }
 
-    /**
-     * Countdown to next 28 Aug 12:00 AM (local time).
-     * When it reaches zero:
-     *  - Fade out counter, show "Happiest Birthday, Guddu!" with gold gradient
-     *  - Fire confetti and hearts
-     *  - Unlock and fade-in the Cards section
-     *  - Prompt to start music
-     */
+    /* =========================
+       Countdown to next 28 Aug 12:00 AM
+       ========================= */
     const countdownEl = document.getElementById('countdown');
     const cardsSection = document.getElementById('cards');
     function nextAug28Midnight(){
       const now = new Date();
       const year = (now.getMonth()>7 || (now.getMonth()===7 && now.getDate()>=28)) ? now.getFullYear()+1 : now.getFullYear();
-      const d = new Date(year, 7, 28, 0, 0, 0, 0); // month index 7 = August
-      return d;
+      return new Date(year, 7, 28, 0, 0, 0, 0); // month index 7 = August
     }
     const targetTime = nextAug28Midnight();
-
     function pad(n){ return n<10 ? '0'+n : n; }
     let countdownTick = null;
 
@@ -402,51 +651,62 @@
 
     function onBirthdayStart(){
       if(countdownTick){ clearInterval(countdownTick); countdownTick=null; }
-      // Fade out current countdown text
       countdownEl.style.transition = 'opacity .4s ease';
       countdownEl.style.opacity = '0';
       setTimeout(()=>{
         countdownEl.innerHTML = `<span class="headline-gold" style="font-size:26px">🎉 Happiest Birthday, ${FRIEND_NAME}! 🎉</span>`;
         countdownEl.style.opacity = '1';
-        // Party time
         confetti(document.body, 220);
         burstHearts();
-        // Unlock cards with a gentle delay
         setTimeout(()=> cardsSection.classList.remove('locked'), 450);
-        // Suggest music
         musicModal.style.display='grid';
       }, 420);
     }
-
     countdownTick = setInterval(renderCountdown, 1000);
     renderCountdown();
 
-    /** Music controls */
-    const musicBtn = document.getElementById('musicBtn'); const song = document.getElementById('song');
+    /* =========================
+       Music controls
+       ========================= */
+    const musicBtn = document.getElementById('musicBtn');
+    const song = document.getElementById('song');
     const musicModal = document.getElementById('musicModal');
-    musicBtn.addEventListener('click', ()=> musicModal.style.display='grid');
-    function playSongAndClose(){ song.play(); musicModal.style.display='none'; }
+    musicBtn?.addEventListener('click', ()=> musicModal.style.display='grid');
+    function playSongAndClose(){
+      musicModal.style.display='none';
+      if(song){
+        const playPromise = song.play();
+        if(playPromise && typeof playPromise.then==='function'){
+          playPromise.catch(()=>{/* ignore autoplay errors */});
+        }
+      }
+    }
 
-    /** Confetti explosion (page) */
+    /* =========================
+       Confetti (page button)
+       ========================= */
     const confettiBtn = document.getElementById('confettiBtn');
-    confettiBtn.addEventListener('click', ()=>{
-      confetti(document.body, 180); // page-wide
-    });
+    confettiBtn?.addEventListener('click', ()=>{ confetti(document.body, 180); });
 
-    /** Typewriter secret message */
+    /* =========================
+       Typewriter secret message
+       ========================= */
     function typeOutMessage(){
       const msg = `Dear ${FRIEND_NAME},\nYou are loved beyond words. Thank you for being you.`;
       let i=0; const box = document.createElement('div');
-      box.className='card'; box.style.position='fixed'; box.style.right='16px'; box.style.bottom='16px'; box.style.maxWidth='340px'; box.style.zIndex='70';
+      box.className='card';
+      box.style.position='fixed'; box.style.right='16px'; box.style.bottom='16px';
+      box.style.maxWidth='340px'; box.style.zIndex='70';
       const p = document.createElement('pre'); p.style.margin='0'; p.style.whiteSpace='pre-wrap';
       box.appendChild(p); document.body.appendChild(box);
       const t = setInterval(()=>{ p.textContent = msg.slice(0, ++i); if(i>=msg.length) clearInterval(t); }, 22);
       setTimeout(()=> box.remove(), 9000);
     }
 
-    /** Greeting Card: download as PNG without external libs (using canvas snapshot) */
+    /* =========================
+       Greeting Card: DOM to PNG via SVG foreignObject
+       ========================= */
     function downloadCard(id, filename){
-      // draw DOM element onto an offscreen canvas via SVG foreignObject
       const node = document.getElementById(id);
       const { width, height } = node.getBoundingClientRect();
       const svg = new Blob([
@@ -460,13 +720,15 @@
       const img = new Image();
       img.onload = ()=>{
         const canvas = document.createElement('canvas'); canvas.width=width; canvas.height=height;
-        const ctx = canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0);
         URL.revokeObjectURL(url);
-        canvas.toBlob(b=>{ const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=filename; a.click(); }, 'image/png');
+        canvas.toBlob(b=>{
+          const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=filename; a.click();
+        }, 'image/png');
       };
       img.src = url;
     }
-
     function randomizePalette(){
       const el = document.getElementById('cardClassic');
       const palettes = [
@@ -476,20 +738,28 @@
       el.style.background = `linear-gradient(135deg, ${p[0]}, ${p[1]})`;
     }
 
-    /** Confetti canvas card */
+    /* =========================
+       Confetti canvas card
+       ========================= */
     const cCanvas = document.getElementById('cardConfetti');
-    const cctx = cCanvas.getContext('2d');
     function confettiBurstCanvas(){ confetti(cCanvas, 120); }
     function saveCanvas(id, filename){
       const c = document.getElementById(id);
       c.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=filename; a.click(); }, 'image/png');
     }
 
-    /** Minimal confetti engine (canvas target) */
+    /* =========================
+       Minimal confetti engine (canvas target)
+       ========================= */
     function confetti(target, count=160){
-      const rect = (target===document.body) ? {left:0, top:0, width:window.innerWidth, height:window.innerHeight} : target.getBoundingClientRect();
+      const rect = (target===document.body)
+        ? {left:0, top:0, width:window.innerWidth, height:window.innerHeight}
+        : target.getBoundingClientRect();
       const canvas = document.createElement('canvas');
-      canvas.width = rect.width; canvas.height = rect.height; canvas.style.position='fixed'; canvas.style.left=rect.left+'px'; canvas.style.top=rect.top+'px'; canvas.style.pointerEvents='none'; canvas.style.zIndex=80;
+      canvas.width = rect.width; canvas.height = rect.height;
+      canvas.style.position='fixed';
+      canvas.style.left=rect.left+'px'; canvas.style.top=rect.top+'px';
+      canvas.style.pointerEvents='none'; canvas.style.zIndex=80;
       document.body.appendChild(canvas);
       const cx = canvas.getContext('2d');
       const pieces = Array.from({length:count}, ()=>({
@@ -506,106 +776,33 @@
         cx.clearRect(0,0,canvas.width,canvas.height);
         pieces.forEach(p=>{
           p.y += p.s*2.2; p.x += Math.sin(frame/20 + p.r); p.r += 0.03;
-          cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+          cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r);
+          cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+          cx.restore();
         });
         frame++;
         if(frame<260) requestAnimationFrame(animate); else canvas.remove();
       })();
     }
 
-    /** Save love note locally */
-    function saveNote(){ localStorage.setItem('gudduLoveNote', document.getElementById('loveNote').value); alert('Saved on this device!'); }
+    /* =========================
+       Save love note locally & share link
+       ========================= */
+    function saveNote(){
+      localStorage.setItem('gudduLoveNote', document.getElementById('loveNote').value);
+      alert('Saved on this device!');
+    }
     document.getElementById('loveNote').value = localStorage.getItem('gudduLoveNote') || '';
-
-    /** Share link with prefilled message */
-    function shareLink(){ const text = encodeURIComponent(document.getElementById('loveNote').value || `Happy Birthday, ${FRIEND_NAME}!`); const url = location.origin+location.pathname+`?wish=${text}`; navigator.clipboard.writeText(url); alert('Link copied!'); }
-    (function readWishFromURL(){ const wish = new URLSearchParams(location.search).get('wish'); if(wish){ document.getElementById('loveNote').value = decodeURIComponent(wish); } })();
+    function shareLink(){
+      const text = encodeURIComponent(document.getElementById('loveNote').value || `Happy Birthday, ${FRIEND_NAME}!`);
+      const url = location.origin+location.pathname+`?wish=${text}`;
+      navigator.clipboard.writeText(url);
+      alert('Link copied!');
+    }
+    (function readWishFromURL(){
+      const wish = new URLSearchParams(location.search).get('wish');
+      if(wish){ document.getElementById('loveNote').value = decodeURIComponent(wish); }
+    })();
   </script>
-<!-- Cake Cutting Banner -->
-<style>
-  #cakeCutBanner {
-    background: linear-gradient(90deg, #ff69b4, #ff99cc);
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    padding: 1rem 2rem;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    position: fixed;
-    top: 70px; /* Adjust if your header height changes */
-    left: 0;
-    width: 100%;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    z-index: 999;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  #cakeCutBanner:hover {
-    background: linear-gradient(90deg, #ff99cc, #ff69b4);
-  }
-  #cakeCutBanner span {
-    margin-left: 10px;
-  }
-</style>
-
-<div id="cakeCutBanner" onclick="window.location.href='virtual-cake.html'">
-  🎂 <span>Let's cut the cake →</span>
-</div>
-<style>
-/* Mobile & Tablet tweaks without overriding desktop look */
-
-/* Allow scrolling on smaller screens */
-@media (max-width: 980px){
-  body { overflow:auto !important; }
-  .stage {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto;
-    gap: 12px !important;
-    height: auto !important;
-    padding: 0 12px !important;
-  }
-  img, canvas, video { max-width: 100% !important; height: auto !important; }
-}
-
-/* Adjust header for mobile */
-@media (max-width: 640px){
-  header .wrap { padding: 10px 12px !important; gap: 10px !important; }
-  .brand span { font-size: 16px !important; }
-  .brand .logo { width:30px !important; height:30px !important; }
-  .btn { padding: 9px 12px !important; border-radius: 12px !important; }
-}
-
-/* Chat area fixes */
-@media (max-width: 980px){
-  .chat { height: auto !important; max-height: none !important; }
-  .chatBody {
-    padding: 10px !important;
-    max-height: 48vh !important;
-    overflow:auto !important;
-  }
-  .chatFoot {
-    position: sticky !important;
-    bottom: 0 !important;
-    background: rgba(15,11,18,.75) !important;
-    backdrop-filter: blur(6px) saturate(140%) !important;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-  .chatFoot input {
-    padding: 12px !important;
-    min-height: 44px !important;
-    font-size: 16px !important;
-  }
-}
-
-/* Knife and overlays scaling */
-@media (max-width: 640px){
-  #knife { width: clamp(110px, 34vw, 160px) !important; z-index: 12 !important; }
-  .overlayNote { font-size: 12px !important; padding: 6px 10px !important; }
-  .legend { font-size: 12px !important; padding: 8px 10px !important; }
-}
-</style>
-
 </body>
 </html>
