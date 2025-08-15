@@ -442,17 +442,28 @@
     <div class="gallery mt-3">
       <!-- IMAGES -->
       <figure class="media">
-        <img src="assets/guddu-1.jpg" alt="Guddu smiling" loading="lazy">
-        <figcaption class="cap">That sunshine smile ☀️</figcaption>
-      </figure>
+  <img src="https://www.dropbox.com/scl/fi/pio930eelwdhfjkkifsoy/Brown-Vintage-Scrapbook-Photo-Collage_20250815_180114_0000.png?rlkey=4secu6mx5kouzs91mn2dld967&st=jo3kkvbw&raw=1" 
+       alt="Guddu smiling" 
+       loading="lazy" 
+       style="cursor: zoom-in; transition: transform 0.3s ease;">
+  <figcaption class="cap">That sunshine smile ☀️</figcaption>
+</figure>
+     <figure class="media">
+  <img src="https://www.dropbox.com/scl/fi/obircsfwbt1egkhqq4g0v/Black-Modern-Fashion-Girl-Photo-Collage_20250815_175302_0000.png?rlkey=s0ld18kt7iil858iyx6dditjs&st=urnz4ri3&raw=1" 
+       alt="Birthday vibes" 
+       loading="lazy" 
+       style="cursor: zoom-in; transition: transform 0.3s ease;">
+  <figcaption class="cap">Pre-birthday glow ✨</figcaption>
+</figure>
+
       <figure class="media">
-        <img src="assets/guddu-2.jpg" alt="Birthday vibes" loading="lazy">
-        <figcaption class="cap">Pre-birthday glow ✨</figcaption>
-      </figure>
-      <figure class="media">
-        <img src="assets/guddu-3.jpg" alt="Candid moment" loading="lazy">
-        <figcaption class="cap">My favorite candid 📸</figcaption>
-      </figure>
+  <img src="https://www.dropbox.com/scl/fi/vh6fi2z253ubuak5lbg3k/Cream-and-Brown-Vintage-Aesthetic-Photo-Collage_20250815_175520_0000.png?rlkey=fp7qcsfc2elhwsfaw8glfgqcm&st=3qy7tttr&raw=1" 
+       alt="Candid moment" 
+       loading="lazy" 
+       style="cursor: zoom-in; transition: transform 0.3s ease;">
+  <figcaption class="cap">My favorite candid 📸</figcaption>
+</figure>
+
       <!-- VIDEO -->
       <figure class="media">
         <video src="assets/guddu-video.mp4" controls preload="metadata" poster="assets/guddu-cover.jpg"></video>
@@ -834,6 +845,52 @@
     if (bgSong.paused) tryPlay(true);
     else if (bgSong.muted) bgSong.muted = false;
   }, { once: true });
+</script>
+
+<script>
+// Zoom and fullscreen for all images inside .media
+document.querySelectorAll('.media img').forEach(img => {
+  img.addEventListener('click', () => {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = 0;
+    overlay.style.background = 'rgba(0,0,0,0.85)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '9999';
+    overlay.style.cursor = 'zoom-out';
+    overlay.style.animation = 'fadeInOverlay 0.25s ease';
+
+    // Full-size image
+    const fullImg = document.createElement('img');
+    fullImg.src = img.src;
+    fullImg.style.maxWidth = '90%';
+    fullImg.style.maxHeight = '90%';
+    fullImg.style.borderRadius = '12px';
+    fullImg.style.boxShadow = '0 8px 30px rgba(0,0,0,0.5)';
+    fullImg.style.transition = 'transform 0.3s ease';
+    fullImg.style.transform = 'scale(0.8)';
+    setTimeout(() => fullImg.style.transform = 'scale(1)', 10);
+
+    overlay.appendChild(fullImg);
+
+    // Remove overlay on click
+    overlay.addEventListener('click', () => overlay.remove());
+
+    document.body.appendChild(overlay);
+  });
+});
+
+// Fade-in animation for overlay
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>
