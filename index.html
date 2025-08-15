@@ -804,5 +804,25 @@
       if(wish){ document.getElementById('loveNote').value = decodeURIComponent(wish); }
     })();
   </script>
+<!-- Background Song Smooth Autoplay -->
+<audio id="bgSong" autoplay loop muted>
+  <source src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Kaun%20Tujhe%20M.s.%20Dhoni%20The%20Untold%20Story%20320%20Kbps.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+<script>
+  const bgSong = document.getElementById('bgSong');
+
+  window.addEventListener('load', () => {
+    const playPromise = bgSong.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // Unmute after a short delay for smooth start
+        setTimeout(() => { bgSong.muted = false; }, 300);
+      }).catch(err => {
+        console.warn("Autoplay might still be blocked:", err);
+      });
+    }
+  });
+</script>
 </body>
 </html>
