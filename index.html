@@ -109,6 +109,31 @@
     .row{display:flex; gap:10px; flex-wrap:wrap}
     .hidden{display:none}
     .mt-2{margin-top:8px} .mt-3{margin-top:14px} .mt-4{margin-top:22px}
+
+    /* Professional birthday reveal bits */
+    .headline-gold{
+      background:linear-gradient(90deg,#ffb800,#ff6fa1,#7c4dff,#ffb800);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      font-weight:800; letter-spacing:.5px; filter:drop-shadow(0 6px 16px rgba(124,77,255,.25));
+      animation:shine 3.2s linear infinite;
+    }
+    @keyframes shine{
+      0%{background-position:0% 50%}100%{background-position:200% 50%}
+    }
+
+    /* Lock cards until reveal */
+    #cards{
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    #cards.locked{
+      opacity:.0; transform:translateY(10px); pointer-events:none;
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .btn, .headline-gold{animation:none}
+      .float-heart{animation:none}
+    }
   </style>
 </head>
 <body>
@@ -152,13 +177,13 @@
         </div>
       </article>
       <article class="card">
-        <h3>Countdown to More Smiles ⏳</h3>
-        <p class="muted">Every second with you is a celebration. Here’s a tiny timer for fun!</p>
-        <div id="countdown" class="mt-3" aria-live="polite" style="font-weight:700; font-size:22px"></div>
+        <h3>Countdown to 28 Aug ⏳</h3>
+        <p class="muted">Tick-tock to midnight magic (12:00 AM, 28 Aug). When it hits zero, surprises appear.</p>
+        <div id="countdown" class="mt-3" aria-live="polite" style="font-weight:800; font-size:24px"></div>
       </article>
       <article class="card">
         <h3>Birthday Tune 🎵</h3>
-        <p class="muted">Tap play to start the music. (Browsers block auto‑play with sound.)</p>
+        <p class="muted">Tap play to start the music. (Browsers block auto-play with sound.)</p>
         <audio id="song" src="assets/hbd.mp3" preload="auto" controls class="mt-2" aria-label="Birthday song"></audio>
       </article>
     </div>
@@ -211,7 +236,7 @@
   </section>
 
   <!-- GREETING CARDS -->
-  <section id="cards" class="section wrap">
+  <section id="cards" class="section wrap locked">
     <h2 class="script" style="font-size:40px; margin:0 0 12px">Open Your Cards 💌</h2>
     <div class="grid cards">
       <article class="card">
@@ -257,8 +282,7 @@
   </section>
 
   <footer>
-    Made with 💖 by <span id="yourNameFoot">Your Friend</span> for <strong>Guddu</strong>. <br>
-    <small>Tip: Replace images/videos in <code>assets/</code>. Edit names in the script below.</small>
+    Made with 💖 by <span id="yourNameFoot">Your Friend Anuj</span>  just for <strong> My dearest Guddu</strong>. <br>
   </footer>
 
   <!-- Music Modal (for autoplay prompt) -->
@@ -328,15 +352,61 @@
       }, i*80);
     }
 
-    /** Countdown fun (to end of the day) */
-    function updateCountdown(){
-      const end = new Date(); end.setHours(23,59,59,999);
-      const now = new Date(); const diff = end - now;
-      if(diff<0){document.getElementById('countdown').textContent = "The celebration continues!"; return}
-      const h = Math.floor(diff/3.6e6), m = Math.floor(diff%3.6e6/6e4), s = Math.floor(diff%6e4/1000);
-      document.getElementById('countdown').textContent = `${h}h ${m}m ${s}s left today 🎂`;
+    /**
+     * Countdown to next 28 Aug 12:00 AM (local time).
+     * When it reaches zero:
+     *  - Fade out counter, show "Happiest Birthday, Guddu!" with gold gradient
+     *  - Fire confetti and hearts
+     *  - Unlock and fade-in the Cards section
+     *  - Prompt to start music
+     */
+    const countdownEl = document.getElementById('countdown');
+    const cardsSection = document.getElementById('cards');
+    function nextAug28Midnight(){
+      const now = new Date();
+      const year = (now.getMonth()>7 || (now.getMonth()===7 && now.getDate()>=28)) ? now.getFullYear()+1 : now.getFullYear();
+      const d = new Date(year, 7, 28, 0, 0, 0, 0); // month index 7 = August
+      return d;
     }
-    setInterval(updateCountdown, 1000); updateCountdown();
+    const targetTime = nextAug28Midnight();
+
+    function pad(n){ return n<10 ? '0'+n : n; }
+    let countdownTick = null;
+
+    function renderCountdown(){
+      const now = new Date();
+      const diff = targetTime - now;
+      if(diff <= 0){
+        onBirthdayStart();
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      countdownEl.textContent = `${days}d ${pad(hours)}h ${pad(mins)}m ${pad(secs)}s`;
+    }
+
+    function onBirthdayStart(){
+      if(countdownTick){ clearInterval(countdownTick); countdownTick=null; }
+      // Fade out current countdown text
+      countdownEl.style.transition = 'opacity .4s ease';
+      countdownEl.style.opacity = '0';
+      setTimeout(()=>{
+        countdownEl.innerHTML = `<span class="headline-gold" style="font-size:26px">🎉 Happiest Birthday, ${FRIEND_NAME}! 🎉</span>`;
+        countdownEl.style.opacity = '1';
+        // Party time
+        confetti(document.body, 220);
+        burstHearts();
+        // Unlock cards with a gentle delay
+        setTimeout(()=> cardsSection.classList.remove('locked'), 450);
+        // Suggest music
+        musicModal.style.display='grid';
+      }, 420);
+    }
+
+    countdownTick = setInterval(renderCountdown, 1000);
+    renderCountdown();
 
     /** Music controls */
     const musicBtn = document.getElementById('musicBtn'); const song = document.getElementById('song');
