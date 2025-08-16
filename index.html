@@ -438,7 +438,7 @@
   <!-- GALLERY -->
   <section id="gallery" class="section wrap" aria-labelledby="gallery-title">
     <h2 id="gallery-title" class="script" style="font-size:40px; margin:0 0 12px">Photos &amp; Videos</h2>
-    <p class="muted">Replace the media files in <code>assets/</code> and captions below with your real memories. (Examples shown.)</p>
+    <p class="muted">Your Awesome pics and videos just to feel you very special </p>
     <div class="gallery mt-3">
       <!-- IMAGES -->
       <figure class="media">
@@ -903,361 +903,142 @@ document.querySelectorAll('video').forEach(video => {
   });
 });
 </script>
-<!-- ===== Guddu 3D Magic Portrait (drop-in) ===== -->
-<style id="guddu3d-styles">
-  #guddu3d-wrap{position:relative; margin:32px auto; max-width:1100px; padding:0 18px;}
-  #guddu3d-card{
-    position:relative; border-radius:24px; overflow:hidden;
-    box-shadow:0 18px 50px rgba(124,77,255,.22);
-    background:linear-gradient(135deg,#ffe6f2,#f1e9ff);
-  }
-  #guddu3d-stage{
-    position:relative; width:100%; aspect-ratio:16/9; min-height:260px; height:auto;
-  }
-  #guddu3d, #guddu3d-sparkles{
-    position:absolute; inset:0; width:100%; height:100%; display:block; border:0;
-  }
-  #guddu3d-loading{
-    position:absolute; inset:0; display:grid; place-items:center;
-    color:#6b6b6b; font-weight:600; backdrop-filter:saturate(160%) blur(2px);
-  }
-  #guddu3d-loading .bar{
-    width:160px; height:8px; border-radius:999px; background:rgba(0,0,0,.06); overflow:hidden; margin-top:10px;
-  }
-  #guddu3d-loading .bar::after{
-    content:""; display:block; height:100%; width:40%; border-radius:999px;
-    background:linear-gradient(90deg,#ff6fa1,#7c4dff);
-    animation:g3dload 1.2s infinite ease-in-out;
-  }
-  @keyframes g3dload{0%{transform:translateX(-60%)}100%{transform:translateX(260%)}}
+<!-- 3D Magic Portrait Section -->
+<section class="section wrap" style="text-align:center; margin-top:40px">
+  <h2 class="script" style="font-size:36px; margin-bottom:20px;">A 3D Surprise for Guddu ✨</h2>
 
-  /* Fallback (no WebGL) */
-  .g3d-tilt{
-    position:relative; perspective:900px; transform-style:preserve-3d;
-    border-radius:24px; overflow:hidden; box-shadow:0 18px 50px rgba(124,77,255,.22);
-  }
-  .g3d-tilt img{display:block; width:100%; height:auto; transform:translateZ(0); will-change:transform;}
-  .g3d-tilt::after{
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(800px 400px at 10% 10%, rgba(255,255,255,.35), transparent 60%);
-    mix-blend-mode:soft-light;
-  }
-  .g3d-title{
-    position:absolute; left:16px; bottom:14px; z-index:2; padding:8px 12px;
-    border-radius:14px; font-weight:800; letter-spacing:.4px; color:white;
-    background:linear-gradient(135deg, rgba(255,61,119,.9), rgba(124,77,255,.9));
-    box-shadow:0 10px 24px rgba(0,0,0,.18);
-  }
-
-  /* Reduce motion friendly */
-  @media (prefers-reduced-motion: reduce){
-    #guddu3d-sparkles{display:none}
-  }
-</style>
-
-<script>
-(function(){
-  // ---- CONFIG: your photo (Dropbox "raw") ----
- const PHOTO_URL = "https://www.dropbox.com/scl/fi/az66uiikm7f203xvjbgv7/IMG-20250815-WA0009.jpg?rlkey=lihiqz3o3whtu37nk5pctht7l&st=3e27d3zp&raw=1";
-
-  // ---- Insert section near the hero (or at top of body) ----
-  const wrap = document.createElement('section');
-  wrap.id = 'magic3D';
-  wrap.className = 'section'; // matches your site’s spacing
-  wrap.innerHTML = `
-    <div id="guddu3d-wrap">
-      <div id="guddu3d-card">
-        <div id="guddu3d-stage">
-          <canvas id="guddu3d" aria-label="3D portrait of Guddu"></canvas>
-          <canvas id="guddu3d-sparkles" aria-hidden="true"></canvas>
-          <div id="guddu3d-loading" role="status" aria-live="polite">
-            <div style="text-align:center">
-              <div>Crafting 3D magic for Guddu… ✨</div>
-              <div class="bar"></div>
-            </div>
-          </div>
-          <div class="g3d-title">For Guddu, with love 💖</div>
-        </div>
-      </div>
+  <!-- 3D portrait container -->
+  <div id="guddu3d-stage" style="position:relative; width:100%; max-width:420px; margin:auto; perspective:1000px; cursor:pointer;">
+    <canvas id="guddu3d" aria-label="3D portrait of Guddu"
+            style="width:100%; border-radius:22px; box-shadow:0 10px 25px rgba(0,0,0,0.25);"></canvas>
+    <canvas id="guddu3d-sparkles" aria-hidden="true"
+            style="pointer-events:none; position:absolute; inset:0; border-radius:22px;"></canvas>
+    <div id="guddu3d-loading" role="status" aria-live="polite"
+         style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; 
+                font-size:18px; font-weight:bold; color:#ff69b4; background:rgba(255,255,255,0.7); border-radius:22px;">
+      Loading Guddu’s magic portrait...
     </div>
-  `;
-  const ref = document.getElementById('gallery') || document.getElementById('welcome') || document.body.firstElementChild;
-  (ref && ref.parentNode) ? ref.parentNode.insertBefore(wrap, ref) : document.body.insertBefore(wrap, document.body.firstChild);
+    <div class="g3d-title" 
+         style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+                font-family:'Great Vibes', cursive; font-size:22px; background:rgba(0,0,0,.5);
+                color:#fff; padding:6px 12px; border-radius:12px; backdrop-filter:blur(6px);">
+      For Guddu, with love 💖
+    </div>
+  </div>
+</section>
 
-  // ---- Sparkles overlay ----
-  const sparkles = (() => {
-    const c = document.getElementById('guddu3d-sparkles');
-    const x = c.getContext('2d');
-    let pts = [], raf = 0;
-    function resize(){
-      const rect = c.parentElement.getBoundingClientRect();
-      c.width = Math.floor(rect.width * devicePixelRatio);
-      c.height = Math.floor(rect.height * devicePixelRatio);
-      c.style.width = rect.width + 'px'; c.style.height = rect.height + 'px';
-      pts = Array.from({length: 60}, () => ({
-        x: Math.random()*c.width, y: Math.random()*c.height,
-        r: Math.random()*2*devicePixelRatio + .8,
-        s: Math.random()*0.8 + 0.2, a: Math.random()*Math.PI*2
-      }));
+<!-- Lightbox overlay -->
+<div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); 
+                         display:flex; align-items:center; justify-content:center; z-index:9999;">
+  <img id="lightbox-img" src="" alt="Full Size Portrait" 
+       style="max-width:90%; max-height:90%; border-radius:12px; box-shadow:0 0 20px rgba(255,255,255,0.6); transition: transform 0.3s ease;">
+</div>
+
+<!-- 3D Magic Script -->
+<script>
+const PHOTO_URL = "https://www.dropbox.com/scl/fi/az66uiikm7f203xvjbgv7/IMG-20250815-WA0009.jpg?rlkey=lihiqz3o3whtu37nk5pctht7l&st=3e27d3zp&raw=1";
+
+const canvas = document.getElementById("guddu3d");
+const sparkles = document.getElementById("guddu3d-sparkles");
+const ctx = canvas.getContext("2d");
+const sctx = sparkles.getContext("2d");
+const loading = document.getElementById("guddu3d-loading");
+
+// Load image
+let img = new Image();
+img.crossOrigin = "anonymous";
+img.onload = () => {
+  loading.style.display = "none";
+  draw3D();
+};
+img.src = PHOTO_URL;
+
+// Resize canvas
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.width * 1.3;
+  sparkles.width = rect.width;
+  sparkles.height = rect.width * 1.3;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+// Tilt values
+let tiltX = 0, tiltY = 0, float = 0;
+
+// Mouse movement (desktop)
+canvas.parentElement.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width - 0.5;
+  const y = (e.clientY - rect.top) / rect.height - 0.5;
+  tiltX = y * 10;
+  tiltY = x * 10;
+});
+canvas.parentElement.addEventListener("mouseleave", () => {
+  tiltX = tiltY = 0;
+});
+
+// Gyroscope (mobile)
+if (window.DeviceOrientationEvent) {
+  window.addEventListener("deviceorientation", e => {
+    if (e.gamma !== null && e.beta !== null) {
+      tiltY = e.gamma / 5; 
+      tiltX = e.beta / 10 - 5;
     }
-    function draw(){
-      x.clearRect(0,0,c.width,c.height);
-      pts.forEach(p=>{
-        p.y += p.s*1.2; if(p.y>c.height+20) p.y = -20;
-        p.x += Math.sin(p.a += 0.02); // gentle sway
-        x.beginPath(); x.arc(p.x,p.y,p.r,0,6.2831);
-        x.fillStyle = 'rgba(255,255,255,.8)'; x.fill();
-      });
-      raf = requestAnimationFrame(draw);
-    }
-    resize(); addEventListener('resize', resize, {passive:true});
-    draw();
-    return {stop:()=>cancelAnimationFrame(raf)};
-  })();
-
-  // ---- WebGL 3D Parallax (with graceful fallback) ----
-  const canvas = document.getElementById('guddu3d');
-  const loader = document.getElementById('guddu3d-loading');
-  const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let gl;
-  try {
-    gl = canvas.getContext('webgl', {alpha:true, antialias:true, powerPreference:'high-performance'});
-  } catch(e){ gl = null; }
-
-  if(!gl){
-    fallbackTilt();
-    return;
-  }
-
-  const vertexSrc = `
-    attribute vec2 position;
-    varying vec2 vUv;
-    void main(){
-      vUv = position*0.5 + 0.5;
-      gl_Position = vec4(position, 0.0, 1.0);
-    }
-  `;
-  const fragmentSrc = `
-    precision mediump float;
-    uniform sampler2D uTex;
-    uniform vec2 uMouse;   // -1..1
-    uniform float uTime;
-    uniform float uStrength;
-    varying vec2 vUv;
-
-    // Luma
-    float luma(vec3 c){ return dot(c, vec3(0.299,0.587,0.114)); }
-
-    void main(){
-      // Fake depth from brightness (centered around 0.5)
-      vec3 base = texture2D(uTex, vUv).rgb;
-      float depth = luma(base);
-      float d = depth - 0.5;
-
-      // Parallax (mouse/gyro) + subtle breathing wave
-      vec2 dir = uMouse * 0.5;
-      float wave = sin((vUv.x + vUv.y + uTime*0.15)*6.2831)*0.015;
-      vec2 uv = vUv + (dir * uStrength * d) + wave * vec2(dir.y, -dir.x);
-
-      // Sample image with gentle sharpening
-      vec3 col = texture2D(uTex, uv).rgb;
-      vec3 col1 = texture2D(uTex, uv + vec2(0.001,0.0)).rgb;
-      vec3 col2 = texture2D(uTex, uv + vec2(0.0,0.001)).rgb;
-      col = mix(col, (col*1.1 - (col1+col2)*0.05), 0.25);
-
-      // Sheen/glow that reacts to "depth" and pointer direction
-      float highlight = pow(max(0.0, dot(normalize(vec3(-dir,1.0)), vec3(0.0,0.0,1.0))) * (0.5+abs(d)), 6.0);
-      vec3 glow = highlight * vec3(1.0,0.85,1.0);
-
-      // Soft vignette to keep it dreamy
-      float vign = smoothstep(0.95, 0.5, distance(vUv, vec2(0.5)));
-      vec3 final = col * vign + glow;
-
-      gl_FragColor = vec4(final, 1.0);
-    }
-  `;
-
-  // Build program
-  function compile(type, src){
-    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
-    return s;
-  }
-  function program(vs, fs){
-    const p = gl.createProgram(); gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
-    if(!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
-    return p;
-  }
-
-  let prog, uTex, uMouse, uTime, uStrength, posBuf, tex, mouse=[0,0], start=performance.now();
-  try{
-    prog = program(compile(gl.VERTEX_SHADER, vertexSrc), compile(gl.FRAGMENT_SHADER, fragmentSrc));
-  }catch(err){
-    console.warn('WebGL shader error:', err); fallbackTilt(); return;
-  }
-  gl.useProgram(prog);
-
-  // Fullscreen triangle/quad
-  const posLoc = gl.getAttribLocation(prog, 'position');
-  posBuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1,-1,  1,-1,  -1, 1,
-     -1, 1,  1,-1,   1, 1
-  ]), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(posLoc);
-  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-  uTex = gl.getUniformLocation(prog, 'uTex');
-  uMouse = gl.getUniformLocation(prog, 'uMouse');
-  uTime = gl.getUniformLocation(prog, 'uTime');
-  uStrength = gl.getUniformLocation(prog, 'uStrength');
-
-  // Load image as texture
-  function loadTexture(url){
-    return new Promise((resolve, reject)=>{
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = ()=> {
-        const t = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, t);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        resolve({t, w: img.naturalWidth, h: img.naturalHeight});
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-  }
-
-  // Resize canvas to container
-  function resize(){
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(2, Math.floor(rect.width * dpr));
-    canvas.height = Math.max(2, Math.floor(rect.height * dpr));
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-    gl.viewport(0,0,canvas.width,canvas.height);
-  }
-  addEventListener('resize', resize, {passive:true});
-  resize();
-
-  // Pointer/gyro controls
-  const target = canvas.parentElement;
-  let lastMove = Date.now();
-  function setMouse(nx, ny){
-    mouse[0] = nx; mouse[1] = ny; lastMove = Date.now();
-  }
-  target.addEventListener('mousemove', (e)=>{
-    const r = target.getBoundingClientRect();
-    const x = (e.clientX - r.left)/r.width;
-    const y = (e.clientY - r.top)/r.height;
-    setMouse((x-0.5)*2, (0.5-y)*2);
-  }, {passive:true});
-  target.addEventListener('mouseleave', ()=> setMouse(0,0), {passive:true});
-
-  // Touch
-  target.addEventListener('touchmove', (e)=>{
-    const t = e.touches[0]; if(!t) return;
-    const r = target.getBoundingClientRect();
-    const x = (t.clientX - r.left)/r.width;
-    const y = (t.clientY - r.top)/r.height;
-    setMouse((x-0.5)*2, (0.5-y)*2);
-  }, {passive:true});
-  target.addEventListener('touchend', ()=> setMouse(0,0), {passive:true});
-
-  // Gyro (iOS needs permission)
-  (function enableGyro(){
-    if(typeof DeviceOrientationEvent === 'undefined') return;
-    const ask = () => {
-      if(DeviceOrientationEvent.requestPermission){
-        DeviceOrientationEvent.requestPermission().then(state=>{
-          if(state === 'granted'){
-            window.addEventListener('deviceorientation', onOrient, true);
-          }
-        }).catch(()=>{});
-      } else {
-        window.addEventListener('deviceorientation', onOrient, true);
-      }
-    };
-    // try auto; some browsers ignore without user gesture, no harm
-    setTimeout(ask, 600);
-    function onOrient(e){
-      const beta = (e.beta||0)/90;   // front/back
-      const gamma = (e.gamma||0)/45; // left/right
-      setMouse(gamma, beta);
-    }
-  })();
-
-  // Animate
-  let strengthBase = 0.18;
-  if(prefersReduced) strengthBase = 0.08;
-
-  function draw(){
-    const t = (performance.now()-start)/1000;
-    // idle sway if no recent movement
-    const idle = (Date.now()-lastMove) > 2000;
-    const idleX = Math.sin(t*0.5)*0.2, idleY = Math.cos(t*0.6)*0.2;
-    const mx = idle ? idleX : mouse[0];
-    const my = idle ? idleY : mouse[1];
-
-    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
-
-    gl.useProgram(prog);
-    gl.uniform1i(uTex, 0);
-    gl.uniform2f(uMouse, mx, my);
-    gl.uniform1f(uTime, t);
-    gl.uniform1f(uStrength, strengthBase);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-    requestAnimationFrame(draw);
-  }
-
-  loadTexture(PHOTO_URL).then(({t})=>{
-    tex = t; gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
-    loader.style.display = 'none';
-    draw();
-  }).catch(err=>{
-    console.warn('Texture load failed, using fallback.', err);
-    fallbackTilt();
   });
+}
 
-  // ---- Fallback: CSS tilt card ----
-  function fallbackTilt(){
-    try { sparkles.stop && sparkles.stop(); } catch(_){}
-    const stage = document.getElementById('guddu3d-stage');
-    stage.innerHTML = `
-      <div class="g3d-tilt" id="g3d-fallback">
-        <img src="${PHOTO_URL}" alt="Guddu portrait">
-        <div class="g3d-title">For Guddu, with love 💖</div>
-      </div>
-    `;
-    const card = document.getElementById('g3d-fallback');
-    let rx=0, ry=0, raf=0;
-    function onMove(e){
-      const r = card.getBoundingClientRect();
-      const cx = (('touches' in e ? e.touches[0].clientX : e.clientX) - r.left)/r.width;
-      const cy = (('touches' in e ? e.touches[0].clientY : e.clientY) - r.top)/r.height;
-      rx = ((cy-0.5)*-1)*14; ry = ((cx-0.5))*14;
-      if(!raf) raf = requestAnimationFrame(()=>{
-        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-        raf=0;
-      });
-    }
-    card.addEventListener('mousemove', onMove, {passive:true});
-    card.addEventListener('mouseleave', ()=>{ card.style.transform='perspective(900px) rotateX(0) rotateY(0)'; }, {passive:true});
-    card.addEventListener('touchmove', onMove, {passive:true});
-    card.addEventListener('touchend', ()=>{ card.style.transform='perspective(900px) rotateX(0) rotateY(0)'; }, {passive:true});
+function draw3D() {
+  requestAnimationFrame(draw3D);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  float += 0.03;
+  const scale = 1.05 + Math.sin(float) * 0.02;
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(tiltY * Math.PI/180);
+  ctx.rotate(-tiltX * Math.PI/180);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+  ctx.restore();
+
+  drawSparkles();
+}
+
+// Sparkles
+let particles = [];
+function drawSparkles() {
+  if (Math.random() < 0.08) {
+    particles.push({x:Math.random()*sparkles.width, y:sparkles.height, r:Math.random()*3+2, s:Math.random()*1+0.5});
   }
-})();
+  sctx.clearRect(0,0,sparkles.width,sparkles.height);
+  particles.forEach((p,i) => {
+    sctx.beginPath();
+    sctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    sctx.fillStyle = "rgba(255,182,193,.8)";
+    sctx.fill();
+    p.y -= p.s;
+    if (p.y < -10) particles.splice(i,1);
+  });
+}
+
+// Lightbox logic
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+
+document.getElementById("guddu3d-stage").addEventListener("click", () => {
+  lightbox.style.display = "flex";
+  lightboxImg.src = PHOTO_URL;
+});
+
+lightbox.addEventListener("click", () => {
+  lightbox.style.display = "none";
+  lightboxImg.src = "";
+});
 </script>
-<!-- ===== /Guddu 3D Magic Portrait ===== -->
+
 
 </body>
 </html>
