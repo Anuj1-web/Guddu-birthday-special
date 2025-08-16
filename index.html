@@ -438,7 +438,7 @@
   <!-- GALLERY -->
   <section id="gallery" class="section wrap" aria-labelledby="gallery-title">
     <h2 id="gallery-title" class="script" style="font-size:40px; margin:0 0 12px">Photos &amp; Videos</h2>
-    <p class="muted">Your Awesome pics and videos just to feel you very special </p>
+    <p class="muted">Your Awesome pics and videos just to make you feel how much special you are. </p>
     <div class="gallery mt-3">
       <!-- IMAGES -->
       <figure class="media">
@@ -903,141 +903,425 @@ document.querySelectorAll('video').forEach(video => {
   });
 });
 </script>
-<!-- 3D Magic Portrait Section -->
-<section class="section wrap" style="text-align:center; margin-top:40px">
-  <h2 class="script" style="font-size:36px; margin-bottom:20px;">A 3D Surprise for Guddu ✨</h2>
-
-  <!-- 3D portrait container -->
-  <div id="guddu3d-stage" style="position:relative; width:100%; max-width:420px; margin:auto; perspective:1000px; cursor:pointer;">
-    <canvas id="guddu3d" aria-label="3D portrait of Guddu"
-            style="width:100%; border-radius:22px; box-shadow:0 10px 25px rgba(0,0,0,0.25);"></canvas>
-    <canvas id="guddu3d-sparkles" aria-hidden="true"
-            style="pointer-events:none; position:absolute; inset:0; border-radius:22px;"></canvas>
-    <div id="guddu3d-loading" role="status" aria-live="polite"
-         style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; 
-                font-size:18px; font-weight:bold; color:#ff69b4; background:rgba(255,255,255,0.7); border-radius:22px;">
-      Loading Guddu’s magic portrait...
-    </div>
-    <div class="g3d-title" 
-         style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-                font-family:'Great Vibes', cursive; font-size:22px; background:rgba(0,0,0,.5);
-                color:#fff; padding:6px 12px; border-radius:12px; backdrop-filter:blur(6px);">
-      For Guddu, with love 💖
-    </div>
-  </div>
-</section>
-
-<!-- Lightbox overlay -->
-<div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); 
-                         display:flex; align-items:center; justify-content:center; z-index:9999;">
-  <img id="lightbox-img" src="" alt="Full Size Portrait" 
-       style="max-width:90%; max-height:90%; border-radius:12px; box-shadow:0 0 20px rgba(255,255,255,0.6); transition: transform 0.3s ease;">
-</div>
-
-<!-- 3D Magic Script -->
+<!-- === Guddu 3D Portrait + Lightbox (drop-in) === -->
 <script>
-const PHOTO_URL = "https://www.dropbox.com/scl/fi/az66uiikm7f203xvjbgv7/IMG-20250815-WA0009.jpg?rlkey=lihiqz3o3whtu37nk5pctht7l&st=3e27d3zp&raw=1";
+(function(){
+  // ========= CONFIG =========
+  // Use your Dropbox link; we'll auto-convert it to a raw, direct file URL
+  const IMAGE_URL = "https://www.dropbox.com/scl/fi/az66uiikm7f203xvjbgv7/IMG-20250815-WA0009.jpg?rlkey=lihiqz3o3whtu37nk5pctht7l&st=3e27d3zp&dl=0";
+  const TITLE_TEXT = "For Guddu, with love 💖";
 
-const canvas = document.getElementById("guddu3d");
-const sparkles = document.getElementById("guddu3d-sparkles");
-const ctx = canvas.getContext("2d");
-const sctx = sparkles.getContext("2d");
-const loading = document.getElementById("guddu3d-loading");
+  // Convert Dropbox link to direct (raw) form, works with dl=0/dl=1/&raw=1/&?dl=*
+  function toRawDropbox(url){
+    try{
+      const u = new URL(url);
+      if (u.hostname.includes("dropbox.com")) {
+        // Use dl.dropboxusercontent.com for reliable direct file serving
+        u.hostname = "dl.dropboxusercontent.com";
+        // Remove any dl/raw params (the host change is enough)
+        u.searchParams.delete("dl");
+        u.searchParams.delete("raw");
+        return u.toString();
+      }
+      return url;
+    }catch(e){ return url; }
+  }
+  const RAW_IMG = toRawDropbox(IMAGE_URL);
 
-// Load image
-let img = new Image();
-img.crossOrigin = "anonymous";
-img.onload = () => {
-  loading.style.display = "none";
-  draw3D();
-};
-img.src = PHOTO_URL;
+  // ========= STYLES =========
+  const css = `
+  /* Section wrapper */
+  #g3d-section { padding: 34px 18px; }
+  #g3d-section .wrap-like { max-width: 1100px; margin: 0 auto; }
 
-// Resize canvas
-function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.width * 1.3;
-  sparkles.width = rect.width;
-  sparkles.height = rect.width * 1.3;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+  /* Headline */
+  #g3d-title { 
+    font-family: "Great Vibes", cursive; 
+    font-size: clamp(24px, 4vw, 36px); 
+    text-align: center; 
+    margin: 0 0 16px;
+    color: var(--primary, #ff3d77);
+    filter: drop-shadow(0 6px 16px rgba(255,61,119,.25));
+  }
 
-// Tilt values
-let tiltX = 0, tiltY = 0, float = 0;
+  /* Card stage */
+  #g3d-stage {
+    position: relative; 
+    margin: 0 auto;
+    width: min(92vw, 420px); 
+    perspective: 1100px;
+  }
 
-// Mouse movement (desktop)
-canvas.parentElement.addEventListener("mousemove", e => {
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width - 0.5;
-  const y = (e.clientY - rect.top) / rect.height - 0.5;
-  tiltX = y * 10;
-  tiltY = x * 10;
-});
-canvas.parentElement.addEventListener("mouseleave", () => {
-  tiltX = tiltY = 0;
-});
+  .g3d-card {
+    position: relative;
+    width: 100%; 
+    aspect-ratio: 3 / 4;           /* nice portrait ratio */
+    border-radius: 22px; 
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+    box-shadow: 0 14px 40px rgba(0,0,0,.18);
+    background: linear-gradient(135deg,#f9f0ff,#ffe9f1);
+    cursor: pointer;
+  }
 
-// Gyroscope (mobile)
-if (window.DeviceOrientationEvent) {
-  window.addEventListener("deviceorientation", e => {
-    if (e.gamma !== null && e.beta !== null) {
-      tiltY = e.gamma / 5; 
-      tiltX = e.beta / 10 - 5;
+  .g3d-img, .g3d-blur {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    will-change: transform;
+  }
+
+  /* Soft background blur for depth */
+  .g3d-blur {
+    filter: blur(18px) saturate(120%);
+    transform: scale(1.06);
+    opacity: .55;
+  }
+
+  /* Main portrait */
+  .g3d-img {
+    transform: translateZ(45px) scale(1.02);
+  }
+
+  /* Shine layer that slides with pointer */
+  .g3d-shine {
+    position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+    background: radial-gradient(600px 360px at 50% 0%, rgba(255,255,255,.55), transparent 60%);
+    opacity: .35;
+    transform: translateZ(80px);
+    transition: opacity .25s ease;
+  }
+  .g3d-card:active .g3d-shine { opacity: .55; }
+
+  /* Caption badge */
+  .g3d-caption {
+    position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%) translateZ(90px);
+    background: rgba(0,0,0,.45); color: #fff;
+    font: 600 14px/1.2 Poppins, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+
+  /* Sparkles canvas */
+  .g3d-sparkles { 
+    position: absolute; inset: 0; pointer-events: none; 
+    border-radius: 22px; 
+    transform: translateZ(100px);
+  }
+
+  /* Skeleton while loading */
+  .g3d-skel {
+    position: absolute; inset: 0; border-radius: 22px;
+    background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(0,0,0,.06), rgba(255,255,255,.05));
+    background-size: 240% 100%;
+    animation: g3d-shimmer 1.4s linear infinite;
+  }
+  @keyframes g3d-shimmer { 
+    0%{ background-position: 0% 0;} 
+    100%{ background-position: 240% 0;}
+  }
+
+  /* Entrance animation */
+  .g3d-in { animation: g3d-pop .6s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes g3d-pop {
+    0%{ opacity: 0; transform: translateY(14px) scale(.98); }
+    100%{ opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Lightbox */
+  #g3d-lightbox {
+    display:none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.92); 
+    align-items: center; justify-content: center;
+    touch-action: none; /* needed for custom pinch/pan */
+  }
+  #g3d-full {
+    max-width: 94vw; max-height: 92vh; 
+    border-radius: 14px; 
+    box-shadow: 0 12px 40px rgba(255,255,255,.2);
+    transform-origin: center center;
+    transition: transform 120ms ease;
+    will-change: transform;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none; /* we pan the container */
+  }
+  #g3d-lightbox[data-open="1"] { display:flex; }
+  #g3d-hint {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.8); 
+    font: 500 13px/1 Poppins, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: rgba(255,255,255,.08);
+    padding: 8px 12px; border-radius: 10px;
+    pointer-events: none;
+  }
+
+  /* Mobile friendliness */
+  @media (max-width: 520px){
+    .g3d-caption { font-size: 13px; padding: 7px 10px; }
+  }
+  `;
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.appendChild(style);
+
+  // ========= MARKUP =========
+  const section = document.createElement('section');
+  section.id = "g3d-section";
+  section.innerHTML = `
+    <div class="wrap-like">
+      <h2 id="g3d-title">${TITLE_TEXT}</h2>
+      <div id="g3d-stage" class="g3d-in">
+        <div class="g3d-card" id="g3d-card" role="button" aria-label="Open full-size portrait">
+          <div class="g3d-skel" id="g3d-skel"></div>
+          <img class="g3d-blur" id="g3d-blur" alt="Guddu portrait blur" />
+          <img class="g3d-img" id="g3d-img" alt="Guddu portrait" />
+          <div class="g3d-shine" id="g3d-shine"></div>
+          <canvas class="g3d-sparkles" id="g3d-sparkles"></canvas>
+          <div class="g3d-caption">Tap to view full size ✨</div>
+        </div>
+      </div>
+    </div>
+  `;
+  // Append at very end so it never overlaps earlier content
+  document.body.appendChild(section);
+
+  // ========= IMAGE LOADING =========
+  const imgMain = section.querySelector('#g3d-img');
+  const imgBlur = section.querySelector('#g3d-blur');
+  const skel    = section.querySelector('#g3d-skel');
+  const card    = section.querySelector('#g3d-card');
+  const shine   = section.querySelector('#g3d-shine');
+  const spCanvas= section.querySelector('#g3d-sparkles');
+  const spx     = spCanvas.getContext('2d');
+
+  function fitSparkles(){
+    const r = card.getBoundingClientRect();
+    // account for DPR so sparkles stay sharp
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    spCanvas.width  = Math.floor(r.width * dpr);
+    spCanvas.height = Math.floor(r.height * dpr);
+    spCanvas.style.width  = r.width + 'px';
+    spCanvas.style.height = r.height + 'px';
+    spx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', fitSparkles, {passive:true});
+
+  const preload = new Image();
+  preload.onload = () => {
+    imgMain.src = RAW_IMG;
+    imgBlur.src = RAW_IMG;
+    skel.style.display = "none";
+    fitSparkles();
+  };
+  preload.onerror = () => {
+    skel.style.display = "none";
+    card.style.filter = "grayscale(1)";
+  };
+  preload.decoding = "async";
+  preload.referrerPolicy = "no-referrer";
+  preload.src = RAW_IMG;
+
+  // ========= TILT EFFECT =========
+  let tiltX = 0, tiltY = 0;
+  let targetTiltX = 0, targetTiltY = 0;
+
+  function applyTilt(){
+    // Smooth follow
+    tiltX += (targetTiltX - tiltX) * 0.12;
+    tiltY += (targetTiltY - tiltY) * 0.12;
+    card.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+    requestAnimationFrame(applyTilt);
+  }
+  applyTilt();
+
+  // Pointer tilt
+  card.addEventListener('pointermove', (e)=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    targetTiltY = (x - 0.5) * 16;   // left/right
+    targetTiltX = -(y - 0.5) * 10;  // up/down
+    // Move shine origin
+    shine.style.background = `radial-gradient(600px 360px at ${x*100}% ${y*100}%, rgba(255,255,255,.55), transparent 60%)`;
+  });
+  card.addEventListener('pointerleave', ()=>{
+    targetTiltX = 0; targetTiltY = 0;
+  });
+
+  // Gentle idle bob if no movement
+  let idleT = 0;
+  setInterval(()=>{
+    if (Math.abs(targetTiltX)<0.01 && Math.abs(targetTiltY)<0.01){
+      idleT += 0.03;
+      targetTiltX = Math.sin(idleT) * 2.2;
+      targetTiltY = Math.cos(idleT*1.2) * 3.0;
+    }
+  }, 50);
+
+  // Optional device orientation (no permission prompt)
+  if ('DeviceOrientationEvent' in window){
+    window.addEventListener('deviceorientation', (e)=>{
+      if (e.beta==null || e.gamma==null) return;
+      const maxX = 10, maxY = 14;
+      targetTiltX = Math.max(-maxX, Math.min(maxX, (e.beta - 50) * 0.25));
+      targetTiltY = Math.max(-maxY, Math.min(maxY, e.gamma * 0.6));
+    }, {passive:true});
+  }
+
+  // ========= SPARKLES =========
+  const pieces = [];
+  function addSparkle(){
+    const r = card.getBoundingClientRect();
+    pieces.push({
+      x: Math.random()*r.width,
+      y: r.height + 10,
+      r: Math.random()*2.2 + 1,
+      s: Math.random()*0.8 + 0.5,
+      a: Math.random()*Math.PI*2,
+      h: Math.floor(Math.random()*360)
+    });
+  }
+  function drawSparkles(){
+    spx.clearRect(0,0,spCanvas.width, spCanvas.height);
+    const r = card.getBoundingClientRect();
+    for (let i=pieces.length-1; i>=0; i--){
+      const p = pieces[i];
+      p.y -= p.s * 1.6;
+      p.x += Math.sin(p.a += 0.03) * 0.7;
+      // soft glow circle
+      spx.beginPath();
+      spx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      spx.fillStyle = `hsla(${p.h}, 90%, 70%, .85)`;
+      spx.fill();
+      if (p.y < -8) pieces.splice(i,1);
+    }
+    // occasionally add
+    if (Math.random() < 0.25) addSparkle();
+    requestAnimationFrame(drawSparkles);
+  }
+  fitSparkles();
+  drawSparkles();
+
+  // ========= LIGHTBOX (tap to open full size) =========
+  const overlay = document.createElement('div');
+  overlay.id = 'g3d-lightbox';
+  overlay.innerHTML = `<img id="g3d-full" alt="Guddu full size"><div id="g3d-hint">Pinch/drag to zoom • Tap outside to close</div>`;
+  document.body.appendChild(overlay);
+
+  const fullImg = overlay.querySelector('#g3d-full');
+
+  // Open
+  function openLightbox(){
+    fullImg.src = RAW_IMG;
+    overlay.dataset.open = "1";
+    // reset view
+    state.scale = 1; state.tx = 0; state.ty = 0;
+    applyTransform();
+  }
+  // Close on background click / ESC
+  overlay.addEventListener('click', (e)=>{
+    if (e.target === overlay || e.target.id === 'g3d-hint'){
+      overlay.dataset.open = "0";
+      setTimeout(()=>{ overlay.style.display = "none"; fullImg.src = ""; }, 100);
     }
   });
-}
-
-function draw3D() {
-  requestAnimationFrame(draw3D);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  float += 0.03;
-  const scale = 1.05 + Math.sin(float) * 0.02;
-
-  ctx.save();
-  ctx.translate(canvas.width/2, canvas.height/2);
-  ctx.rotate(tiltY * Math.PI/180);
-  ctx.rotate(-tiltX * Math.PI/180);
-  ctx.scale(scale, scale);
-  ctx.drawImage(img, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
-  ctx.restore();
-
-  drawSparkles();
-}
-
-// Sparkles
-let particles = [];
-function drawSparkles() {
-  if (Math.random() < 0.08) {
-    particles.push({x:Math.random()*sparkles.width, y:sparkles.height, r:Math.random()*3+2, s:Math.random()*1+0.5});
-  }
-  sctx.clearRect(0,0,sparkles.width,sparkles.height);
-  particles.forEach((p,i) => {
-    sctx.beginPath();
-    sctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    sctx.fillStyle = "rgba(255,182,193,.8)";
-    sctx.fill();
-    p.y -= p.s;
-    if (p.y < -10) particles.splice(i,1);
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape' && overlay.dataset.open === "1"){
+      overlay.click();
+    }
   });
-}
+  // Show overlay
+  card.addEventListener('click', ()=>{
+    overlay.style.display = "flex";
+    requestAnimationFrame(openLightbox);
+  });
 
-// Lightbox logic
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightbox-img");
+  // ========= ZOOM & PAN (desktop + mobile) =========
+  const state = { scale: 1, tx: 0, ty: 0 };
+  function applyTransform(){
+    fullImg.style.transform = `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`;
+  }
+  // Wheel to zoom (desktop)
+  overlay.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    const delta = -e.deltaY * 0.0015;
+    const old = state.scale;
+    state.scale = Math.min(6, Math.max(1, state.scale + delta));
+    // zoom towards pointer
+    const rect = fullImg.getBoundingClientRect();
+    const cx = e.clientX - rect.left - rect.width/2;
+    const cy = e.clientY - rect.top  - rect.height/2;
+    state.tx -= (cx / old) * (state.scale - old);
+    state.ty -= (cy / old) * (state.scale - old);
+    applyTransform();
+  }, {passive:false});
 
-document.getElementById("guddu3d-stage").addEventListener("click", () => {
-  lightbox.style.display = "flex";
-  lightboxImg.src = PHOTO_URL;
-});
+  // Drag to pan (desktop)
+  let dragging = false, lx=0, ly=0;
+  overlay.addEventListener('mousedown', (e)=>{
+    // Only pan if image is zoomed
+    if (state.scale <= 1) return;
+    dragging = true; lx = e.clientX; ly = e.clientY;
+    e.preventDefault();
+  });
+  overlay.addEventListener('mousemove', (e)=>{
+    if (!dragging) return;
+    state.tx += (e.clientX - lx);
+    state.ty += (e.clientY - ly);
+    lx = e.clientX; ly = e.clientY;
+    applyTransform();
+  });
+  overlay.addEventListener('mouseup', ()=> dragging=false);
+  overlay.addEventListener('mouseleave', ()=> dragging=false);
 
-lightbox.addEventListener("click", () => {
-  lightbox.style.display = "none";
-  lightboxImg.src = "";
-});
+  // Touch pinch & pan (mobile)
+  let t1 = null, t2 = null, lastDist = 0, lastMid = {x:0,y:0};
+  overlay.addEventListener('touchstart', (e)=>{
+    if (e.touches.length === 1){
+      t1 = e.touches[0];
+    } else if (e.touches.length === 2){
+      t1 = e.touches[0]; t2 = e.touches[1];
+      lastDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      lastMid = { x:(t1.clientX + t2.clientX)/2, y:(t1.clientY + t2.clientY)/2 };
+    }
+  }, {passive:false});
+
+  overlay.addEventListener('touchmove', (e)=>{
+    if (e.touches.length === 1 && state.scale > 1){
+      // pan
+      const n1 = e.touches[0];
+      state.tx += (n1.clientX - (t1?.clientX || n1.clientX));
+      state.ty += (n1.clientY - (t1?.clientY || n1.clientY));
+      t1 = n1;
+      applyTransform();
+      e.preventDefault();
+    } else if (e.touches.length === 2){
+      const n1 = e.touches[0], n2 = e.touches[1];
+      const dist = Math.hypot(n2.clientX - n1.clientX, n2.clientY - n1.clientY);
+      const mid  = { x:(n1.clientX + n2.clientX)/2, y:(n1.clientY + n2.clientY)/2 };
+      const old = state.scale;
+      const factor = dist / (lastDist || dist);
+      state.scale = Math.min(6, Math.max(1, state.scale * factor));
+      // zoom toward gesture midpoint
+      const rect = fullImg.getBoundingClientRect();
+      const cx = mid.x - rect.left - rect.width/2;
+      const cy = mid.y - rect.top  - rect.height/2;
+      state.tx -= (cx / old) * (state.scale - old);
+      state.ty -= (cy / old) * (state.scale - old);
+      lastDist = dist; lastMid = mid; t1 = n1; t2 = n2;
+      applyTransform();
+      e.preventDefault();
+    }
+  }, {passive:false});
+
+  overlay.addEventListener('touchend', ()=>{
+    t1 = null; t2 = null; lastDist = 0;
+  });
+
+})();
 </script>
+<!-- === /Guddu 3D Portrait === -->
+
 
 
 </body>
