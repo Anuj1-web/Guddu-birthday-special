@@ -3,251 +3,196 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Guddu’s Ultra-Magical Surprises ✨</title>
-  <meta name="description" content="An elevated starry experience: tap-only surprises, elegant animations, and a wish that becomes a star—and emails to Rohit." />
-  <!--
-    📧 Wish email sending uses EmailJS (client-side) to deliver mail without a server.
-    1) Create free account at https://www.emailjs.com/
-    2) Add an Email Service (Gmail/Outlook/SMTP) → get SERVICE_ID
-    3) Create a Template with variables: wish_text, from_name, timestamp → get TEMPLATE_ID
-    4) Copy your PUBLIC_KEY
-    5) Fill the placeholders below: EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID
-
-    Alternative (server): Use Firebase Cloud Functions + SendGrid. Instructions are included in comments inside <script> near the bottom.
-  -->
+  <title>Guddu — A Night of Surprises ✨</title>
+  <meta name="description" content="An orchestrated, tap-free journey of magical scenes for Guddu. Auto-revealing surprises, gentle music, secret letter, compliments mirror, and a wish that becomes a star and is emailed automatically." />
   <style>
     :root{
-      --bg1: #050610; --bg2: #0b0f2b; --bg3: #120d33;
-      --text: #eaf0ff; --muted:#c7d0ff; --glow:#96f3ff; --rose:#ff7bd5; --gold:#ffd98a; --vio:#b79dff;
-      --glass: rgba(255,255,255,.08); --glass2: rgba(255,255,255,.14);
-      --radius: 20px; --shadow: 0 12px 40px rgba(0,0,0,.45);
+      --ink:#eaf0ff; --muted:#cbd6ff; --deep:#050612; --deep2:#0b0f2b; --rose:#ff84d7; --gold:#ffd98a; --aqua:#8ff6ff; --vio:#b79dff; --glass:rgba(255,255,255,.08);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      color:var(--text); background: radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0a0d25 35%, #050610 70%);
-      overflow-x:hidden}
+    body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--ink); background: radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0b0f2b 45%, #050612 85%); overflow:hidden}
 
-    /* Aurora backdrop */
-    .aurora{position:fixed; inset:-10% -10% 0 -10%; z-index:-1; filter: blur(40px) saturate(120%); opacity:.9;}
-    .a1,.a2,.a3{position:absolute; width:60vw; height:60vw; border-radius:50%; mix-blend-mode:screen;}
-    .a1{left:-10vw; top:-10vh; background: radial-gradient(circle, #3ae1ff55, #6a54ff33, #0000 70%); animation: drift 16s ease-in-out infinite}
-    .a2{right:-14vw; top:10vh; background: radial-gradient(circle, #ff54d444, #ffe28f33, #0000 70%); animation: drift 22s ease-in-out infinite reverse}
-    .a3{left:20vw; bottom:-10vh; background: radial-gradient(circle, #79ffbe44, #7ea2ff33, #0000 70%); animation: drift 20s ease-in-out infinite}
+    /* Global aurora */
+    .aurora{position:fixed; inset:-15% -10% -10% -10%; z-index:-1; filter: blur(42px) saturate(120%);} 
+    .a{position:absolute; width:70vw; height:70vw; border-radius:50%; mix-blend-mode:screen;}
+    .a.a1{left:-8vw; top:-6vh; background: radial-gradient(circle, #3ae1ff60, #6a54ff36, #0000 70%); animation: drift 18s ease-in-out infinite}
+    .a.a2{right:-14vw; top:10vh; background: radial-gradient(circle, #ff54d455, #ffe28f33, #0000 70%); animation: drift 24s ease-in-out infinite reverse}
+    .a.a3{left:22vw; bottom:-12vh; background: radial-gradient(circle, #79ffbe55, #7ea2ff33, #0000 70%); animation: drift 22s ease-in-out infinite}
     @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5vh)}}
 
-    header{position:sticky; top:0; backdrop-filter: blur(10px); background:linear-gradient(180deg, rgba(10,12,30,.75), rgba(10,12,30,.3)); border-bottom:1px solid rgba(255,255,255,.08); z-index:10}
-    .wrap{max-width:1100px; margin:0 auto; padding:14px 18px}
-    h1{margin:0; font-size:clamp(26px,4vw,40px)}
-    .sub{opacity:.9; color:var(--muted); margin-top:6px}
+    /* Stage */
+    .stage{position:fixed; inset:0; display:grid; place-items:center}
+    .scene{position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity 900ms ease}
+    .scene.live{opacity:1; pointer-events:auto}
 
-    /* Jewel grid */
-    .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; max-width:1100px; margin:16px auto 100px; padding:0 18px}
-    .jewel{position:relative; border-radius:var(--radius); padding:18px; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.12); box-shadow:var(--shadow); cursor:pointer; overflow:hidden}
-    .jewel:hover{transform:translateY(-3px)}
-    .jewel h3{margin:0 0 6px; font-size:1.05rem}
-    .jewel p{margin:0; color:var(--muted); font-size:.92rem}
-    .tag{position:absolute; right:10px; top:10px; font-size:.75rem; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.14)}
+    /* Title banner */
+    .banner{position:absolute; top:22px; left:50%; transform:translateX(-50%); background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.16); padding:10px 16px; border-radius:999px; font-weight:700; letter-spacing:.3px; box-shadow:0 12px 36px rgba(0,0,0,.35)}
 
-    /* Modal shell */
-    .modal{position:fixed; inset:0; display:none; place-items:center; background:radial-gradient(1000px 700px at center, rgba(5,6,16,.95), rgba(5,6,16,.7)); z-index:50}
-    .modal.open{display:grid}
-    .dialog{width:min(100%, 980px); height:min(92vh, 720px); border-radius:24px; overflow:hidden; border:1px solid rgba(255,255,255,.14); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); box-shadow:var(--shadow); display:flex; flex-direction:column}
-    .dialog header{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border-bottom:1px solid rgba(255,255,255,.1)}
-    .dialog h2{margin:0; font-size:1.08rem}
-    .close{background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--text); border-radius:12px; padding:8px 12px; cursor:pointer}
-    .scene{flex:1; position:relative; background:radial-gradient(1000px 700px at 70% -10%, #121436, #070a1b 60%, #05060f); overflow:hidden}
-
-    /* Floating tips */
-    .tip{position:absolute; left:50%; transform:translateX(-50%); bottom:10px; font-size:.9rem; opacity:.8}
-
-    /* ★ Starfield canvas (global for some scenes) */
     canvas{display:block}
 
+    /* Music pill */
+    .music{position:absolute; bottom:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:6px 12px; font-size:.9rem; display:flex; gap:10px; align-items:center; box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    .music button{background:transparent; border:none; color:var(--ink); cursor:pointer}
+
     /* Wish input pill */
-    .wish-pill{position:absolute; left:50%; transform:translateX(-50%); bottom:16px; display:flex; gap:8px; align-items:center; background:var(--glass); border:1px solid var(--glass2); border-radius:999px; padding:8px 10px; box-shadow:var(--shadow)}
-    .wish-pill input{background:transparent; border:none; outline:none; color:var(--text); width:56vw; max-width:460px}
-    .wish-pill button{background:linear-gradient(180deg, #76efff, #54bfff); color:#04243a; border:none; border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:700}
+    .wish-pill{position:absolute; left:50%; transform:translateX(-50%); bottom:16px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,.42); border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:10px 12px; box-shadow:0 10px 30px rgba(0,0,0,.45)}
+    .wish-pill input{background:transparent; border:none; outline:none; color:var(--ink); width:60vw; max-width:520px}
+    .wish-pill button{background:linear-gradient(180deg, #76efff, #54bfff); color:#04243a; border:none; border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:800}
 
-    /* Constellation points */
-    .star-dot{position:absolute; width:6px; height:6px; border-radius:50%; background:#fff; filter:drop-shadow(0 0 10px #fff)}
-    .line{position:absolute; height:2px; background:linear-gradient(90deg, #fff, #ffffff00)}
+    .tip{position:absolute; left:50%; transform:translateX(-50%); bottom:56px; font-size:.92rem; color:var(--muted); opacity:.9}
 
-    /* Lanterns v2: silky glow */
-    .lantern{position:absolute; width:84px; height:114px; left:0; bottom:-120px; display:grid; place-items:center; filter: drop-shadow(0 0 18px rgba(255,190,90,.5))}
-    .lantern .paper{width:78px; height:100px; border-radius:16px 16px 22px 22px; background:radial-gradient(60% 60% at 50% 20%, #fff1c6, #ffd693 70%, #ffb95d); border:1px solid #f8c879; display:grid; place-items:center; font-weight:800; color:#5e3b00; text-shadow:0 1px 0 #ffe7b9}
-    .lantern::after{content:""; position:absolute; width:16px; height:14px; bottom:-6px; border-radius:50%; background:radial-gradient(circle, #ffd27a, #ff9a00)}
+    /* Mirror of Compliments (kept) */
+    .orb{position:absolute; width:min(48vw, 340px); aspect-ratio:1; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(170,210,255,.78) 40%, rgba(120,160,255,.45) 65%, rgba(60,90,220,.25) 80%, rgba(30,40,120,.12)); border:1px solid rgba(255,255,255,.55); box-shadow:0 0 65px rgba(160,200,255,.45), inset 0 0 45px rgba(255,255,255,.75); display:grid; place-items:center; text-align:center; padding:22px; color:#0c1c3a; font-weight:800}
+
+    /* Secret letter */
+    .letter{position:absolute; inset:0; padding:30px; max-width:760px; margin:auto; line-height:1.75; font-size:clamp(1rem, 1.3vw, 1.15rem)}
+    .caret{display:inline-block; width:10px; height:1.1em; background:currentColor; animation:blink 1s steps(2,start) infinite}
+    @keyframes blink{50%{opacity:0}}
+
+    /* New scenes visuals */
+    .lantern{position:absolute; width:90px; height:120px; left:0; bottom:-140px; display:grid; place-items:center; filter:drop-shadow(0 0 18px rgba(255,190,90,.55))}
+    .lantern .paper{width:84px; height:106px; border-radius:16px 16px 22px 22px; background:radial-gradient(60% 60% at 50% 20%, #fff1c6, #ffd693 70%, #ffb95d); border:1px solid #f8c879; display:grid; place-items:center; font-weight:900; color:#5e3b00; text-shadow:0 1px 0 #ffe7b9}
     @keyframes rise{from{transform:translateY(0) scale(.95); opacity:0}10%{opacity:1}to{transform:translateY(-130vh) scale(1.05); opacity:.98}}
 
-    /* 3D balloons v2 */
-    .balloon{position:absolute; width:54px; height:70px; bottom:-90px; left:0; border-radius:54px 54px 46px 46px; background:radial-gradient(120% 120% at 30% 25%, #fff7, #ff8adc 40%, #ff4bc7); box-shadow: inset -10px -14px 20px rgba(0,0,0,.22), 0 10px 24px rgba(0,0,0,.25)}
-    .balloon::after{content:""; position:absolute; width:14px; height:12px; background:#ff3cc8; bottom:-6px; left:50%; transform:translateX(-50%) rotate(45deg)}
-    .string{position:absolute; width:1px; height:48px; background:rgba(255,255,255,.7); bottom:-48px; left:50%}
+    .firefly{position:absolute; width:6px; height:6px; border-radius:50%; background:#fff; box-shadow:0 0 18px #ffd98a; animation:fly 7s linear infinite}
+    @keyframes fly{0%{transform:translate(0,0)}25%{transform:translate(40px,-30px)}50%{transform:translate(-10px,-60px)}75%{transform:translate(-40px,-20px)}100%{transform:translate(0,0)}}
 
-    /* Floating petals trail */
-    .petal{position:absolute; font-size:22px; animation:petal 2.2s ease-out forwards; filter:drop-shadow(0 0 6px rgba(255,255,255,.6))}
-    @keyframes petal{0%{transform:translateY(0) rotate(-20deg); opacity:0}20%{opacity:1}100%{transform:translateY(-120px) rotate(10deg); opacity:0}}
+    .butter{position:absolute; font-size:28px; animation:flit 4.5s ease-in-out infinite}
+    @keyframes flit{0%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(40px,-60px) rotate(12deg)}100%{transform:translate(0,0) rotate(-6deg)}}
 
-    /* Crystal buttons */
-    .crystal{position:absolute; inset:auto; left:50%; transform:translateX(-50%); top:16px; display:flex; gap:8px}
-    .crystal button{border:none; background:linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.08)); border:1px solid rgba(255,255,255,.22); color:var(--text); padding:8px 12px; border-radius:999px; cursor:pointer}
-
-    /* Minimal control when needed */
-    .controls{position:absolute; left:12px; top:12px; display:flex; gap:8px}
+    .toast{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); padding:8px 14px; border:1px solid rgba(255,255,255,.22); border-radius:999px; background:rgba(0,0,0,.35); backdrop-filter:blur(4px); box-shadow:0 10px 24px rgba(0,0,0,.35); z-index:99}
   </style>
 </head>
 <body>
-  <div class="aurora" aria-hidden="true">
-    <div class="a1"></div><div class="a2"></div><div class="a3"></div>
+  <div class="aurora" aria-hidden="true"><div class="a a1"></div><div class="a a2"></div><div class="a a3"></div></div>
+  <div class="stage">
+    <div class="banner">A Night of Surprises for Guddu ✨</div>
+
+    <!-- SCENE 1: Star Overture (canvas particles) -->
+    <section class="scene" id="scene-stars"><canvas id="cv-stars"></canvas><div class="music" id="musicCtl" title="Music"><span id="musicLabel">Music: On</span><button id="toggleMusic">⏸︎</button></div></section>
+
+    <!-- SCENE 2: Lantern Ocean (auto) -->
+    <section class="scene" id="scene-lanterns"></section>
+
+    <!-- SCENE 3: Mirror of Compliments (kept) -->
+    <section class="scene" id="scene-mirror"><div class="orb" id="orb">You are starlight ✨</div></section>
+
+    <!-- SCENE 4: Wish in the Sky (input pill) -->
+    <section class="scene" id="scene-wish"><canvas id="cv-wish"></canvas><form id="wishForm" class="wish-pill" autocomplete="off"><input id="wishInput" type="text" placeholder="Make a birthday wish…" maxlength="140" /><button type="submit">Send ✨</button></form><div class="tip">Your wish becomes a star and is sent to Rohit 💌</div></section>
+
+    <!-- SCENE 5: Firefly Meadow -->
+    <section class="scene" id="scene-fireflies"></section>
+
+    <!-- SCENE 6: Secret Letter (kept, auto-type) -->
+    <section class="scene" id="scene-letter"><div class="letter" id="typeArea"></div></section>
+
+    <!-- SCENE 7: Butterfly Cascade -->
+    <section class="scene" id="scene-butterflies"></section>
+
+    <!-- SCENE 8: Fireworks Finale with Message -->
+    <section class="scene" id="scene-fireworks"><canvas id="cv-fw"></canvas></section>
   </div>
-  <header>
-    <div class="wrap">
-      <h1>Surprises for Guddu ✨</h1>
-      <div class="sub">Tap any jewel below. No typing needed—except one place for your wish ⭐</div>
-    </div>
-  </header>
 
-  <main class="grid" id="grid">
-    <button class="jewel" data-open="stargarden"><span class="tag">#1</span><h3>Star Garden</h3><p>Tap and stars bloom into constellations.</p></button>
-    <button class="jewel" data-open="nameconstellation"><span class="tag">#2</span><h3>Name Constellation</h3><p>Sky spells “Happy Birthday Guddu”.</p></button>
-    <button class="jewel" data-open="lanterns"><span class="tag">#3</span><h3>Lantern River</h3><p>Silky lanterns drift upward with glow trails.</p></button>
-    <button class="jewel" data-open="balloons"><span class="tag">#4</span><h3>Shimmer Balloons</h3><p>Shiny hearts rise with sparkles.</p></button>
-    <button class="jewel" data-open="petals"><span class="tag">#5</span><h3>Petal Rain</h3><p>Every tap paints floating blossoms.</p></button>
-    <button class="jewel" data-open="fireworks"><span class="tag">#6</span><h3>Sky Fireworks</h3><p>Tap to launch aurora fireworks.</p></button>
-    <button class="jewel" data-open="mirrorglow"><span class="tag">#7</span><h3>Mirror of Compliments</h3><p>Each tap reveals a new glow message.</p></button>
-    <button class="jewel" data-open="letter"><span class="tag">#8</span><h3>Secret Letter</h3><p>A heartfelt note types itself.</p></button>
-    <button class="jewel" data-open="wish"><span class="tag">⭐</span><h3>Make a Wish</h3><p>Your wish becomes a star (and emails Rohit).</p></button>
-  </main>
-
-  <!-- Modals / Scenes -->
-  <div class="modal" id="modal-stargarden"><div class="dialog"><header><h2>Star Garden</h2><button class="close" data-close>Close</button></header><div class="scene" id="sgScene"><canvas id="sgCanvas"></canvas><div class="tip">Tap anywhere to bloom stars ✨</div></div></div></div>
-  <div class="modal" id="modal-nameconstellation"><div class="dialog"><header><h2>Name Constellation</h2><button class="close" data-close>Close</button></header><div class="scene" id="ncScene"><canvas id="ncCanvas"></canvas><div class="crystal"><button id="ncShow">Form Message</button><button id="ncScatter">Scatter</button></div><div class="tip">Message: HAPPY BIRTHDAY GUDDU</div></div></div></div>
-  <div class="modal" id="modal-lanterns"><div class="dialog"><header><h2>Lantern River</h2><button class="close" data-close>Close</button></header><div class="scene" id="lrScene"></div></div></div>
-  <div class="modal" id="modal-balloons"><div class="dialog"><header><h2>Shimmer Balloons</h2><button class="close" data-close>Close</button></header><div class="scene" id="sbScene"></div></div></div>
-  <div class="modal" id="modal-petals"><div class="dialog"><header><h2>Petal Rain</h2><button class="close" data-close>Close</button></header><div class="scene" id="prScene"><div class="tip">Move your finger/mouse to draw petals 🌸</div></div></div></div>
-  <div class="modal" id="modal-fireworks"><div class="dialog"><header><h2>Sky Fireworks</h2><button class="close" data-close>Close</button></header><div class="scene" id="fwScene"><canvas id="fwCanvas"></canvas><div class="controls"><button id="fwAuto">Auto Show</button><button id="fwClear">Clear</button></div><div class="tip">Tap to launch a firework 🎆</div></div></div></div>
-  <div class="modal" id="modal-mirrorglow"><div class="dialog"><header><h2>Mirror of Compliments</h2><button class="close" data-close>Close</button></header><div class="scene" id="mgScene"><div class="tip">Tap the glowing orb ✨</div></div></div></div>
-  <div class="modal" id="modal-letter"><div class="dialog"><header><h2>Secret Letter</h2><button class="close" data-close>Close</button></header><div class="scene" id="slScene"><div id="typeArea" style="position:absolute; inset:0; padding:28px; line-height:1.75; font-size:1.06rem; max-width:720px; margin:auto"></div><div class="controls"><button id="typeStart">Start</button><button id="typeSkip">Skip</button></div></div></div></div>
-  <div class="modal" id="modal-wish"><div class="dialog"><header><h2>Make a Wish ⭐</h2><button class="close" data-close>Close</button></header><div class="scene" id="wishScene"><canvas id="wishCanvas"></canvas><form id="wishForm" class="wish-pill"><input id="wishInput" type="text" placeholder="Type your wish here…" maxlength="120" required /><button id="wishSend" type="submit">Send ✉️</button></form><div class="tip">Your wish turns into a star and is sent to Rohit 💌</div></div></div></div>
+  <!-- Background music (autoplays; some browsers require interaction; we start unmuted then allow pause) -->
+  <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8b28e94f76.mp3?filename=ethereal-ambient-110997.mp3" autoplay loop playsinline></audio>
 
   <script>
+    /* Utility */
     const $ = (s, el=document)=>el.querySelector(s); const $$=(s, el=document)=>[...el.querySelectorAll(s)];
     const rand=(a,b)=>Math.random()*(b-a)+a; const rInt=(a,b)=>Math.floor(rand(a,b));
 
-    // Open/Close
-    $('#grid').addEventListener('click', e=>{ const b=e.target.closest('[data-open]'); if(!b) return; openModal(b.dataset.open); });
-    document.body.addEventListener('click', e=>{ if(e.target.matches('[data-close]')||e.target.classList.contains('modal')) closeModals(); });
-    function openModal(id){ const m=$(`#modal-${id}`); if(!m) return; m.classList.add('open'); document.body.style.overflow='hidden'; initScene(id); }
-    function closeModals(){ $$('.modal.open').forEach(m=>m.classList.remove('open')); document.body.style.overflow=''; teardownScene(currentScene); currentScene=null; }
+    /* Timeline controller: auto-reveal scenes in sequence */
+    const scenes=[
+      { id:'scene-stars', dur: 6000 },
+      { id:'scene-lanterns', dur: 7000 },
+      { id:'scene-mirror', dur: 7000 },
+      { id:'scene-wish', dur: 12000 },
+      { id:'scene-fireflies', dur: 6000 },
+      { id:'scene-letter', dur: 14000 },
+      { id:'scene-butterflies', dur: 6000 },
+      { id:'scene-fireworks', dur: 8000 },
+    ];
 
-    // Scenes lifecycle
-    let currentScene=null; const initialized=new Set();
-    function initScene(id){ currentScene=id; if(initialized.has(id)) return; ({
-      stargarden:initStarGarden,
-      nameconstellation:initNameConstellation,
-      lanterns:initLanternRiver,
-      balloons:initShimmerBalloons,
-      petals:initPetalRain,
-      fireworks:initFireworks,
-      mirrorglow:initMirrorGlow,
-      letter:initSecretLetter,
-      wish:initWish
-    })[id]?.(); initialized.add(id); }
-    function teardownScene(id){ ({fireworks:teardownFireworks, petals:teardownPetals})[id]?.(); }
+    let step=0, timer=null; const started=new Set(); function showScene(i){ const id=scenes[i].id; $$('.scene').forEach(s=>s.classList.remove('live')); const el=$(`#${id}`); el.classList.add('live'); if(!started.has(id)){ initScene(id); started.add(id);} }
+    function playTimeline(){ showScene(step); timer=setTimeout(()=>{ step=(step+1)%scenes.length; playTimeline(); }, scenes[step].dur); }
 
-    // ===== 1) Star Garden (tap blooms) =====
-    function initStarGarden(){
-      const c=$('#sgCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1);
-      const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;}; c.style.position='absolute'; c.style.inset=0; fit(); addTwinkles(); window.addEventListener('resize',fit);
-      function addTwinkles(){ for(let i=0;i<80;i++){ ctx.globalAlpha=.07; ctx.fillStyle='#fff'; ctx.fillRect(rInt(0,c.width), rInt(0,c.height), 2, 2);} ctx.globalAlpha=1; }
-      const blooms=[];
-      $('#sgScene').addEventListener('pointerdown', e=>{
-        const r=c.getBoundingClientRect(); const x=(e.clientX-r.left)*dpr; const y=(e.clientY-r.top)*dpr; bloom(x,y);
-      });
-      function bloom(x,y){ for(let i=0;i<90;i++){ const ang=Math.PI*2*(i/90)+rand(-.03,.03); const sp=rand(1.2,2.2); blooms.push({x,y,vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, life:rInt(40,70)}); } }
-      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=blooms.length-1;i>=0;i--){ const p=blooms[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='white'; ctx.globalAlpha=Math.max(0,p.life/80); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill(); if(p.life<=0) blooms.splice(i,1);} requestAnimationFrame(loop);} loop();
+    /* Music control */
+    const bgm=$('#bgm'); const musicBtn=$('#toggleMusic'); const musicLabel=$('#musicLabel');
+    musicBtn.addEventListener('click',()=>{ if(bgm.paused){ bgm.play(); musicLabel.textContent='Music: On'; musicBtn.textContent='⏸︎'; } else { bgm.pause(); musicLabel.textContent='Music: Off'; musicBtn.textContent='▶︎'; }});
+    // Try to gently start audio; if blocked, keep UI visible
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && bgm.paused){ bgm.play().catch(()=>{}); }});
+
+    /* Scene initializers */
+    function initScene(id){ ({
+      'scene-stars': initStars,
+      'scene-lanterns': initLanterns,
+      'scene-mirror': initMirror,
+      'scene-wish': initWish,
+      'scene-fireflies': initFireflies,
+      'scene-letter': initLetter,
+      'scene-butterflies': initButterflies,
+      'scene-fireworks': initFireworks,
+    })[id]?.(); }
+
+    /* SCENE 1: Star Overture */
+    function initStars(){ const c=$('#cv-stars'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); window.addEventListener('resize', fit);
+      const parts=[]; for(let i=0;i<500;i++) parts.push({x:rand(0,c.width), y:rand(0,c.height), r:rand(.5,1.8), tw:rand(.3,1)});
+      function loop(){ ctx.fillStyle='rgba(5,6,18,.28)'; ctx.fillRect(0,0,c.width,c.height); for(const p of parts){ p.tw+=.02; ctx.beginPath(); ctx.globalAlpha=(Math.sin(p.tw)+1)/3+.2; ctx.fillStyle='#fff'; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); } requestAnimationFrame(loop);} loop(); }
+
+    /* SCENE 2: Lantern Ocean */
+    function initLanterns(){ const scene=$('#scene-lanterns'); function add(){ const el=document.createElement('div'); el.className='lantern'; el.style.left=rand(6,92)+'vw'; el.style.animation=`rise ${rand(16,22)}s linear forwards`; el.innerHTML=`<div class=paper>${pick(['LOVE','JOY','PEACE','HOPE','MAGIC'])}</div>`; scene.appendChild(el); setTimeout(()=>el.remove(),23000);} function pick(a){return a[rInt(0,a.length)];}
+      for(let i=0;i<12;i++) setTimeout(add,i*300); }
+
+    /* SCENE 3: Mirror of Compliments (auto rotates text) */
+    function initMirror(){ const orb=$('#orb'); const lines=['Most beautiful smile ✨','Kindest heart 💖','You light up my world 🌟','You are my favorite miracle 🔮','Unstoppable, brilliant, loved 💫']; let i=0; setInterval(()=>{ i=(i+1)%lines.length; orb.textContent=lines[i]; orb.style.boxShadow='0 0 85px rgba(255,255,255,.95), inset 0 0 50px rgba(255,255,255,.85)'; setTimeout(()=>orb.style.boxShadow='0 0 65px rgba(160,200,255,.45), inset 0 0 45px rgba(255,255,255,.75)',380); }, 1600); }
+
+    /* SCENE 4: Wish in the Sky — emails automatically via EmailJS */
+    // EmailJS SDK loader — replace keys below
+    ;(function(){ const s=document.createElement('script'); s.src='https://cdn.emailjs.com/sdk/3.11.0/email.min.js'; s.onload=()=>{ emailjs.init('EMAILJS_PUBLIC_KEY'); /* replace */ }; document.head.appendChild(s); })();
+
+    function initWish(){ const c=$('#cv-wish'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); window.addEventListener('resize', fit);
+      const stars=[]; function burst(x,y){ for(let i=0;i<120;i++){ const a=Math.PI*2*(i/120)+rand(-.03,.03); const s=rand(1.2,2.4); stars.push({x,y,vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rInt(60,90)}); } }
+      function loop(){ ctx.fillStyle='rgba(5,6,18,.28)'; ctx.fillRect(0,0,c.width,c.height); for(let i=stars.length-1;i>=0;i--){ const p=stars[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=Math.max(0,p.life/90); ctx.arc(p.x,p.y,1.7,0,Math.PI*2); ctx.fill(); if(p.life<=0) stars.splice(i,1);} requestAnimationFrame(loop);} loop();
+
+      const form=$('#wishForm'); const input=$('#wishInput'); form.addEventListener('submit', async (e)=>{ e.preventDefault(); const wish=input.value.trim(); if(!wish) return; burst(c.width/2, c.height*.6); try{ const params={ wish_text:wish, from_name:'Guddu', timestamp:new Date().toLocaleString(), to_email:'anujshekhawat2004@gmail.com' };// <- recipient here
+          await emailjs.send('EMAILJS_SERVICE_ID','EMAILJS_TEMPLATE_ID',params); // replace
+          toast('Sent to Rohit 💌'); }catch(err){ console.error(err); toast('Could not send email (check EmailJS keys)'); }
+        input.value=''; const log=JSON.parse(localStorage.getItem('guddu_wishes')||'[]'); log.push({wish, time:Date.now()}); localStorage.setItem('guddu_wishes', JSON.stringify(log)); });
     }
 
-    // ===== 2) Name Constellation =====
-    function initNameConstellation(){
-      const c=$('#ncCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1);
-      const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;}; c.style.position='absolute'; c.style.inset=0; fit(); window.addEventListener('resize',fit);
-      const text='HAPPY BIRTHDAY GUDDU';
-      const off=document.createElement('canvas'); const octx=off.getContext('2d');
-      function targets(){ off.width=c.width; off.height=c.height; octx.clearRect(0,0,off.width,off.height); octx.fillStyle='#fff'; octx.font=`bold ${Math.max(36*dpr, c.width/14)}px system-ui`; octx.textAlign='center'; octx.textBaseline='middle'; octx.fillText(text,c.width/2,c.height/2); const img=octx.getImageData(0,0,off.width,off.height).data; const pts=[]; const gap=Math.max(5,Math.round(7*dpr)); for(let y=0;y<off.height;y+=gap){ for(let x=0;x<off.width;x+=gap){ if(img[(y*off.width+x)*4+3]>80) pts.push({x,y}); }} return pts; }
-      const PMAX=1000; const stars=[]; for(let i=0;i<PMAX;i++) stars.push({x:rand(0,c.width), y:rand(0,c.height), vx:0, vy:0, tx:null, ty:null});
-      let pts=targets();
-      function assign(){ for(let i=0;i<stars.length;i++){ const t=pts[i%pts.length]; stars[i].tx=t.x+rand(-2,2); stars[i].ty=t.y+rand(-2,2);} }
-      assign();
-      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(const s of stars){ if(s.tx!=null){ s.vx=(s.vx+(s.tx-s.x)*.02)*.9; s.vy=(s.vy+(s.ty-s.y)*.02)*.9; s.x+=s.vx; s.y+=s.vy; } else { s.x+=Math.sin(s.y*.003)*.3; s.y+=Math.cos(s.x*.003)*.3; } ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=.95; ctx.arc(s.x,s.y,1.6,0,Math.PI*2); ctx.fill(); }
-        requestAnimationFrame(loop); }
-      loop();
-      $('#ncShow').addEventListener('click',()=>{ pts=targets(); assign(); });
-      $('#ncScatter').addEventListener('click',()=>{ for(const s of stars){ s.tx=null; s.ty=null; }});
+    /* SCENE 5: Firefly Meadow */
+    function initFireflies(){ const scene=$('#scene-fireflies'); for(let i=0;i<40;i++){ const f=document.createElement('div'); f.className='firefly'; f.style.left=rInt(4,96)+'vw'; f.style.top=rInt(30,86)+'vh'; f.style.animationDuration=rand(5,10)+'s'; scene.appendChild(f);} }
+
+    /* SCENE 6: Secret Letter (auto-type, no button) */
+    function initLetter(){ const area=$('#typeArea'); const text=`My dearest Guddu,
+
+Tonight the sky is brighter—because it carries my wish for you.
+Thank you for your kindness, your laughter, and the magic you bring.
+
+I wish you calm mornings, brave dreams, and a thousand reasons to smile.
+I’m grateful for you today and every day.
+
+Happy Birthday, my star.
+Always yours. 💖`; let i=0; function render(){ area.innerHTML=`<span>${text.slice(0,i).replace(/
+/g,'<br>')}</span><span class="caret"></span>`;} render(); const speed=22; const t=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(t); }, speed); }
+
+    /* SCENE 7: Butterfly Cascade */
+    function initButterflies(){ const scene=$('#scene-butterflies'); const icons=['🦋','🦋','🦋','🦋','🦋','🦋']; for(let i=0;i<24;i++){ const b=document.createElement('div'); b.className='butter'; b.textContent=icons[rInt(0,icons.length)]; b.style.left=rInt(5,95)+'vw'; b.style.top=rInt(55,88)+'vh'; b.style.animationDuration=rand(3.5,6.5)+'s'; scene.appendChild(b);} }
+
+    /* SCENE 8: Fireworks Finale */
+    function initFireworks(){ const c=$('#cv-fw'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); window.addEventListener('resize', fit);
+      const parts=[]; function boom(x,y){ const hue=rInt(300,360); for(let i=0;i<160;i++){ const a=Math.PI*2*(i/160)+rand(-.02,.02); const s=rand(2.2,3.4); parts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(70,100), color:`hsl(${hue},90%,60%)`}); } }
+      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life--; ctx.beginPath(); ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,p.life/100); ctx.arc(p.x,p.y,1.8,0,Math.PI*2); ctx.fill(); if(p.life<=0) parts.splice(i,1);} requestAnimationFrame(loop);} loop();
+      // auto sequence of booms and a message
+      let t=0; const seq=setInterval(()=>{ boom(rand(c.width*.2,c.width*.8), rand(c.height*.35,c.height*.6)); t++; if(t>10){ clearInterval(seq); ctx.save(); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font=`bold ${Math.max(36, c.width/18)}px system-ui`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('HAPPY BIRTHDAY GUDDU', c.width/2, c.height*.5); ctx.restore(); } }, 500);
     }
 
-    // ===== 3) Lantern River =====
-    function initLanternRiver(){ const scene=$('#lrScene'); scene.addEventListener('pointerdown',()=>release(12)); release(10); function release(n){ for(let i=0;i<n;i++) setTimeout(()=>add(), i*180);} function add(){ const el=document.createElement('div'); el.className='lantern'; el.style.left=rand(8,92)+'vw'; el.style.animation=`rise ${rand(14,20)}s linear forwards`; el.innerHTML=`<div class=paper>${pick(['LOVE','JOY','SMILE','PEACE','HOPE','MAGIC'])}</div>`; scene.appendChild(el); setTimeout(()=>el.remove(),20000);} function pick(a){return a[rInt(0,a.length)];}}
+    /* Helpers */
+    function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),1800); }
 
-    // ===== 4) Shimmer Balloons =====
-    function initShimmerBalloons(){ const scene=$('#sbScene'); scene.addEventListener('pointerdown',()=>burst()); burst(); function add(txt){ const b=document.createElement('div'); b.className='balloon'; b.style.left=rand(6,94)+'vw'; b.style.animation=`rise ${rand(12,18)}s linear forwards`; b.innerHTML=`<div class=string></div>`; scene.appendChild(b); setTimeout(()=>b.remove(),18000);} function burst(){ for(let i=0;i<14;i++) setTimeout(()=>add(), i*120);} }
-
-    // ===== 5) Petal Rain (trail) =====
-    let petalHandler=null; function initPetalRain(){ const scene=$('#prScene'); const enable=()=>{ if(petalHandler) return; petalHandler=(e)=>{ const p=document.createElement('div'); p.className='petal'; p.textContent=pick(['🌸','🌷','💮','🌺','🌼']); p.style.left=(e.clientX-10)+'px'; p.style.top=(e.clientY-10)+'px'; scene.appendChild(p); setTimeout(()=>p.remove(),2200); }; scene.addEventListener('pointermove', petalHandler);}; const disable=()=>{ if(!petalHandler) return; scene.removeEventListener('pointermove', petalHandler); petalHandler=null; }; enable(); $('#modal-petals .close').addEventListener('click', disable, {once:true}); function pick(a){return a[rInt(0,a.length)];} }
-    function teardownPetals(){ const scene=$('#prScene'); if(petalHandler){ scene.removeEventListener('pointermove', petalHandler); petalHandler=null; } }
-
-    // ===== 6) Fireworks =====
-    let fwAnim=null, fwCtx=null, fwCv=null, fwParts=[];
-    function initFireworks(){ fwCv=$('#fwCanvas'); fwCv.style.position='absolute'; fwCv.style.inset=0; const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ fwCv.width=fwCv.clientWidth*dpr; fwCv.height=fwCv.clientHeight*dpr; }; fit(); window.addEventListener('resize',fit); fwCtx=fwCv.getContext('2d'); function launch(x,y){ const hue=rInt(300,360); for(let i=0;i<140;i++){ const a=Math.PI*2*(i/140)+rand(-.02,.02); const s=rand(2.2,3.4); fwParts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(60,90), color:`hsl(${hue},90%,60%)`}); } }
-      function loop(){ fwCtx.fillStyle='rgba(5,6,16,.25)'; fwCtx.fillRect(0,0,fwCv.width, fwCv.height); for(let i=fwParts.length-1;i>=0;i--){ const p=fwParts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life--; fwCtx.beginPath(); fwCtx.fillStyle=p.color; fwCtx.globalAlpha=Math.max(0,p.life/90); fwCtx.arc(p.x,p.y,1.8,0,Math.PI*2); fwCtx.fill(); if(p.life<=0) fwParts.splice(i,1);} fwAnim=requestAnimationFrame(loop);} loop();
-      $('#fwScene').addEventListener('pointerdown', e=>{ const r=fwCv.getBoundingClientRect(); launch((e.clientX-r.left)*(fwCv.width/r.width),(e.clientY-r.top)*(fwCv.height/r.height)); });
-      $('#fwAuto').addEventListener('click',()=>{ let t=0; const seq=setInterval(()=>{ launch(rand(fwCv.width*.2,fwCv.width*.8), rand(fwCv.height*.35,fwCv.height*.6)); t++; if(t>12){ clearInterval(seq); showMsg(); } }, 450); });
-      $('#fwClear').addEventListener('click',()=>{ fwParts=[]; });
-      function showMsg(){ fwCtx.save(); fwCtx.fillStyle='rgba(255,255,255,.95)'; fwCtx.font=`bold ${Math.max(32, fwCv.width/20)}px system-ui`; fwCtx.textAlign='center'; fwCtx.textBaseline='middle'; fwCtx.fillText('HAPPY BIRTHDAY GUDDU', fwCv.width/2, fwCv.height*.5); fwCtx.restore(); }
-    }
-    function teardownFireworks(){ if(fwAnim) cancelAnimationFrame(fwAnim); fwAnim=null; fwParts=[]; }
-
-    // ===== 7) Mirror of Compliments =====
-    function initMirrorGlow(){ const scene=$('#mgScene'); const orb=document.createElement('div'); orb.style.width='200px'; orb.style.height='200px'; orb.style.borderRadius='50%'; orb.style.background='radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(170,210,255,.7) 40%, rgba(120,160,255,.35) 65%, rgba(60,90,220,.2) 80%, rgba(30,40,120,.1))'; orb.style.border='1px solid rgba(255,255,255,.5)'; orb.style.boxShadow='0 0 45px rgba(160,200,255,.35), inset 0 0 35px rgba(255,255,255,.55)'; orb.style.display='grid'; orb.style.placeItems='center'; orb.style.fontWeight='800'; orb.style.color='#0c1c3a'; orb.textContent='Tap Me'; const holder=document.createElement('div'); holder.style.position='absolute'; holder.style.inset='0'; holder.style.display='grid'; holder.style.placeItems='center'; holder.appendChild(orb); scene.appendChild(holder); const lines=['Most beautiful smile ✨','Kindest heart 💖','You light up my world 🌟','You are my favorite miracle 🔮','Happy Birthday, Star! 🎂']; let i=0; orb.addEventListener('pointerdown',()=>{ i=(i+1)%lines.length; orb.textContent=lines[i]; orb.style.boxShadow='0 0 65px rgba(255,255,255,.8), inset 0 0 40px rgba(255,255,255,.7)'; setTimeout(()=>orb.style.boxShadow='0 0 45px rgba(160,200,255,.35), inset 0 0 35px rgba(255,255,255,.55)',320); }); }
-
-    // ===== 8) Secret Letter =====
-    function initSecretLetter(){ const area=$('#typeArea'); const text=`My dearest Guddu,\n\nTonight the sky is brighter—because it carries my wish for you.\nThank you for your kindness, your laughter, and the magic you bring.\n\nI wish you calm mornings, brave dreams, and a thousand reasons to smile.\nI’m grateful for you today and every day.\n\nHappy Birthday, my star.\nAlways yours. 💖`; let i=0,timer=null; function render(){ area.innerHTML=`<span>${text.slice(0,i).replace(/\n/g,'<br>')}</span><span style="display:inline-block;width:10px;height:1.1em;background:currentColor;animation:blink 1s steps(2,start) infinite"></span>`;} $('#typeStart').addEventListener('click',()=>{ clearInterval(timer); i=0; render(); timer=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(timer); }, 26); }); $('#typeSkip').addEventListener('click',()=>{ clearInterval(timer); i=text.length; render(); }); }
-
-    // ===== 9) Make a Wish (email) =====
-    // EmailJS SDK — load once
-    ;(function(){ const s=document.createElement('script'); s.src='https://cdn.emailjs.com/sdk/3.11.0/email.min.js'; s.onload=()=>{ emailjs.init('EMAILJS_PUBLIC_KEY'); /* <-- replace */ }; document.head.appendChild(s); })();
-
-    function initWish(){
-      const c=$('#wishCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2, devicePixelRatio||1); const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr; }; c.style.position='absolute'; c.style.inset=0; fit(); window.addEventListener('resize', fit);
-      const stars=[]; function addStar(x,y){ for(let i=0;i<100;i++){ const a=Math.PI*2*(i/100)+rand(-.03,.03); const s=rand(1.2,2.2); stars.push({x,y,vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rInt(50,80)}); } }
-      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=stars.length-1;i>=0;i--){ const p=stars[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=Math.max(0,p.life/90); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill(); if(p.life<=0) stars.splice(i,1);} requestAnimationFrame(loop);} loop();
-
-      $('#wishForm').addEventListener('submit', async (e)=>{
-        e.preventDefault(); const input=$('#wishInput'); const wish=input.value.trim(); if(!wish) return; // turn wish into a star
-        addStar(c.width/2, c.height*.58);
-        // send email via EmailJS
-        try{
-          const params={ wish_text: wish, from_name: 'Guddu', timestamp: new Date().toLocaleString() };
-          await emailjs.send('EMAILJS_SERVICE_ID', 'EMAILJS_TEMPLATE_ID', params); // <-- replace
-          toast('Wish sent to Rohit 💌');
-        }catch(err){ console.error(err); toast('Could not send email (check EmailJS keys)'); }
-        // store locally (optional)
-        const log = JSON.parse(localStorage.getItem('guddu_wishes')||'[]'); log.push({wish, time:Date.now()}); localStorage.setItem('guddu_wishes', JSON.stringify(log));
-        input.value='';
-      });
-    }
-
-    function toast(msg){ const t=document.createElement('div'); t.textContent=msg; t.style.position='fixed'; t.style.left='50%'; t.style.bottom='18px'; t.style.transform='translateX(-50%)'; t.style.padding='8px 14px'; t.style.border='1px solid rgba(255,255,255,.22)'; t.style.borderRadius='999px'; t.style.background='rgba(0,0,0,.35)'; t.style.backdropFilter='blur(4px)'; t.style.boxShadow='0 10px 24px rgba(0,0,0,.35)'; t.style.zIndex=99; document.body.appendChild(t); setTimeout(()=>t.remove(),1900); }
-
-    // ===== Notes for backend alternative (comment) =====
-    /*
-      🔒 Server route alternative (no third-party):
-      - Save wishes to Firestore and use a Cloud Function to email via SendGrid.
-      - Pseudocode:
-        1) In the web, do: fetch('/wish', { method:'POST', body: JSON.stringify({wish}) })
-        2) In Cloud Function: onRequest handler → send email with SendGrid using your API key to rohit's email
-      - This avoids exposing keys to client. If you prefer this path, tell me and I'll provide functions/index.js + security rules.
-    */
+    // Start timeline
+    playTimeline();
   </script>
 </body>
 </html>
