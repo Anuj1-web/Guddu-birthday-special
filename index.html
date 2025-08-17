@@ -1334,8 +1334,31 @@ document.querySelectorAll('video').forEach(video => {
 })();
 </script>
 <!-- === /Guddu 3D Portrait === -->
+<!-- Surprise Button -->
+<div style="text-align: center; margin: 40px 0;">
+  <a href="surprises.html" 
+     style="display: inline-block; padding: 14px 28px; 
+            background: linear-gradient(135deg, #ff69b4, #ff1493); 
+            color: white; font-size: 20px; font-weight: bold; 
+            border-radius: 12px; text-decoration: none; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+            transition: transform 0.2s, box-shadow 0.2s;">
+    🎁 Open Your Surprises ✨
+  </a>
+</div>
 
-
+<script>
+  // Small hover effect
+  const btn = document.querySelector('a[href="surprises.html"]');
+  btn.addEventListener("mouseenter", () => {
+    btn.style.transform = "scale(1.05)";
+    btn.style.boxShadow = "0 6px 16px rgba(0,0,0,0.3)";
+  });
+  btn.addEventListener("mouseleave", () => {
+    btn.style.transform = "scale(1)";
+    btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+  });
+</script>
 
 </body>
 </html>
