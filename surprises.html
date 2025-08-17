@@ -2,56 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0f2b" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Guddu — A Night of Surprises ✨</title>
-  <meta name="description" content="Tap-free magical scenes for Guddu. Auto-revealing surprises, gentle music, secret letter, compliments mirror, and a wish that becomes a star and is emailed automatically." />
+  <meta name="description" content="Cinematic, tap-free birthday journey for Guddu: skywriter, lantern lake, premium mirror of compliments, wish-to-constellation with email, auto-typing love letter, butterfly nebula, fireworks finale, and gentle music." />
   <style>
     :root{
-      --ink:#eaf0ff; --muted:#cbd6ff; --deep:#050612; --deep2:#0b0f2b; --rose:#ff84d7; --gold:#ffd98a; --aqua:#8ff6ff; --vio:#b79dff; --glass:rgba(255,255,255,.08);
+      --ink:#eef2ff; --muted:#bdc7ff; --deep:#050613; --deep2:#0a0f2b;
+      --rose:#ff92dc; --gold:#ffd98a; --aqua:#89f3ff; --vio:#c0a2ff; --glass:rgba(255,255,255,.09);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--ink); background: radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0b0f2b 45%, #050612 85%); overflow:hidden}
-
-    /* Global aurora */
-    .aurora{position:fixed; inset:-15% -10% -10% -10%; z-index:-1; filter: blur(42px) saturate(120%);} 
+    body{
+      margin:0; color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0b0f2b 45%, #050612 85%);
+      overflow:hidden;
+    }
+    .aurora{position:fixed; inset:-20% -10% -10% -10%; z-index:-1; filter: blur(42px) saturate(120%);}
     .a{position:absolute; width:70vw; height:70vw; border-radius:50%; mix-blend-mode:screen;}
     .a.a1{left:-8vw; top:-6vh; background: radial-gradient(circle, #3ae1ff60, #6a54ff36, #0000 70%); animation: drift 18s ease-in-out infinite}
     .a.a2{right:-14vw; top:10vh; background: radial-gradient(circle, #ff54d455, #ffe28f33, #0000 70%); animation: drift 24s ease-in-out infinite reverse}
     .a.a3{left:22vw; bottom:-12vh; background: radial-gradient(circle, #79ffbe55, #7ea2ff33, #0000 70%); animation: drift 22s ease-in-out infinite}
     @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5vh)}}
 
-    /* Stage */
     .stage{position:fixed; inset:0; display:grid; place-items:center}
     .scene{position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity 900ms ease}
     .scene.live{opacity:1; pointer-events:auto}
-
-    /* Title banner */
-    .banner{position:absolute; top:22px; left:50%; transform:translateX(-50%); background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.16); padding:10px 16px; border-radius:999px; font-weight:700; letter-spacing:.3px; box-shadow:0 12px 36px rgba(0,0,0,.35)}
-
     canvas{display:block}
 
-    /* Music pill */
-    .music{position:absolute; bottom:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:6px 12px; font-size:.9rem; display:flex; gap:10px; align-items:center; box-shadow:0 10px 28px rgba(0,0,0,.35)}
-    .music button{background:transparent; border:none; color:var(--ink); cursor:pointer}
+    .banner{position:absolute; top:14px; left:50%; transform:translateX(-50%);
+      background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.07));
+      border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:999px;
+      font-weight:800; letter-spacing:.3px; box-shadow:0 12px 36px rgba(0,0,0,.35)
+    }
+    .music-pill{position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.2); border-radius:999px;
+      padding:6px 12px; font-size:.9rem; display:flex; gap:10px; align-items:center;
+      box-shadow:0 10px 28px rgba(0,0,0,.35)
+    }
+    .music-pill button{background:transparent; border:none; color:var(--ink); cursor:pointer}
+    .music-pill.hidden{display:none}
 
-    /* Wish input pill */
+    /* Wish pill */
     .wish-pill{position:absolute; left:50%; transform:translateX(-50%); bottom:16px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,.42); border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:10px 12px; box-shadow:0 10px 30px rgba(0,0,0,.45)}
     .wish-pill input{background:transparent; border:none; outline:none; color:var(--ink); width:60vw; max-width:520px}
     .wish-pill button{background:linear-gradient(180deg, #76efff, #54bfff); color:#04243a; border:none; border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:800}
-
     .tip{position:absolute; left:50%; transform:translateX(-50%); bottom:56px; font-size:.92rem; color:var(--muted); opacity:.9}
 
-    /* Mirror of Compliments (kept) */
-    .orb{position:absolute; width:min(48vw, 340px); aspect-ratio:1; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(170,210,255,.78) 40%, rgba(120,160,255,.45) 65%, rgba(60,90,220,.25) 80%, rgba(30,40,120,.12)); border:1px solid rgba(255,255,255,.55); box-shadow:0 0 65px rgba(160,200,255,.45), inset 0 0 45px rgba(255,255,255,.75); display:grid; place-items:center; text-align:center; padding:22px; color:#0c1c3a; font-weight:800}
+    /* Mirror of Compliments (premium orb) */
+    .orb{position:absolute; width:min(56vw, 360px); aspect-ratio:1; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%);
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.98), rgba(180,215,255,.8) 40%, rgba(120,160,255,.5) 65%, rgba(60,90,220,.28) 80%, rgba(30,40,120,.12));
+      border:1px solid rgba(255,255,255,.55);
+      box-shadow:0 0 95px rgba(160,200,255,.55), inset 0 0 55px rgba(255,255,255,.85);
+      display:grid; place-items:center; text-align:center; padding:22px; color:#0c1c3a; font-weight:900; letter-spacing:.3px
+    }
 
     /* Secret letter */
-    .letter{position:absolute; inset:0; padding:30px; max-width:760px; margin:auto; line-height:1.75; font-size:clamp(1rem, 1.3vw, 1.15rem)}
+    .letter-wrap{position:absolute; inset:0; display:grid; place-items:center}
+    .paper{
+      width:min(90vw,760px); min-height:52vh; padding:26px 22px; line-height:1.75;
+      background:linear-gradient(180deg,#fff,#f7fbff); color:#0b1a35; border-radius:14px;
+      border:1px solid rgba(0,0,0,.06); box-shadow:0 35px 80px rgba(0,0,0,.35);
+      transform:perspective(1200px) rotateX(12deg) translateY(12px); opacity:.98;
+    }
     .caret{display:inline-block; width:10px; height:1.1em; background:currentColor; animation:blink 1s steps(2,start) infinite}
     @keyframes blink{50%{opacity:0}}
 
-    /* New scenes visuals */
+    /* Upgraded visuals */
     .lantern{position:absolute; width:90px; height:120px; left:0; bottom:-140px; display:grid; place-items:center; filter:drop-shadow(0 0 18px rgba(255,190,90,.55))}
     .lantern .paper{width:84px; height:106px; border-radius:16px 16px 22px 22px; background:radial-gradient(60% 60% at 50% 20%, #fff1c6, #ffd693 70%, #ffb95d); border:1px solid #f8c879; display:grid; place-items:center; font-weight:900; color:#5e3b00; text-shadow:0 1px 0 #ffe7b9}
     @keyframes rise{from{transform:translateY(0) scale(.95); opacity:0}10%{opacity:1}to{transform:translateY(-130vh) scale(1.05); opacity:.98}}
@@ -67,152 +84,306 @@
 </head>
 <body>
   <div class="aurora" aria-hidden="true"><div class="a a1"></div><div class="a a2"></div><div class="a a3"></div></div>
+
   <div class="stage">
     <div class="banner">A Night of Surprises for Guddu ✨</div>
 
-    <!-- SCENE 1: Star Overture (canvas particles) -->
-    <section class="scene live" id="scene-stars"><canvas id="cv-stars"></canvas><div class="music" id="musicCtl" title="Music"><span id="musicLabel">Music: On</span><button id="toggleMusic">⏸︎</button></div></section>
+    <!-- S1: Aurora Star Overture -->
+    <section class="scene live" id="s-stars"><canvas id="cv-stars"></canvas><div class="music-pill" id="musicCtl"><span id="musicLabel">Sound: On</span><button id="toggleMusic" aria-label="Toggle sound">⏸︎</button></div></section>
 
-    <!-- SCENE 2: Lantern Ocean (auto) -->
-    <section class="scene" id="scene-lanterns"></section>
+    <!-- S2: Skywriter Rocket -->
+    <section class="scene" id="s-skywriter"><canvas id="cv-sky"></canvas></section>
 
-    <!-- SCENE 3: Mirror of Compliments (kept) -->
-    <section class="scene" id="scene-mirror"><div class="orb" id="orb">You are starlight ✨</div></section>
+    <!-- S3: Lantern Lake 2.0 (water reflections) -->
+    <section class="scene" id="s-lanterns"><canvas id="cv-lake"></canvas></section>
 
-    <!-- SCENE 4: Wish in the Sky (input pill) -->
-    <section class="scene" id="scene-wish"><canvas id="cv-wish"></canvas><form id="wishForm" class="wish-pill" autocomplete="off"><input id="wishInput" type="text" placeholder="Make a birthday wish…" maxlength="140" /><button type="submit">Send ✨</button></form><div class="tip">Your wish becomes a star and is sent to Rohit 💌</div></section>
+    <!-- S4: Mirror of Compliments (premium) -->
+    <section class="scene" id="s-mirror"><div class="orb" id="orb">You are starlight ✨</div></section>
 
-    <!-- SCENE 5: Firefly Meadow -->
-    <section class="scene" id="scene-fireflies"></section>
+    <!-- S5: Wish Constellator -->
+    <section class="scene" id="s-wish"><canvas id="cv-wish"></canvas>
+      <form id="wishForm" class="wish-pill" autocomplete="off">
+        <input id="wishInput" type="text" placeholder="Make a birthday wish…" maxlength="140" />
+        <button type="submit">Send ✨</button>
+      </form>
+      <div class="tip">Your wish becomes a star and is sent to Rohit 💌</div>
+    </section>
 
-    <!-- SCENE 6: Secret Letter (kept, auto-type) -->
-    <section class="scene" id="scene-letter"><div class="letter" id="typeArea"></div></section>
+    <!-- S6: Secret Letter (auto-type) -->
+    <section class="scene" id="s-letter"><div class="letter-wrap"><div class="paper"><div id="typeArea"></div></div></div></section>
 
-    <!-- SCENE 7: Butterfly Cascade -->
-    <section class="scene" id="scene-butterflies"></section>
+    <!-- S7: Butterfly Nebula -->
+    <section class="scene" id="s-butter"><canvas id="cv-butter"></canvas></section>
 
-    <!-- SCENE 8: Fireworks Finale with Message -->
-    <section class="scene" id="scene-fireworks"><canvas id="cv-fw"></canvas></section>
+    <!-- S8: Fireworks Symphony -->
+    <section class="scene" id="s-fire"><canvas id="cv-fire"></canvas></section>
   </div>
 
-  <!-- Background music (autoplays; some browsers require interaction; we try politely and fall back to first tap) -->
+  <!-- Background music -->
   <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8b28e94f76.mp3?filename=ethereal-ambient-110997.mp3" autoplay loop playsinline></audio>
 
   <script>
-    /* Utility */
-    const $ = (s, el=document)=>el.querySelector(s); const $$=(s, el=document)=>[...el.querySelectorAll(s)];
-    const rand=(a,b)=>Math.random()*(b-a)+a; const rInt=(a,b)=>Math.floor(rand(a,b));
-
-    /* Timeline controller: auto-reveal scenes in sequence */
-    const scenes=[
-      { id:'scene-stars', dur: 5000 },
-      { id:'scene-lanterns', dur: 6500 },
-      { id:'scene-mirror', dur: 6000 },
-      { id:'scene-wish', dur: 11000 },
-      { id:'scene-fireflies', dur: 6000 },
-      { id:'scene-letter', dur: 13000 },
-      { id:'scene-butterflies', dur: 6000 },
-      { id:'scene-fireworks', dur: 9000 },
-    ];
-
-    let step=0, timer=null; const started=new Set();
-    function showScene(i){
-      const id=scenes[i].id; $$('.scene').forEach(s=>s.classList.remove('live'));
-      const el=$(`#${id}`); if(!el) return; el.classList.add('live');
-      if(!started.has(id)){ initScene(id); started.add(id); }
-    }
-    function playTimeline(){
-      showScene(step);
-      timer=setTimeout(()=>{ step=(step+1)%scenes.length; playTimeline(); }, scenes[step].dur);
-    }
-
-    /* Music control */
-    const bgm=$('#bgm'); const musicBtn=$('#toggleMusic'); const musicLabel=$('#musicLabel');
-    musicBtn.addEventListener('click',()=>{ if(bgm.paused){ bgm.play().then(()=>{musicLabel.textContent='Music: On'; musicBtn.textContent='⏸︎';}).catch(()=>{}); } else { bgm.pause(); musicLabel.textContent='Music: Off'; musicBtn.textContent='▶︎'; }});
-
-    // politely try to start audio on load and on first interaction
-    function kickAudio(){ bgm.play().catch(()=>{}); }
-    window.addEventListener('pointerdown', kickAudio, {once:true});
-    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kickAudio(); });
-
-    /* Scene initializers */
-    function initScene(id){ ({
-      'scene-stars': initStars,
-      'scene-lanterns': initLanterns,
-      'scene-mirror': initMirror,
-      'scene-wish': initWish,
-      'scene-fireflies': initFireflies,
-      'scene-letter': initLetter,
-      'scene-butterflies': initButterflies,
-      'scene-fireworks': initFireworks,
-    })[id]?.(); }
-
-    /* SCENE 1: Star Overture */
-    function initStars(){
-      const c=$('#cv-stars'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1);
-      function fit(){ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }
-      fit(); window.addEventListener('resize', fit);
-      const parts=[]; for(let i=0;i<650;i++) parts.push({x:rand(0,c.width), y:rand(0,c.height), r:rand(.6,1.9), tw:rand(.3,1)});
-      const comets=[{x:-100*dpr, y:c.height*0.25, vx:3.2, vy:0.6, life:420},{x:c.width+100*dpr, y:c.height*0.7, vx:-3.0, vy:-0.5, life:420}];
-      function loop(){
-        // sky gradient
-        const grd=ctx.createRadialGradient(c.width*0.6,c.height*0.1,10, c.width*0.6,c.height*0.1, Math.max(c.width,c.height));
-        grd.addColorStop(0,'#1a1f44'); grd.addColorStop(1,'#06091a'); ctx.fillStyle=grd; ctx.fillRect(0,0,c.width,c.height);
-        // twinkles
-        for(const p of parts){ p.tw+=.02; ctx.beginPath(); ctx.globalAlpha=(Math.sin(p.tw)+1)/3+.25; ctx.fillStyle='#fff'; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
-        // comets
-        for(const cmt of comets){ cmt.x+=cmt.vx*dpr; cmt.y+=cmt.vy*dpr; cmt.life--; const trail=ctx.createLinearGradient(cmt.x,cmt.y,cmt.x-cmt.vx*25,cmt.y-cmt.vy*25); trail.addColorStop(0,'rgba(255,255,255,.95)'); trail.addColorStop(1,'rgba(255,255,255,0)'); ctx.strokeStyle=trail; ctx.lineWidth=2*dpr; ctx.beginPath(); ctx.moveTo(cmt.x,cmt.y); ctx.lineTo(cmt.x-cmt.vx*30, cmt.y-cmt.vy*30); ctx.stroke(); ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=1; ctx.arc(cmt.x,cmt.y,2.2*dpr,0,Math.PI*2); ctx.fill(); }
-        requestAnimationFrame(loop);
-      }
-      loop();
-    }
-
-    /* SCENE 2: Lantern Ocean */
-    function initLanterns(){ const scene=$('#scene-lanterns'); function add(){ const el=document.createElement('div'); el.className='lantern'; el.style.left=rand(6,92)+'vw'; el.style.animation=`rise ${rand(16,22)}s linear forwards`; el.innerHTML=`<div class=paper>${pick(['LOVE','JOY','PEACE','HOPE','MAGIC'])}</div>`; scene.appendChild(el); setTimeout(()=>el.remove(),23000);} function pick(a){return a[rInt(0,a.length)];}
-      for(let i=0;i<12;i++) setTimeout(add,i*300); }
-
-    /* SCENE 3: Mirror of Compliments (auto rotates text) */
-    function initMirror(){ const orb=$('#orb'); const lines=['Most beautiful smile ✨','Kindest heart 💖','You light up my world 🌟','You are my favorite miracle 🔮','Unstoppable, brilliant, loved 💫']; let i=0; setInterval(()=>{ i=(i+1)%lines.length; orb.textContent=lines[i]; orb.style.boxShadow='0 0 85px rgba(255,255,255,.95), inset 0 0 50px rgba(255,255,255,.85)'; setTimeout(()=>orb.style.boxShadow='0 0 65px rgba(160,200,255,.45), inset 0 0 45px rgba(255,255,255,.75)',380); }, 1600); }
-
-    /* SCENE 4: Wish in the Sky — emails automatically via EmailJS */
-    // EmailJS SDK loader — replace keys below
-    ;(function(){ const s=document.createElement('script'); s.src='https://cdn.emailjs.com/sdk/3.11.0/email.min.js'; s.onload=()=>{ emailjs.init('EMAILJS_PUBLIC_KEY'); /* replace with your public key */ }; document.head.appendChild(s); })();
-
-    function initWish(){ const c=$('#cv-wish'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); window.addEventListener('resize', fit);
-      const stars=[]; function burst(x,y){ for(let i=0;i<140;i++){ const a=Math.PI*2*(i/140)+rand(-.03,.03); const s=rand(1.2,2.4); stars.push({x,y,vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rInt(60,90)}); } }
-      function loop(){ ctx.fillStyle='rgba(5,6,18,.28)'; ctx.fillRect(0,0,c.width,c.height); for(let i=stars.length-1;i>=0;i--){ const p=stars[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=Math.max(0,p.life/90); ctx.arc(p.x,p.y,1.7,0,Math.PI*2); ctx.fill(); if(p.life<=0) stars.splice(i,1);} requestAnimationFrame(loop);} loop();
-
-      const form=$('#wishForm'); const input=$('#wishInput'); form.addEventListener('submit', async (e)=>{ e.preventDefault(); const wish=input.value.trim(); if(!wish) return; burst(c.width/2, c.height*.6);
-        try{ const params={ wish_text:wish, from_name:'Guddu', timestamp:new Date().toLocaleString(), to_email:'anujshekhawat2004@gmail.com' };// <- recipient here
-          if(window.emailjs){ await emailjs.send('EMAILJS_SERVICE_ID','EMAILJS_TEMPLATE_ID',params); /* replace IDs */ toast('Sent to Rohit 💌'); }
-          else { throw new Error('EmailJS not loaded'); }
-        }catch(err){ console.error(err); toast('Wish saved locally ✨ (connect EmailJS to auto‑email)'); }
-        input.value=''; const log=JSON.parse(localStorage.getItem('guddu_wishes')||'[]'); log.push({wish, time:Date.now()}); localStorage.setItem('guddu_wishes', JSON.stringify(log));
-      });
-    }
-
-    /* SCENE 5: Firefly Meadow */
-    function initFireflies(){ const scene=$('#scene-fireflies'); for(let i=0;i<40;i++){ const f=document.createElement('div'); f.className='firefly'; f.style.left=rInt(4,96)+'vw'; f.style.top=rInt(30,86)+'vh'; f.style.animationDuration=rand(5,10)+'s'; scene.appendChild(f);} }
-
-    /* SCENE 6: Secret Letter (auto-type, no button) */
-    function initLetter(){ const area=$('#typeArea'); const text=`My dearest Guddu,\n\nTonight the sky is brighter—because it carries my wish for you.\nThank you for your kindness, your laughter, and the magic you bring.\n\nI wish you calm mornings, brave dreams, and a thousand reasons to smile.\nI’m grateful for you today and every day.\n\nHappy Birthday, my star.\nAlways yours. 💖`; let i=0; function render(){ area.innerHTML=`<span>${text.slice(0,i).replace(/\n/g,'<br>')}</span><span class="caret"></span>`;} render(); const speed=22; const t=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(t); }, speed); }
-
-    /* SCENE 7: Butterfly Cascade */
-    function initButterflies(){ const scene=$('#scene-butterflies'); const icons=['🦋','🦋','🦋','🦋','🦋','🦋']; for(let i=0;i<24;i++){ const b=document.createElement('div'); b.className='butter'; b.textContent=icons[rInt(0,icons.length)]; b.style.left=rInt(5,95)+'vw'; b.style.top=rInt(55,88)+'vh'; b.style.animationDuration=rand(3.5,6.5)+'s'; scene.appendChild(b);} }
-
-    /* SCENE 8: Fireworks Finale */
-    function initFireworks(){ const c=$('#cv-fw'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); window.addEventListener('resize', fit);
-      const parts=[]; function boom(x,y){ const hue=rInt(300,360); for(let i=0;i<160;i++){ const a=Math.PI*2*(i/160)+rand(-.02,.02); const s=rand(2.2,3.4); parts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(70,100), color:`hsl(${hue},90%,60%)`}); } }
-      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life--; ctx.beginPath(); ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,p.life/100); ctx.arc(p.x,p.y,1.8,0,Math.PI*2); ctx.fill(); if(p.life<=0) parts.splice(i,1);} requestAnimationFrame(loop);} loop();
-      // auto sequence of booms and a message
-      let t=0; const seq=setInterval(()=>{ boom(rand(c.width*.2,c.width*.8), rand(c.height*.35,c.height*.6)); t++; if(t>10){ clearInterval(seq); ctx.save(); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font=`bold ${Math.max(36, c.width/18)}px system-ui`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('HAPPY BIRTHDAY GUDDU', c.width/2, c.height*.5); ctx.restore(); } }, 500);
-    }
-
     /* Helpers */
-    function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),1800); }
+    const $=(s,el=document)=>el.querySelector(s), $$=(s,el=document)=>[...el.querySelectorAll(s)];
+    const rand=(a,b)=>Math.random()*(b-a)+a, rInt=(a,b)=>Math.floor(rand(a,b));
 
-    // Start timeline once DOM is ready; also try to start music gently
-    document.addEventListener('DOMContentLoaded', ()=>{ playTimeline(); kickAudio(); });
+    /* Timeline (auto scenes) */
+    const SCENES=[
+      {id:'s-stars', dur:5000},
+      {id:'s-skywriter', dur:6500},
+      {id:'s-lanterns', dur:7000},
+      {id:'s-mirror', dur:5500},
+      {id:'s-wish', dur:11000},
+      {id:'s-letter', dur:13000},
+      {id:'s-butter', dur:6000},
+      {id:'s-fire', dur:9000}
+    ];
+    let step=0, timer=null, inited=new Set();
+    function show(i){
+      $$('.scene').forEach(s=>s.classList.remove('live'));
+      const id=SCENES[i].id, el=$('#'+id);
+      el.classList.add('live');
+      if(!inited.has(id)){ INIT[id](); inited.add(id); }
+      clearTimeout(timer);
+      timer=setTimeout(()=>{ step=(step+1)%SCENES.length; show(step); }, SCENES[i].dur);
+    }
+    document.addEventListener('DOMContentLoaded', ()=>show(0));
+
+    /* Music: robust autoplay (muted->play->unmute), fallback pill */
+    const bgm=$('#bgm'), musicCtl=$('#musicCtl'), musicLabel=$('#musicLabel'), toggleBtn=$('#toggleMusic');
+    async function startMusic(){
+      try{
+        bgm.muted=true;      // allow autoplay
+        await bgm.play();    // start silently
+        setTimeout(()=>{     // gently unmute
+          bgm.muted=false;
+          musicLabel.textContent='Sound: On';
+          toggleBtn.textContent='⏸︎';
+        }, 400);
+      }catch(e){
+        // iOS/Safari might still block — show small pill
+        musicLabel.textContent='Sound: Off';
+        toggleBtn.textContent='▶︎';
+      }
+    }
+    startMusic();
+    toggleBtn.addEventListener('click', async ()=>{
+      if(bgm.paused){ try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; }catch(e){} }
+      else { bgm.pause(); musicLabel.textContent='Sound: Off'; toggleBtn.textContent='▶︎'; }
+    });
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && bgm.paused){ bgm.play().catch(()=>{}); }});
+
+    /* ---------- Scene Initializers ---------- */
+    const INIT={
+      /* S1: Aurora Star Overture with comets */
+      's-stars':()=>{
+        const c=$('#cv-stars'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; };
+        fit(); addEventListener('resize', fit);
+        const stars=Array.from({length:700},()=>({x:rand(0,c.width), y:rand(0,c.height), r:rand(.6,1.9), tw:rand(.3,1)}));
+        const comets=[{x:-120*dpr, y:c.height*0.25, vx:3.1, vy:0.5, life:420},{x:c.width+120*dpr, y:c.height*0.7, vx:-3.0, vy:-0.5, life:420}];
+        (function loop(){
+          ctx.clearRect(0,0,c.width,c.height);
+          const grd=ctx.createRadialGradient(c.width*0.6,c.height*0.1,10, c.width*0.6,c.height*0.1, Math.max(c.width,c.height));
+          grd.addColorStop(0,'#19204a'); grd.addColorStop(1,'#06091a'); ctx.fillStyle=grd; ctx.fillRect(0,0,c.width,c.height);
+          for(const p of stars){ p.tw+=.02; ctx.beginPath(); ctx.globalAlpha=(Math.sin(p.tw)+1)/3+.25; ctx.fillStyle='#fff'; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
+          for(const k of comets){ k.x+=k.vx*dpr; k.y+=k.vy*dpr; k.life--;
+            const trail=ctx.createLinearGradient(k.x,k.y,k.x-k.vx*25,k.y-k.vy*25);
+            trail.addColorStop(0,'rgba(255,255,255,.95)'); trail.addColorStop(1,'rgba(255,255,255,0)');
+            ctx.strokeStyle=trail; ctx.lineWidth=2*dpr; ctx.beginPath(); ctx.moveTo(k.x,k.y); ctx.lineTo(k.x-k.vx*30,k.y-k.vy*30); ctx.stroke();
+            ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=1; ctx.arc(k.x,k.y,2.2*dpr,0,Math.PI*2); ctx.fill();
+          }
+          requestAnimationFrame(loop);
+        })();
+      },
+
+      /* S2: Skywriter Rocket draws "HAPPY BIRTHDAY GUDDU" */
+      's-skywriter':()=>{
+        const c=$('#cv-sky'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); addEventListener('resize', fit);
+        const msg='HAPPY BIRTHDAY GUDDU';
+        ctx.fillStyle='rgba(255,255,255,.95)';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        let t=0, x=0, y=c.height*0.5, phase=0;
+        const trail=[];
+        function loop(){
+          ctx.fillStyle='rgba(5,6,18,.25)'; ctx.fillRect(0,0,c.width,c.height);
+          // trail
+          for(let i=trail.length-1;i>=0;i--){ const p=trail[i]; p.a-=.02; if(p.a<=0) trail.splice(i,1);
+            ctx.beginPath(); ctx.fillStyle=`rgba(255,255,255,${p.a})`; ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill();
+          }
+          // rocket path draws text by revealing clipping mask
+          if(phase===0){
+            ctx.save();
+            ctx.font=`bold ${Math.max(26, c.width/18)}px system-ui`;
+            ctx.globalAlpha = 0.08;
+            ctx.fillText(msg, c.width/2, c.height/2);
+            ctx.restore();
+            // move rocket across the text area
+            x = (t/c.width)*(c.width*1.1);
+            y = c.height*0.45 + Math.sin(t/50)*30;
+            trail.push({x,y,a:1});
+            ctx.beginPath(); ctx.fillStyle='#fff'; ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+            t += 6; if(t>c.width*1.1){ phase=1; }
+          } else {
+            ctx.save();
+            ctx.globalCompositeOperation='lighter';
+            ctx.font=`bold ${Math.max(28, c.width/18)}px system-ui`;
+            ctx.fillText(msg, c.width/2, c.height/2);
+            ctx.restore();
+          }
+          requestAnimationFrame(loop);
+        }
+        loop();
+      },
+
+      /* S3: Lantern Lake 2.0 with water reflection */
+      's-lanterns':()=>{
+        const c=$('#cv-lake'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); addEventListener('resize', fit);
+        const floats=[];
+        function addLantern(){
+          const X=rand(c.width*0.1, c.width*0.9), speed=rand(0.2,0.6), size=rand(18,26);
+          floats.push({x:X, y:c.height*0.78, s:size, vy:-speed, wob:rand(0,Math.PI*2)});
+        }
+        for(let i=0;i<20;i++) setTimeout(addLantern, i*200);
+        function lantern(x,y,s){
+          ctx.save();
+          const grd=ctx.createRadialGradient(x,y-s*2, 2, x,y, s*4);
+          grd.addColorStop(0,'#fff4c8'); grd.addColorStop(0.5,'#ffd690'); grd.addColorStop(1,'#ffbc66');
+          ctx.fillStyle=grd; ctx.strokeStyle='#f7c977'; ctx.lineWidth=1*dpr;
+          ctx.beginPath(); ctx.roundRect(x-s, y-s*2, s*2, s*2.6, s*.5); ctx.fill(); ctx.stroke();
+          ctx.restore();
+          // glow
+          ctx.beginPath(); ctx.fillStyle='rgba(255,210,120,.22)'; ctx.arc(x,y, s*2.5,0,Math.PI*2); ctx.fill();
+        }
+        function loop(){
+          ctx.fillStyle='#06091a'; ctx.fillRect(0,0,c.width,c.height);
+          // water
+          const horizon=c.height*0.72;
+          ctx.fillStyle='#0a0f2b'; ctx.fillRect(0,horizon,c.width,c.height-horizon);
+          for(const f of floats){
+            f.y+=f.vy; f.wob+=0.04;
+            lantern(f.x + Math.sin(f.wob)*6, f.y, f.s);
+            // reflection
+            const ry = horizon + (horizon - f.y);
+            ctx.globalAlpha=0.18; ctx.scale(1, -1); ctx.translate(0, - (ry*2));
+            lantern(f.x + Math.sin(f.wob)*6, ry, f.s*.9);
+            ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=1;
+          }
+          requestAnimationFrame(loop);
+        }
+        loop();
+      },
+
+      /* S4: Mirror of Compliments (premium) */
+      's-mirror':()=>{
+        const orb=$('#orb');
+        const lines=['Most beautiful smile ✨','Kindest heart 💖','You light up my world 🌟','My favorite miracle 🔮','Unstoppable, brilliant, loved 💫','Today the stars chose you ✨'];
+        let i=0;
+        setInterval(()=>{
+          i=(i+1)%lines.length;
+          orb.textContent=lines[i];
+          orb.style.boxShadow='0 0 120px rgba(255,255,255,.95), inset 0 0 60px rgba(255,255,255,.88)';
+          setTimeout(()=>orb.style.boxShadow='0 0 95px rgba(160,200,255,.55), inset 0 0 55px rgba(255,255,255,.85)',420);
+        }, 1600);
+      },
+
+      /* S5: Wish Constellator (wish -> star + email) */
+      's-wish':()=>{
+        // EmailJS loader
+        (function(){ const s=document.createElement('script'); s.src='https://cdn.emailjs.com/sdk/3.11.0/email.min.js';
+          s.onload=()=>{ try{ emailjs.init('EMAILJS_PUBLIC_KEY'); }catch(e){} }; document.head.appendChild(s); })(); // <-- replace
+
+        const c=$('#cv-wish'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); addEventListener('resize', fit);
+
+        const stars=[];
+        function burst(x,y){
+          for(let i=0;i<140;i++){
+            const a=Math.PI*2*(i/140)+rand(-.03,.03), s=rand(1.2,2.4);
+            stars.push({x,y,vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rInt(70,100)});
+          }
+        }
+        (function loop(){
+          ctx.fillStyle='rgba(5,6,18,.28)'; ctx.fillRect(0,0,c.width,c.height);
+          for(let i=stars.length-1;i>=0;i--){
+            const p=stars[i]; p.x+=p.vx; p.y+=p.vy; p.life--;
+            ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=Math.max(0,p.life/100);
+            ctx.arc(p.x,p.y,1.7,0,Math.PI*2); ctx.fill();
+            if(p.life<=0) stars.splice(i,1);
+          }
+          requestAnimationFrame(loop);
+        })();
+
+        const form=$('#wishForm'), input=$('#wishInput');
+        form.addEventListener('submit', async (e)=>{
+          e.preventDefault();
+          const wish=input.value.trim(); if(!wish) return;
+          burst(c.width/2, c.height*.6);
+          input.value='';
+          const log=JSON.parse(localStorage.getItem('guddu_wishes')||'[]'); log.push({wish, time:Date.now()}); localStorage.setItem('guddu_wishes', JSON.stringify(log));
+          try{
+            if(window.emailjs){
+              await emailjs.send('EMAILJS_SERVICE_ID','EMAILJS_TEMPLATE_ID',{
+                wish_text:wish, from_name:'Guddu', timestamp:new Date().toLocaleString(), to_email:'anujshekhawat2004@gmail.com'
+              });
+              toast('Wish sent to Rohit 💌');
+            } else { throw new Error('EmailJS not ready'); }
+          }catch(err){ console.error(err); toast('Wish saved ⭐ (email pending)'); }
+        });
+      },
+
+      /* S6: Secret Letter (auto-type) */
+      's-letter':()=>{
+        const area=$('#typeArea');
+        const text=`My dearest Guddu,
+
+Tonight the sky is brighter—because it carries my wish for you.
+Thank you for your kindness, your laughter, and the magic you bring.
+
+I wish you calm mornings, brave dreams, and a thousand reasons to smile.
+I’m grateful for you today and every day.
+
+Happy Birthday, my star.
+Always yours. 💖`;
+        let i=0; const speed=22;
+        function render(){ area.innerHTML=`<span>${text.slice(0,i).replace(/\n/g,'<br>')}</span><span class="caret"></span>`; }
+        render();
+        const t=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(t); }, speed);
+      },
+
+      /* S7: Butterfly Nebula (particles swirl into a heart) */
+      's-butter':()=>{
+        const c=$('#cv-butter'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); addEventListener('resize', fit);
+        const P=[]; for(let i=0;i<500;i++){ P.push({x:rand(0,c.width), y:rand(0,c.height), a:rand(0,Math.PI*2), r:rand(0.4,1.5)}); }
+        function heart(t){ const s=10; const x=16*Math.sin(t)**3, y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t); return [x*s, -y*s]; }
+        let k=0;
+(function loop(){
+          ctx.fillStyle='rgba(5,6,16,.28)'; ctx.fillRect(0,0,c.width,c.height);
+          for(const p of P){
+            const [hx,hy]=heart((k/40 + p.x*0.0008)%(Math.PI*2));
+            p.x+= (c.width/2 + hx - p.x)*0.02; p.y+= (c.height/2 + hy - p.y)*0.02;
+            ctx.beginPath(); ctx.globalAlpha=.9; ctx.fillStyle='#fff';
+            ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+          }
+          k++; requestAnimationFrame(loop);
+        })();
+      },
+
+      /* S8: Fireworks Symphony */
+      's-fire':()=>{
+        const c=$('#cv-fire'), ctx=c.getContext('2d'), dpr=Math.min(2,devicePixelRatio||1);
+        const fit=()=>{ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }; fit(); addEventListener('resize', fit);
+        const parts=[]; function boom(x,y){ const hue=rInt(300,360); for(let i=0;i<180;i++){ const a=Math.PI*2*(i/180)+rand(-.02,.02); const s=rand(2.2,3.6); parts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(70,100), color:`hsl(${hue},90%,60%)`}); } }
+        (function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life--; ctx.beginPath(); ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,p.life/100); ctx.arc(p.x,p.y,1.8,0,Math.PI*2); ctx.fill(); if(p.life<=0) parts.splice(i,1);} requestAnimationFrame(loop); })();
+        let t=0; const seq=setInterval(()=>{ boom(rand(c.width*.2,c.width*.8), rand(c.height*.35,c.height*.6)); t++; if(t>11){ clearInterval(seq); ctx.save(); ctx.fillStyle='rgba(255,255,255,.97)'; ctx.font=`bold ${Math.max(36, c.width/18)}px system-ui`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('HAPPY BIRTHDAY GUDDU', c.width/2, c.height*.5); ctx.restore(); } }, 520);
+      }
+    };
+
+    /* Toast helper */
+    function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),1800); }
   </script>
 </body>
 </html>
