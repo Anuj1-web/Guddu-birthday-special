@@ -3,906 +3,251 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Starry Surprises for Guddu ✨</title>
-  <meta name="description" content="A magical collection of interactive surprises for Guddu: wishes that become stars, lanterns, constellations, butterflies, fireworks, and more." />
+  <title>Guddu’s Ultra-Magical Surprises ✨</title>
+  <meta name="description" content="An elevated starry experience: tap-only surprises, elegant animations, and a wish that becomes a star—and emails to Rohit." />
+  <!--
+    📧 Wish email sending uses EmailJS (client-side) to deliver mail without a server.
+    1) Create free account at https://www.emailjs.com/
+    2) Add an Email Service (Gmail/Outlook/SMTP) → get SERVICE_ID
+    3) Create a Template with variables: wish_text, from_name, timestamp → get TEMPLATE_ID
+    4) Copy your PUBLIC_KEY
+    5) Fill the placeholders below: EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID
+
+    Alternative (server): Use Firebase Cloud Functions + SendGrid. Instructions are included in comments inside <script> near the bottom.
+  -->
   <style>
     :root{
-      --bg: #070715;
-      --bg-2: #0b0b23;
-      --text: #f6f6ff;
-      --subtle: #c7c7ff;
-      --accent: #ff9bd2;
-      --accent-2: #8be9fd;
-      --gold: #ffd166;
-      --pink: #ff77e9;
-      --green: #7CFFCB;
-      --shadow: 0 8px 30px rgba(0,0,0,.45);
-      --glass: rgba(255,255,255,.08);
-      --glass-2: rgba(255,255,255,.12);
+      --bg1: #050610; --bg2: #0b0f2b; --bg3: #120d33;
+      --text: #eaf0ff; --muted:#c7d0ff; --glow:#96f3ff; --rose:#ff7bd5; --gold:#ffd98a; --vio:#b79dff;
+      --glass: rgba(255,255,255,.08); --glass2: rgba(255,255,255,.14);
+      --radius: 20px; --shadow: 0 12px 40px rgba(0,0,0,.45);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      color:var(--text); background: radial-gradient(circle at 20% 10%, #111133 0%, #070715 40%, #04040a 100%);
-      overflow-x:hidden;
-    }
-    header{
-      position:sticky; top:0; z-index:50; backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(7,7,21,.85), rgba(7,7,21,.4));
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    .wrap{max-width:1100px; margin:0 auto; padding:18px 18px;}
-    h1{margin:0; font-size: clamp(26px, 4vw, 42px); letter-spacing:.5px;}
-    .subtitle{opacity:.9; color:var(--subtle); margin-top:6px}
+    body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--text); background: radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0a0d25 35%, #050610 70%);
+      overflow-x:hidden}
 
-    .grid{
-      display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; padding:22px 18px 90px; max-width:1100px; margin:0 auto;
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius:18px; padding:18px; cursor:pointer; text-align:left;
-      box-shadow: var(--shadow); transition:.25s transform, .25s box-shadow, .25s border-color;
-      position:relative; overflow:hidden; isolation:isolate;
-    }
-    .card:hover{ transform: translateY(-4px); border-color: rgba(255,255,255,.22);}
-    .card h3{margin:0 0 6px; font-size:1.05rem}
-    .card p{margin:0; color:var(--subtle); font-size:.92rem}
-    .badge{position:absolute; right:12px; top:12px; font-size:.75rem; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.12)}
+    /* Aurora backdrop */
+    .aurora{position:fixed; inset:-10% -10% 0 -10%; z-index:-1; filter: blur(40px) saturate(120%); opacity:.9;}
+    .a1,.a2,.a3{position:absolute; width:60vw; height:60vw; border-radius:50%; mix-blend-mode:screen;}
+    .a1{left:-10vw; top:-10vh; background: radial-gradient(circle, #3ae1ff55, #6a54ff33, #0000 70%); animation: drift 16s ease-in-out infinite}
+    .a2{right:-14vw; top:10vh; background: radial-gradient(circle, #ff54d444, #ffe28f33, #0000 70%); animation: drift 22s ease-in-out infinite reverse}
+    .a3{left:20vw; bottom:-10vh; background: radial-gradient(circle, #79ffbe44, #7ea2ff33, #0000 70%); animation: drift 20s ease-in-out infinite}
+    @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5vh)}}
 
-    /* Modal */
-    .modal{ position: fixed; inset:0; display:none; place-items:center; background: radial-gradient(1200px 800px at center, rgba(3,3,10,.96), rgba(3,3,10,.85) 40%, rgba(3,3,10,.65) 70%, rgba(3,3,10,.35)); z-index:100;}
-    .modal.open{ display:grid;}
-    .dialog{
-      width:min(100%, 980px); height:min(92vh, 720px); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid rgba(255,255,255,.12); border-radius:22px; position:relative; overflow:hidden; box-shadow: var(--shadow);
-      display:flex; flex-direction:column;
-    }
-    .dialog header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-bottom:1px solid rgba(255,255,255,.08)}
-    .dialog h2{ margin:0; font-size:1.1rem }
-    .close{ background:transparent; border:1px solid rgba(255,255,255,.18); color:var(--text); border-radius:12px; padding:8px 12px; cursor:pointer }
-    .scene{ flex:1; position:relative; background: radial-gradient(1200px 800px at 70% -20%, #10102d, #06061a 60%, #04040a); }
-    .controls{ position:absolute; left:12px; top:12px; display:flex; flex-wrap:wrap; gap:8px; z-index:10 }
-    .control{ background:var(--glass); color:var(--text); border:1px solid rgba(255,255,255,.18); padding:8px 10px; border-radius:12px; font-size:.9rem; cursor:pointer }
-    .control input[type="text"], .control input[type="number"], .control textarea{ background:rgba(0,0,0,.25); color:var(--text); border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:8px 10px; outline:none }
-    .credit{ position:absolute; right:12px; bottom:10px; opacity:.65; font-size:.8rem }
+    header{position:sticky; top:0; backdrop-filter: blur(10px); background:linear-gradient(180deg, rgba(10,12,30,.75), rgba(10,12,30,.3)); border-bottom:1px solid rgba(255,255,255,.08); z-index:10}
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 18px}
+    h1{margin:0; font-size:clamp(26px,4vw,40px)}
+    .sub{opacity:.9; color:var(--muted); margin-top:6px}
 
-    /* Stars generic */
-    .star{ position:absolute; color:#fff; filter: drop-shadow(0 0 8px rgba(255,255,255,.8)); pointer-events:auto }
-    .star .label{ font-size:12px; white-space:nowrap; padding:4px 6px; background: rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.25); border-radius:999px }
-    @keyframes floatUp{ from{ transform:translateY(30px) scale(.9); opacity:0 } 10%{opacity:1} to{ transform:translateY(-120vh) scale(1.05); opacity:.9 } }
+    /* Jewel grid */
+    .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; max-width:1100px; margin:16px auto 100px; padding:0 18px}
+    .jewel{position:relative; border-radius:var(--radius); padding:18px; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.12); box-shadow:var(--shadow); cursor:pointer; overflow:hidden}
+    .jewel:hover{transform:translateY(-3px)}
+    .jewel h3{margin:0 0 6px; font-size:1.05rem}
+    .jewel p{margin:0; color:var(--muted); font-size:.92rem}
+    .tag{position:absolute; right:10px; top:10px; font-size:.75rem; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.14)}
 
-    /* Lanterns */
-    .lantern{ position:absolute; width:80px; height:110px; left:0; bottom:-120px; display:grid; place-items:center; filter: drop-shadow(0 0 10px rgba(255,180,0,.4)); }
-    .lantern .paper{
-      width:70px; height:95px; background: linear-gradient(180deg, rgba(255,236,179,.95), rgba(255,204,120,.92));
-      border-radius:14px 14px 20px 20px; border:1px solid rgba(255,180,0,.45); position:relative; box-shadow: inset 0 -10px 20px rgba(255,120,0,.35), inset 0 10px 20px rgba(255,255,255,.3);
-      display:flex; align-items:center; justify-content:center; padding:8px; text-align:center; color:#5c3b00; font-weight:600; letter-spacing:.2px
-    }
-    .lantern::after{ content:""; position:absolute; width:12px; height:12px; border-radius:50%; background: radial-gradient(circle, #ffd27a, #ff9a00); bottom:-4px; filter: blur(1px); }
-    @keyframes riseLantern{ from{ transform: translateY(0) scale(.95); opacity:0 } 10%{opacity:1} to{ transform: translateY(-125vh) scale(1.05); opacity:.95 } }
+    /* Modal shell */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:radial-gradient(1000px 700px at center, rgba(5,6,16,.95), rgba(5,6,16,.7)); z-index:50}
+    .modal.open{display:grid}
+    .dialog{width:min(100%, 980px); height:min(92vh, 720px); border-radius:24px; overflow:hidden; border:1px solid rgba(255,255,255,.14); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); box-shadow:var(--shadow); display:flex; flex-direction:column}
+    .dialog header{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border-bottom:1px solid rgba(255,255,255,.1)}
+    .dialog h2{margin:0; font-size:1.08rem}
+    .close{background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--text); border-radius:12px; padding:8px 12px; cursor:pointer}
+    .scene{flex:1; position:relative; background:radial-gradient(1000px 700px at 70% -10%, #121436, #070a1b 60%, #05060f); overflow:hidden}
 
-    /* Shooting stars */
-    .shooting{ position:absolute; width:2px; height:2px; background:white; border-radius:50%; box-shadow:0 0 12px 6px rgba(255,255,255,.6); }
-    .shooting::after{ content:""; position:absolute; width:120px; height:2px; right:2px; top:0; background: linear-gradient(90deg, rgba(255,255,255,.8), rgba(255,255,255,0)); transform-origin:right center; }
-    @keyframes shoot{ from{ transform: translate3d(0,0,0) rotate(var(--angle, -20deg)); opacity:1 } to{ transform: translate3d(var(--dx, 600px), var(--dy, -180px), 0) rotate(var(--angle,-20deg)); opacity:0 } }
+    /* Floating tips */
+    .tip{position:absolute; left:50%; transform:translateX(-50%); bottom:10px; font-size:.9rem; opacity:.8}
 
-    /* Orb */
-    .orb{ width:180px; height:180px; border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), rgba(171,220,255,.6) 35%, rgba(120,180,255,.35) 60%, rgba(80,120,255,.15) 75%, rgba(40,40,100,.08) 100%);
-      border:1px solid rgba(255,255,255,.4); box-shadow: 0 0 40px rgba(140,200,255,.35), inset 0 0 30px rgba(255,255,255,.45); display:grid; place-items:center; color:#0b1b3a; font-weight:700; text-align:center }
+    /* ★ Starfield canvas (global for some scenes) */
+    canvas{display:block}
 
-    /* Butterflies */
-    .butterfly{ position:absolute; width:26px; height:22px; left:-40px; background: radial-gradient(circle at 30% 50%, #ffb3f1, #ff7bdc 60%, #ff49c6 100%); border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%; transform: rotate(12deg);
-      filter: drop-shadow(0 0 10px rgba(255,120,220,.6));
-      animation: flyX var(--time, 14s) linear forwards, flap .6s ease-in-out infinite; }
-    .butterfly::after{ content:""; position:absolute; left:8px; top:-2px; width:26px; height:22px; background: radial-gradient(circle at 70% 50%, #ffc0f4, #ff8de6 60%, #ff5cd3 100%);
-      border-radius: 40% 60% 40% 60% / 60% 60% 40% 40%; transform: rotate(-18deg);
-    }
-    @keyframes flyX{ from{ transform: translateX(-60px) translateY(var(--y, 0)) rotate(0deg) } to{ transform: translateX(110vw) translateY(calc(var(--y, 0) - 40vh)) rotate(15deg) } }
-    @keyframes flap{ 0%,100%{ transform: rotate(10deg) } 50%{ transform: rotate(0deg) } }
-    @keyframes floatY{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-18px) } }
+    /* Wish input pill */
+    .wish-pill{position:absolute; left:50%; transform:translateX(-50%); bottom:16px; display:flex; gap:8px; align-items:center; background:var(--glass); border:1px solid var(--glass2); border-radius:999px; padding:8px 10px; box-shadow:var(--shadow)}
+    .wish-pill input{background:transparent; border:none; outline:none; color:var(--text); width:56vw; max-width:460px}
+    .wish-pill button{background:linear-gradient(180deg, #76efff, #54bfff); color:#04243a; border:none; border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:700}
 
-    /* Notes */
-    .notes{ position:absolute; inset:0; padding:18px; display:flex; flex-wrap:wrap; align-content:flex-start; gap:14px; overflow:auto }
-    .note{ width:180px; min-height:140px; background: linear-gradient(180deg, #fff6a8, #ffe87a); color:#4a3b00; border:1px solid rgba(0,0,0,.08); border-radius:12px; padding:12px; box-shadow: 0 12px 25px rgba(0,0,0,.25);
-      transform: rotate(var(--r, -2deg)); position:relative }
-    .note::before{ content:""; position:absolute; width:36px; height:10px; background: rgba(255,0,0,.12); top:-6px; left:50%; transform:translateX(-50%) rotate(-4deg); border-radius:2px }
+    /* Constellation points */
+    .star-dot{position:absolute; width:6px; height:6px; border-radius:50%; background:#fff; filter:drop-shadow(0 0 10px #fff)}
+    .line{position:absolute; height:2px; background:linear-gradient(90deg, #fff, #ffffff00)}
 
-    /* Typewriter */
-    .type-area{ position:absolute; inset:0; padding:28px; line-height:1.7; font-size:1.05rem; max-width:720px; margin:auto; color:var(--text) }
-    .caret{ display:inline-block; width:10px; height:1.1em; background: currentColor; animation: blink 1s steps(2, start) infinite }
-    @keyframes blink{ 50%{ opacity:0 } }
+    /* Lanterns v2: silky glow */
+    .lantern{position:absolute; width:84px; height:114px; left:0; bottom:-120px; display:grid; place-items:center; filter: drop-shadow(0 0 18px rgba(255,190,90,.5))}
+    .lantern .paper{width:78px; height:100px; border-radius:16px 16px 22px 22px; background:radial-gradient(60% 60% at 50% 20%, #fff1c6, #ffd693 70%, #ffb95d); border:1px solid #f8c879; display:grid; place-items:center; font-weight:800; color:#5e3b00; text-shadow:0 1px 0 #ffe7b9}
+    .lantern::after{content:""; position:absolute; width:16px; height:14px; bottom:-6px; border-radius:50%; background:radial-gradient(circle, #ffd27a, #ff9a00)}
+    @keyframes rise{from{transform:translateY(0) scale(.95); opacity:0}10%{opacity:1}to{transform:translateY(-130vh) scale(1.05); opacity:.98}}
 
-    /* Balloons */
-    .balloon{ position:absolute; width:46px; height:60px; left:0; bottom:-80px; background: radial-gradient(circle at 35% 30%, #ffb3f1, #ff73d8 60%, #ff3cc8); border-radius:46px 46px 40px 40px; box-shadow: inset -8px -12px 20px rgba(0,0,0,.15), 0 8px 18px rgba(0,0,0,.25);
-      animation: riseBalloon var(--t, 12s) linear forwards; display:grid; place-items:center; color:#240021; font-weight:700 }
-    .balloon::after{ content:""; position:absolute; width:12px; height:10px; background: #ff3cc8; bottom:-4px; left:50%; transform:translateX(-50%) rotate(45deg); }
-    .string{ position:absolute; width:1px; height:40px; background: rgba(255,255,255,.6); bottom:-40px; left:50%; transform:translateX(-.5px) }
-    @keyframes riseBalloon{ from{ transform: translateY(0) } to{ transform: translateY(-120vh) } }
+    /* 3D balloons v2 */
+    .balloon{position:absolute; width:54px; height:70px; bottom:-90px; left:0; border-radius:54px 54px 46px 46px; background:radial-gradient(120% 120% at 30% 25%, #fff7, #ff8adc 40%, #ff4bc7); box-shadow: inset -10px -14px 20px rgba(0,0,0,.22), 0 10px 24px rgba(0,0,0,.25)}
+    .balloon::after{content:""; position:absolute; width:14px; height:12px; background:#ff3cc8; bottom:-6px; left:50%; transform:translateX(-50%) rotate(45deg)}
+    .string{position:absolute; width:1px; height:48px; background:rgba(255,255,255,.7); bottom:-48px; left:50%}
 
-    /* Flowers trail */
-    .bloom{ position:absolute; font-size:20px; animation: bloom 1.6s ease-out forwards; filter: drop-shadow(0 0 6px rgba(255,255,255,.5)); }
-    @keyframes bloom{ 0%{ transform: scale(.2) rotate(-20deg); opacity:0 } 20%{ opacity:1 } 100%{ transform: scale(1.2) rotate(10deg); opacity:0 } }
+    /* Floating petals trail */
+    .petal{position:absolute; font-size:22px; animation:petal 2.2s ease-out forwards; filter:drop-shadow(0 0 6px rgba(255,255,255,.6))}
+    @keyframes petal{0%{transform:translateY(0) rotate(-20deg); opacity:0}20%{opacity:1}100%{transform:translateY(-120px) rotate(10deg); opacity:0}}
 
-    /* Fireworks */
-    canvas{ display:block }
-    .center-tip{ position:absolute; left:50%; transform:translateX(-50%); bottom:10px; font-size:.9rem; opacity:.7 }
+    /* Crystal buttons */
+    .crystal{position:absolute; inset:auto; left:50%; transform:translateX(-50%); top:16px; display:flex; gap:8px}
+    .crystal button{border:none; background:linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.08)); border:1px solid rgba(255,255,255,.22); color:var(--text); padding:8px 12px; border-radius:999px; cursor:pointer}
 
-    /* Fairy dust toggle (global small helper) */
-    .fairy-toggle{ position:fixed; right:14px; bottom:14px; z-index:60; background:var(--glass); border:1px solid rgba(255,255,255,.18); padding:10px 12px; border-radius:12px; cursor:pointer }
-    .spark{ position:fixed; width:6px; height:6px; background: radial-gradient(circle, #fff, rgba(255,255,255,.2)); border-radius:50%; pointer-events:none; filter: drop-shadow(0 0 8px #fff); animation: spark .8s ease-out forwards }
-    @keyframes spark{ from{ transform:scale(1); opacity:1 } to{ transform: translateY(-16px) scale(.2); opacity:0 } }
-
-    /* Small helper layouts */
-    .scene-center{ position:absolute; inset:0; display:grid; place-items:center }
-    .row{ display:flex; gap:8px; align-items:center }
+    /* Minimal control when needed */
+    .controls{position:absolute; left:12px; top:12px; display:flex; gap:8px}
   </style>
 </head>
 <body>
+  <div class="aurora" aria-hidden="true">
+    <div class="a1"></div><div class="a2"></div><div class="a3"></div>
+  </div>
   <header>
     <div class="wrap">
       <h1>Surprises for Guddu ✨</h1>
-      <div class="subtitle">Choose any magical experience. Each one is unique, warm, and made just for you. 💖</div>
+      <div class="sub">Tap any jewel below. No typing needed—except one place for your wish ⭐</div>
     </div>
   </header>
 
-  <main class="grid" id="cards">
-    <button class="card" data-open="wish">
-      <span class="badge">#1</span>
-      <h3>Wish Collector ⭐</h3>
-      <p>Type a wish → it becomes a floating star in the night sky.</p>
-    </button>
-    <button class="card" data-open="name-stars">
-      <span class="badge">#2</span>
-      <h3>Name in the Stars 🌌</h3>
-      <p>Stars gather to form “Happy Birthday Guddu”.</p>
-    </button>
-    <button class="card" data-open="lanterns">
-      <span class="badge">#3</span>
-      <h3>Floating Lanterns 🏮</h3>
-      <p>Light lanterns with sweet words and watch them ascend.</p>
-    </button>
-    <button class="card" data-open="shooting">
-      <span class="badge">#4</span>
-      <h3>Shooting Stars 💫</h3>
-      <p>Catch a shooting star to reveal a loving message.</p>
-    </button>
-    <button class="card" data-open="jar">
-      <span class="badge">#5</span>
-      <h3>Fortune Star Jar 🔮</h3>
-      <p>Shake the jar to release a glowing star with a blessing.</p>
-    </button>
-    <button class="card" data-open="orb">
-      <span class="badge">#6</span>
-      <h3>Magic Mirror Orb ✨</h3>
-      <p>Tap the orb to reveal compliments chosen for Guddu.</p>
-    </button>
-    <button class="card" data-open="butterflies">
-      <span class="badge">#7</span>
-      <h3>Butterfly Garden 🦋</h3>
-      <p>Release butterflies carrying tiny messages of love.</p>
-    </button>
-    <button class="card" data-open="notes">
-      <span class="badge">#8</span>
-      <h3>Love Notes Wall 💌</h3>
-      <p>Pin handwritten-style notes on a cozy board.</p>
-    </button>
-    <button class="card" data-open="letter">
-      <span class="badge">#9</span>
-      <h3>Secret Letter (Typewriter) ✍️</h3>
-      <p>A heartfelt letter reveals itself word by word.</p>
-    </button>
-    <button class="card" data-open="balloons">
-      <span class="badge">#10</span>
-      <h3>Heart Balloons 🎈</h3>
-      <p>Send heart balloons rising with a sweet label.</p>
-    </button>
-    <button class="card" data-open="flowers">
-      <span class="badge">#11</span>
-      <h3>Flower Bloom Trail 🌸</h3>
-      <p>Every touch leaves a blooming trail that fades like magic.</p>
-    </button>
-    <button class="card" data-open="fireworks">
-      <span class="badge">#12</span>
-      <h3>Fireworks Finale 🎆</h3>
-      <p>Tap to launch fireworks — end with a glowing message.</p>
-    </button>
+  <main class="grid" id="grid">
+    <button class="jewel" data-open="stargarden"><span class="tag">#1</span><h3>Star Garden</h3><p>Tap and stars bloom into constellations.</p></button>
+    <button class="jewel" data-open="nameconstellation"><span class="tag">#2</span><h3>Name Constellation</h3><p>Sky spells “Happy Birthday Guddu”.</p></button>
+    <button class="jewel" data-open="lanterns"><span class="tag">#3</span><h3>Lantern River</h3><p>Silky lanterns drift upward with glow trails.</p></button>
+    <button class="jewel" data-open="balloons"><span class="tag">#4</span><h3>Shimmer Balloons</h3><p>Shiny hearts rise with sparkles.</p></button>
+    <button class="jewel" data-open="petals"><span class="tag">#5</span><h3>Petal Rain</h3><p>Every tap paints floating blossoms.</p></button>
+    <button class="jewel" data-open="fireworks"><span class="tag">#6</span><h3>Sky Fireworks</h3><p>Tap to launch aurora fireworks.</p></button>
+    <button class="jewel" data-open="mirrorglow"><span class="tag">#7</span><h3>Mirror of Compliments</h3><p>Each tap reveals a new glow message.</p></button>
+    <button class="jewel" data-open="letter"><span class="tag">#8</span><h3>Secret Letter</h3><p>A heartfelt note types itself.</p></button>
+    <button class="jewel" data-open="wish"><span class="tag">⭐</span><h3>Make a Wish</h3><p>Your wish becomes a star (and emails Rohit).</p></button>
   </main>
 
-  <!-- Fairy dust toggle (applies on this page) -->
-  <button class="fairy-toggle" id="fairyToggle">✨ Fairy dust: OFF</button>
-
-  <!-- ===== Modals / Scenes ===== -->
-
-  <!-- 1) Wish Collector -->
-  <div class="modal" id="modal-wish">
-    <div class="dialog">
-      <header>
-        <h2>Wish Collector ⭐</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="wishScene">
-        <div class="controls">
-          <div class="control row">
-            <input id="wishInput" type="text" placeholder="Type a wish for Guddu..." maxlength="60" />
-            <button id="wishAdd" class="control">Add Star</button>
-          </div>
-          <button id="wishBurst" class="control">✨ Sprinkle 10 Wishes</button>
-          <button id="wishClear" class="control">Clear Sky</button>
-        </div>
-        <div class="scene-center" aria-hidden="true" style="pointer-events:none">
-          <div style="opacity:.9; text-align:center">
-            <div style="font-size:1.6rem; margin-bottom:8px">Make a Wish, Guddu ✨</div>
-            <div style="opacity:.75">Your words will rise as glowing stars and watch over you 💖</div>
-          </div>
-        </div>
-        <div class="credit">Tip: Click a star to make it twinkle ✨</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2) Name in the Stars -->
-  <div class="modal" id="modal-name-stars">
-    <div class="dialog">
-      <header>
-        <h2>Name in the Stars 🌌</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="nameStarsScene">
-        <div class="controls">
-          <button id="nsForm" class="control">Form Message</button>
-          <button id="nsScatter" class="control">Scatter Stars</button>
-          <div class="control row">
-            <label for="nsText" style="opacity:.8; margin-right:6px">Text</label>
-            <input id="nsText" type="text" value="HAPPY BIRTHDAY GUDDU" maxlength="28" />
-          </div>
-        </div>
-        <canvas id="nsCanvas"></canvas>
-        <div class="center-tip">Click anywhere to send a twinkle 🌟</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3) Floating Lanterns -->
-  <div class="modal" id="modal-lanterns">
-    <div class="dialog">
-      <header>
-        <h2>Floating Lanterns 🏮</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="lanternScene">
-        <div class="controls">
-          <div class="control row">
-            <input id="lanternText" type="text" placeholder="Word on lantern (e.g., Joy, Love)" maxlength="16" />
-            <button id="lanternLight" class="control">Light a Lantern</button>
-          </div>
-          <button id="lanternBurst" class="control">Release 10</button>
-          <button id="lanternClear" class="control">Clear Sky</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4) Shooting Stars -->
-  <div class="modal" id="modal-shooting">
-    <div class="dialog">
-      <header>
-        <h2>Shooting Stars 💫</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="shootingScene">
-        <div class="controls">
-          <button id="shootToggle" class="control">Start Shower</button>
-          <button id="shootClear" class="control">Clear</button>
-        </div>
-        <div class="center-tip">Tap a shooting star to reveal a message 💖</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 5) Fortune Star Jar -->
-  <div class="modal" id="modal-jar">
-    <div class="dialog">
-      <header>
-        <h2>Fortune Star Jar 🔮</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="jarScene">
-        <div class="controls">
-          <button id="jarShake" class="control">Shake the Jar</button>
-        </div>
-        <div class="scene-center">
-          <svg id="jarSvg" width="240" height="300" viewBox="0 0 240 300" aria-label="Star Jar">
-            <defs>
-              <radialGradient id="glassGrad" cx="50%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
-                <stop offset="60%" stop-color="#9fd7ff" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#5aa3ff" stop-opacity="0.18"/>
-              </radialGradient>
-            </defs>
-            <g>
-              <path d="M60 40 h120 a20 20 0 0 1 20 20 v18 a90 90 0 0 1 -10 40 l-20 40 a120 120 0 0 1 -200 0 l-20 -40 a90 90 0 0 1 -10 -40 v-18 a20 20 0 0 1 20 -20 z" fill="url(#glassGrad)" stroke="rgba(255,255,255,.6)" stroke-width="2" transform="translate(30,10)"/>
-              <rect x="70" y="28" width="100" height="16" rx="8" fill="#996633" stroke="#b8860b" stroke-width="2" />
-              <rect x="58" y="18" width="124" height="18" rx="9" fill="#b8860b" stroke="#d4a642" stroke-width="2" />
-            </g>
-          </svg>
-        </div>
-        <div class="credit">Each shake releases one glowing blessing ✨</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6) Magic Mirror Orb -->
-  <div class="modal" id="modal-orb">
-    <div class="dialog">
-      <header>
-        <h2>Magic Mirror Orb ✨</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="orbScene">
-        <div class="scene-center">
-          <div class="orb" id="orb">Tap Me</div>
-        </div>
-        <div class="credit">Tip: Keep tapping for more ✨</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 7) Butterfly Garden -->
-  <div class="modal" id="modal-butterflies">
-    <div class="dialog">
-      <header>
-        <h2>Butterfly Garden 🦋</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="butterflyScene">
-        <div class="controls">
-          <button id="butterRelease" class="control">Release Butterflies</button>
-          <button id="butterClear" class="control">Clear</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 8) Love Notes Wall -->
-  <div class="modal" id="modal-notes">
-    <div class="dialog">
-      <header>
-        <h2>Love Notes Wall 💌</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="notesScene">
-        <div class="controls">
-          <div class="control row">
-            <textarea id="noteText" rows="2" cols="28" placeholder="Write a little love note..."></textarea>
-            <button id="noteAdd" class="control">Pin Note</button>
-            <button id="noteClear" class="control">Clear Board</button>
-          </div>
-        </div>
-        <div class="notes" id="notesBoard"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 9) Secret Letter -->
-  <div class="modal" id="modal-letter">
-    <div class="dialog">
-      <header>
-        <h2>Secret Letter ✍️</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="letterScene">
-        <div class="controls">
-          <button id="letterStart" class="control">Start</button>
-          <button id="letterSkip" class="control">Skip to End</button>
-        </div>
-        <div class="type-area" id="letterArea"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 10) Heart Balloons -->
-  <div class="modal" id="modal-balloons">
-    <div class="dialog">
-      <header>
-        <h2>Heart Balloons 🎈</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="balloonScene">
-        <div class="controls">
-          <div class="control row">
-            <input id="balloonText" type="text" placeholder="Small label (e.g., Guddu)" maxlength="12" />
-            <button id="balloonRelease" class="control">Release Balloon</button>
-          </div>
-          <button id="balloonBurst" class="control">Release 12</button>
-          <button id="balloonClear" class="control">Clear</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 11) Flower Bloom Trail -->
-  <div class="modal" id="modal-flowers">
-    <div class="dialog">
-      <header>
-        <h2>Flower Bloom Trail 🌸</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="flowersScene">
-        <div class="controls">
-          <button id="flowerToggle" class="control">Enable Bloom Trail</button>
-        </div>
-        <div class="center-tip">Move your finger/mouse to draw blooms ✿</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 12) Fireworks Finale -->
-  <div class="modal" id="modal-fireworks">
-    <div class="dialog">
-      <header>
-        <h2>Fireworks Finale 🎆</h2>
-        <button class="close" data-close>Close</button>
-      </header>
-      <div class="scene" id="fireworksScene">
-        <div class="controls">
-          <button id="fwAuto" class="control">Auto Show</button>
-          <button id="fwClear" class="control">Clear</button>
-        </div>
-        <canvas id="fwCanvas"></canvas>
-        <div class="center-tip">Click anywhere to launch a firework ✨</div>
-      </div>
-    </div>
-  </div>
+  <!-- Modals / Scenes -->
+  <div class="modal" id="modal-stargarden"><div class="dialog"><header><h2>Star Garden</h2><button class="close" data-close>Close</button></header><div class="scene" id="sgScene"><canvas id="sgCanvas"></canvas><div class="tip">Tap anywhere to bloom stars ✨</div></div></div></div>
+  <div class="modal" id="modal-nameconstellation"><div class="dialog"><header><h2>Name Constellation</h2><button class="close" data-close>Close</button></header><div class="scene" id="ncScene"><canvas id="ncCanvas"></canvas><div class="crystal"><button id="ncShow">Form Message</button><button id="ncScatter">Scatter</button></div><div class="tip">Message: HAPPY BIRTHDAY GUDDU</div></div></div></div>
+  <div class="modal" id="modal-lanterns"><div class="dialog"><header><h2>Lantern River</h2><button class="close" data-close>Close</button></header><div class="scene" id="lrScene"></div></div></div>
+  <div class="modal" id="modal-balloons"><div class="dialog"><header><h2>Shimmer Balloons</h2><button class="close" data-close>Close</button></header><div class="scene" id="sbScene"></div></div></div>
+  <div class="modal" id="modal-petals"><div class="dialog"><header><h2>Petal Rain</h2><button class="close" data-close>Close</button></header><div class="scene" id="prScene"><div class="tip">Move your finger/mouse to draw petals 🌸</div></div></div></div>
+  <div class="modal" id="modal-fireworks"><div class="dialog"><header><h2>Sky Fireworks</h2><button class="close" data-close>Close</button></header><div class="scene" id="fwScene"><canvas id="fwCanvas"></canvas><div class="controls"><button id="fwAuto">Auto Show</button><button id="fwClear">Clear</button></div><div class="tip">Tap to launch a firework 🎆</div></div></div></div>
+  <div class="modal" id="modal-mirrorglow"><div class="dialog"><header><h2>Mirror of Compliments</h2><button class="close" data-close>Close</button></header><div class="scene" id="mgScene"><div class="tip">Tap the glowing orb ✨</div></div></div></div>
+  <div class="modal" id="modal-letter"><div class="dialog"><header><h2>Secret Letter</h2><button class="close" data-close>Close</button></header><div class="scene" id="slScene"><div id="typeArea" style="position:absolute; inset:0; padding:28px; line-height:1.75; font-size:1.06rem; max-width:720px; margin:auto"></div><div class="controls"><button id="typeStart">Start</button><button id="typeSkip">Skip</button></div></div></div></div>
+  <div class="modal" id="modal-wish"><div class="dialog"><header><h2>Make a Wish ⭐</h2><button class="close" data-close>Close</button></header><div class="scene" id="wishScene"><canvas id="wishCanvas"></canvas><form id="wishForm" class="wish-pill"><input id="wishInput" type="text" placeholder="Type your wish here…" maxlength="120" required /><button id="wishSend" type="submit">Send ✉️</button></form><div class="tip">Your wish turns into a star and is sent to Rohit 💌</div></div></div></div>
 
   <script>
-    // ========= Helpers =========
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-    const rand = (min, max) => Math.random() * (max - min) + min;
-    const randInt = (min, max) => Math.floor(rand(min, max));
+    const $ = (s, el=document)=>el.querySelector(s); const $$=(s, el=document)=>[...el.querySelectorAll(s)];
+    const rand=(a,b)=>Math.random()*(b-a)+a; const rInt=(a,b)=>Math.floor(rand(a,b));
 
-    // Modal open/close
-    const openModal = id => {
-      const m = document.getElementById(`modal-${id}`);
-      if(!m) return;
-      m.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      initScene(id);
-    };
-    const closeModals = () => {
-      $$('.modal.open').forEach(m => m.classList.remove('open'));
-      document.body.style.overflow = '';
-      // Stop scene-specific listeners if needed
-      teardownScene(currentScene);
-      currentScene = null;
-    };
+    // Open/Close
+    $('#grid').addEventListener('click', e=>{ const b=e.target.closest('[data-open]'); if(!b) return; openModal(b.dataset.open); });
+    document.body.addEventListener('click', e=>{ if(e.target.matches('[data-close]')||e.target.classList.contains('modal')) closeModals(); });
+    function openModal(id){ const m=$(`#modal-${id}`); if(!m) return; m.classList.add('open'); document.body.style.overflow='hidden'; initScene(id); }
+    function closeModals(){ $$('.modal.open').forEach(m=>m.classList.remove('open')); document.body.style.overflow=''; teardownScene(currentScene); currentScene=null; }
 
-    $('#cards').addEventListener('click', e => {
-      const btn = e.target.closest('[data-open]');
-      if(btn) openModal(btn.getAttribute('data-open'));
-    });
-    document.body.addEventListener('click', e => {
-      if(e.target.matches('[data-close]')) closeModals();
-      if(e.target.classList.contains('modal')) closeModals();
-    });
+    // Scenes lifecycle
+    let currentScene=null; const initialized=new Set();
+    function initScene(id){ currentScene=id; if(initialized.has(id)) return; ({
+      stargarden:initStarGarden,
+      nameconstellation:initNameConstellation,
+      lanterns:initLanternRiver,
+      balloons:initShimmerBalloons,
+      petals:initPetalRain,
+      fireworks:initFireworks,
+      mirrorglow:initMirrorGlow,
+      letter:initSecretLetter,
+      wish:initWish
+    })[id]?.(); initialized.add(id); }
+    function teardownScene(id){ ({fireworks:teardownFireworks, petals:teardownPetals})[id]?.(); }
 
-    // Fairy dust toggle (global)
-    let fairyOn = false; let fairyHandler = null;
-    $('#fairyToggle').addEventListener('click', () => {
-      fairyOn = !fairyOn;
-      $('#fairyToggle').textContent = `✨ Fairy dust: ${fairyOn ? 'ON' : 'OFF'}`;
-      if(fairyOn && !fairyHandler){
-        fairyHandler = (e) => {
-          const s = document.createElement('div');
-          s.className = 'spark';
-          s.style.left = (e.clientX + rand(-6,6)) + 'px';
-          s.style.top = (e.clientY + rand(-6,6)) + 'px';
-          document.body.appendChild(s);
-          setTimeout(()=>s.remove(), 900);
-        };
-        window.addEventListener('pointermove', fairyHandler);
-      } else if(!fairyOn && fairyHandler){
-        window.removeEventListener('pointermove', fairyHandler);
-        fairyHandler = null;
-      }
-    });
-
-    // ========= Scene lifecycle =========
-    let currentScene = null; const inited = new Set();
-    function initScene(id){
-      currentScene = id;
-      if(inited.has(id)) return; // init only once
-      const map = {
-        'wish': initWish,
-        'name-stars': initNameStars,
-        'lanterns': initLanterns,
-        'shooting': initShooting,
-        'jar': initJar,
-        'orb': initOrb,
-        'butterflies': initButterflies,
-        'notes': initNotes,
-        'letter': initLetter,
-        'balloons': initBalloons,
-        'flowers': initFlowers,
-        'fireworks': initFireworks,
-      };
-      map[id]?.();
-      inited.add(id);
-    }
-    function teardownScene(id){
-      const map = {
-        'shooting': teardownShooting,
-        'flowers': teardownFlowers,
-        'fireworks': teardownFireworks,
-      };
-      map[id]?.();
-    }
-
-    // ========= 1) Wish Collector =========
-    function initWish(){
-      const scene = $('#wishScene');
-      const input = $('#wishInput');
-      const addBtn = $('#wishAdd');
-      const burstBtn = $('#wishBurst');
-      const clearBtn = $('#wishClear');
-
-      function addStar(text){
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = rand(4, 92) + 'vw';
-        star.style.bottom = '-10vh';
-        star.style.fontSize = rand(14, 22) + 'px';
-        star.style.animation = `floatUp ${rand(9, 16)}s linear forwards`;
-        star.innerHTML = `<span class="label">${text || '⭐'}</span>`;
-        star.addEventListener('click', ()=>{
-          star.style.filter = 'drop-shadow(0 0 18px rgba(255,255,255,1))';
-          setTimeout(()=> star.style.filter = '', 400);
-        });
-        scene.appendChild(star);
-        setTimeout(()=> star.remove(), 18000);
-      }
-
-      addBtn.addEventListener('click', ()=>{
-        const t = input.value.trim(); if(!t) return; addStar(t); input.value = '';
+    // ===== 1) Star Garden (tap blooms) =====
+    function initStarGarden(){
+      const c=$('#sgCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1);
+      const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;}; c.style.position='absolute'; c.style.inset=0; fit(); addTwinkles(); window.addEventListener('resize',fit);
+      function addTwinkles(){ for(let i=0;i<80;i++){ ctx.globalAlpha=.07; ctx.fillStyle='#fff'; ctx.fillRect(rInt(0,c.width), rInt(0,c.height), 2, 2);} ctx.globalAlpha=1; }
+      const blooms=[];
+      $('#sgScene').addEventListener('pointerdown', e=>{
+        const r=c.getBoundingClientRect(); const x=(e.clientX-r.left)*dpr; const y=(e.clientY-r.top)*dpr; bloom(x,y);
       });
-      input.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addBtn.click(); }});
-      burstBtn.addEventListener('click', ()=>{
-        const pool = ['Happiness','Health','Success','Luck','Laughter','Love','Dreams','Peace','Magic','Joy'];
-        for(let i=0;i<10;i++) setTimeout(()=> addStar(pool[randInt(0,pool.length)]), i*150);
-      });
-      clearBtn.addEventListener('click', ()=> $$('#wishScene .star').forEach(s=>s.remove()));
+      function bloom(x,y){ for(let i=0;i<90;i++){ const ang=Math.PI*2*(i/90)+rand(-.03,.03); const sp=rand(1.2,2.2); blooms.push({x,y,vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, life:rInt(40,70)}); } }
+      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=blooms.length-1;i>=0;i--){ const p=blooms[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='white'; ctx.globalAlpha=Math.max(0,p.life/80); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill(); if(p.life<=0) blooms.splice(i,1);} requestAnimationFrame(loop);} loop();
     }
 
-    // ========= 2) Name in the Stars (canvas particle morph) =========
-    function initNameStars(){
-      const canvas = $('#nsCanvas');
-      const ctx = canvas.getContext('2d');
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      function size(){
-        canvas.width = canvas.clientWidth * dpr;
-        canvas.height = canvas.clientHeight * dpr;
-      }
-      const scene = $('#nameStarsScene');
-      const resize = () => {
-        canvas.style.position='absolute'; canvas.style.inset=0; size();
-      };
-      resize();
-      window.addEventListener('resize', resize);
-
-      const particles = []; const MAX = 900; // total particles
-      for(let i=0;i<MAX;i++){
-        particles.push({ x: rand(0, canvas.width), y: rand(0, canvas.height), tx: null, ty: null, vx:0, vy:0, s: rand(1,2.2)});
-      }
-
-      const off = document.createElement('canvas'); const octx = off.getContext('2d');
-      function makeTargets(text){
-        const w = canvas.width, h = canvas.height; off.width=w; off.height=h; octx.clearRect(0,0,w,h);
-        const fontSize = Math.max(36*dpr, Math.min(110*dpr, w/12));
-        octx.fillStyle='#fff'; octx.font = `bold ${fontSize}px system-ui, sans-serif`;
-        octx.textAlign='center'; octx.textBaseline='middle';
-        octx.fillText(text, w/2, h/2);
-        const data = octx.getImageData(0,0,w,h).data;
-        const pts=[]; const gap = Math.max(4, Math.round(6*dpr));
-        for(let y=0;y<h;y+=gap){ for(let x=0;x<w;x+=gap){
-          const idx=(y*w + x)*4 + 3; if(data[idx]>80){ pts.push({x,y}); }
-        }}
-        // pick up to MAX points
-        return pts.sort(()=>Math.random()-.5).slice(0, MAX);
-      }
-
-      let targets = makeTargets($('#nsText').value.trim());
-      function applyTargets(){
-        const pts = targets; const len = pts.length;
-        for(let i=0;i<particles.length;i++){
-          const p=particles[i]; const t = pts[i % len]; p.tx = t.x + rand(-3,3); p.ty = t.y + rand(-3,3);
-        }
-      }
-      applyTargets();
-
-      function step(){
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        // background twinkles
-        for(let i=0;i<40;i++){
-          const x = (i*97 % canvas.width); const y = (i*53 % canvas.height);
-          ctx.globalAlpha = .08; ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, 2, 2);
-        }
-        ctx.globalAlpha = 1;
-        for(const p of particles){
-          if(p.tx!=null){
-            const ax = (p.tx - p.x) * .02; const ay = (p.ty - p.y) * .02;
-            p.vx = (p.vx + ax) * .9; p.vy = (p.vy + ay) * .9; p.x += p.vx; p.y += p.vy;
-          } else { // drift
-            p.x += Math.sin(p.y*0.003)*0.4; p.y += Math.cos(p.x*0.003)*0.4;
-          }
-          ctx.beginPath(); ctx.fillStyle = 'white'; ctx.globalAlpha = .9; ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
-        }
-        requestAnimationFrame(step);
-      }
-      step();
-
-      scene.addEventListener('click', e=>{
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * dpr; const y = (e.clientY - rect.top) * dpr;
-        // add a burst
-        for(let i=0;i<40;i++){
-          setTimeout(()=>{
-            ctx.beginPath(); ctx.fillStyle='white'; ctx.globalAlpha = .7; ctx.arc(x+rand(-30,30), y+rand(-30,30), rand(1,2), 0, Math.PI*2); ctx.fill();
-          }, i*6);
-        }
-      });
-
-      $('#nsForm').addEventListener('click', ()=>{ targets = makeTargets($('#nsText').value.trim() || 'GUDDU'); applyTargets(); });
-      $('#nsScatter').addEventListener('click', ()=>{ for(const p of particles){ p.tx=null; p.ty=null; } });
-    }
-
-    // ========= 3) Floating Lanterns =========
-    function initLanterns(){
-      const scene = $('#lanternScene');
-      const input = $('#lanternText');
-      const add = $('#lanternLight');
-      const burst = $('#lanternBurst');
-      const clear = $('#lanternClear');
-
-      function addLantern(text){
-        const el = document.createElement('div'); el.className='lantern';
-        const left = rand(4, 92); el.style.left = left + 'vw';
-        el.style.animation = `riseLantern ${rand(12,18)}s linear forwards`;
-        el.innerHTML = `<div class="paper"><span>${text||'Love'}</span></div>`;
-        scene.appendChild(el);
-        setTimeout(()=>el.remove(), 20000);
-      }
-      add.addEventListener('click', ()=>{ const t=input.value.trim(); addLantern(t||'Joy'); input.value=''; });
-      burst.addEventListener('click', ()=>{
-        const pool=['Love','Joy','Health','Peace','Luck','Dreams','Smile','Shine','Hope','Magic'];
-        for(let i=0;i<10;i++) setTimeout(()=> addLantern(pool[randInt(0,pool.length)]), i*220);
-      });
-      clear.addEventListener('click', ()=> $$('#lanternScene .lantern').forEach(l=>l.remove()));
-    }
-
-    // ========= 4) Shooting Stars =========
-    let shootingTimer=null;
-    function initShooting(){
-      const scene = $('#shootingScene');
-      const toggle = $('#shootToggle');
-      const clear = $('#shootClear');
-
-      function spawn(){
-        const el = document.createElement('div'); el.className='shooting';
-        const y = rand(10, 60); const x = rand(6, 40);
-        const dx = rand(400, 720); const dy = rand(-220, -80);
-        const ang = rand(-28, -12);
-        el.style.top = y + 'vh'; el.style.left = x + 'vw';
-        el.style.setProperty('--dx', dx+'px'); el.style.setProperty('--dy', dy+'px'); el.style.setProperty('--angle', ang+'deg');
-        el.style.animation = `shoot ${rand(1.3, 2.1)}s linear forwards`;
-        el.title = 'Tap me';
-        el.addEventListener('click', (e)=>{
-          e.stopPropagation(); revealMessage(e.clientX, e.clientY); el.remove();
-        });
-        scene.appendChild(el);
-        setTimeout(()=>el.remove(), 2500);
-      }
-      function revealMessage(x, y){
-        const msg = document.createElement('div');
-        msg.style.position='fixed'; msg.style.left=x+'px'; msg.style.top=y+'px'; msg.style.transform='translate(-50%, -50%)';
-        msg.style.padding='6px 10px'; msg.style.border='1px solid rgba(255,255,255,.25)'; msg.style.borderRadius='999px';
-        msg.style.background='rgba(0,0,0,.35)'; msg.style.backdropFilter='blur(4px)'; msg.style.boxShadow='0 8px 20px rgba(0,0,0,.35)';
-        msg.style.fontWeight='700'; msg.textContent = pick([
-          'Guddu, you are loved ❤️','Your smile is my sunshine ☀️','Shine bright, Birthday Star ✨','Always with you 💖','You make the world better 🌎','Forever special 🌟'
-        ]);
-        document.body.appendChild(msg);
-        setTimeout(()=> msg.remove(), 1800);
-      }
-      function pick(arr){ return arr[randInt(0, arr.length)]; }
-
-      toggle.addEventListener('click', ()=>{
-        if(shootingTimer){ clearInterval(shootingTimer); shootingTimer=null; toggle.textContent='Start Shower'; }
-        else { shootingTimer = setInterval(spawn, 600); toggle.textContent='Stop Shower'; }
-      });
-      clear.addEventListener('click', ()=> { $$('#shootingScene .shooting').forEach(s=>s.remove()); });
-    }
-    function teardownShooting(){ if(shootingTimer){ clearInterval(shootingTimer); shootingTimer=null; $('#shootToggle').textContent='Start Shower'; } }
-
-    // ========= 5) Fortune Star Jar =========
-    function initJar(){
-      const scene = $('#jarScene');
-      $('#jarShake').addEventListener('click', ()=>{
-        // Shake effect
-        const jar = $('#jarSvg'); jar.style.transition='transform .25s'; jar.style.transform='rotate(6deg)';
-        setTimeout(()=> jar.style.transform='rotate(-6deg)', 180);
-        setTimeout(()=> jar.style.transform='', 360);
-        releaseStar();
-      });
-      function releaseStar(){
-        const blessings = [
-          'May every wish find its way ✨',
-          'Endless laughter and soft hugs 💖',
-          'Luck follows your steps 🍀',
-          'Dreams that glow into reality 🌙',
-          'Health, peace, and sunshine ☀️',
-          'You are a miracle, Guddu 🌟'
-        ];
-        const el = document.createElement('div'); el.className='star';
-        el.style.left = rand(20, 80) + 'vw'; el.style.bottom = '-10vh'; el.style.animation = `floatUp ${rand(10,16)}s linear forwards`;
-        el.innerHTML = `<span class="label">${blessings[randInt(0, blessings.length)]}</span>`;
-        scene.appendChild(el); setTimeout(()=>el.remove(), 18000);
-      }
-    }
-
-    // ========= 6) Magic Mirror Orb =========
-    function initOrb(){
-      const orb = $('#orb');
-      const lines = [
-        'Most beautiful smile in my universe ✨',
-        'Kindest heart, brightest soul 💖',
-        'My favorite person, always 🌟',
-        'You are magic, Guddu 🔮',
-        'Happy Birthday, My Star! 🎂'
-      ];
-      let i=0; orb.addEventListener('click', ()=>{
-        i=(i+1)%lines.length; orb.textContent = lines[i];
-        orb.style.boxShadow='0 0 50px rgba(255,255,255,.8), inset 0 0 30px rgba(255,255,255,.6)';
-        setTimeout(()=> orb.style.boxShadow='', 400);
-      });
-    }
-
-    // ========= 7) Butterfly Garden =========
-    function initButterflies(){
-      const scene = $('#butterflyScene');
-      $('#butterRelease').addEventListener('click', ()=>{
-        for(let i=0;i<12;i++) setTimeout(()=>spawn(), i*160);
-      });
-      $('#butterClear').addEventListener('click', ()=> $$('#butterflyScene .butterfly').forEach(b=>b.remove()));
-      function spawn(){
-        const b = document.createElement('div'); b.className='butterfly';
-        b.style.top = rand(40, 80) + 'vh';
-        b.style.setProperty('--y', rand(-40, 40)+'px');
-        b.style.setProperty('--time', rand(10, 16)+'s');
-        scene.appendChild(b); setTimeout(()=>b.remove(), 17000);
-      }
-    }
-
-    // ========= 8) Love Notes Wall =========
-    function initNotes(){
-      const board = $('#notesBoard');
-      $('#noteAdd').addEventListener('click', ()=>{
-        const t = $('#noteText').value.trim(); if(!t) return; addNote(t); $('#noteText').value='';
-      });
-      $('#noteClear').addEventListener('click', ()=> board.innerHTML='');
-      function addNote(text){
-        const n = document.createElement('div'); n.className='note'; n.style.setProperty('--r', rand(-4,4)+'deg');
-        n.textContent = text; board.appendChild(n);
-      }
-    }
-
-    // ========= 9) Secret Letter (Typewriter) =========
-    function initLetter(){
-      const area = $('#letterArea');
-      const content = `My dearest Guddu,\n\nOn this day, the stars look a little brighter—because they are celebrating you.\nThank you for your laughter, your kindness, and your light.\nYou make ordinary moments feel like magic.\n\nI wish you calm mornings, brave dreams, and a thousand reasons to smile.\nI’m grateful for you today and every day.\n\nHappy Birthday, my star.\nAlways yours. 💖`;
-      let i=0; let timer=null;
-      function render(){ area.innerHTML = `<span>${content.slice(0,i).replace(/\n/g,'<br>')}</span><span class="caret"></span>`; }
-      $('#letterStart').addEventListener('click', ()=>{
-        clearInterval(timer); i=0; render();
-        timer = setInterval(()=>{ i++; render(); if(i>=content.length){ clearInterval(timer); } }, 28);
-      });
-      $('#letterSkip').addEventListener('click', ()=>{ clearInterval(timer); i=content.length; render(); });
-    }
-
-    // ========= 10) Heart Balloons =========
-    function initBalloons(){
-      const scene = $('#balloonScene');
-      const add = (txt) => {
-        const b = document.createElement('div'); b.className='balloon'; b.style.left = rand(5, 95)+'vw'; b.style.setProperty('--t', rand(10,16)+'s');
-        b.innerHTML = `<div class="string"></div>${txt?`<div style=\"font-size:11px; padding:2px 6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.2); border-radius:999px\">${txt}</div>`:''}`;
-        scene.appendChild(b); setTimeout(()=>b.remove(), 17000);
-      };
-      $('#balloonRelease').addEventListener('click', ()=>{ const t=$('#balloonText').value.trim(); add(t||'Guddu'); $('#balloonText').value=''; });
-      $('#balloonBurst').addEventListener('click', ()=>{ for(let i=0;i<12;i++) setTimeout(()=> add(['Love','Joy','Shine','Smile','Dream','Magic'][randInt(0,6)]), i*140); });
-      $('#balloonClear').addEventListener('click', ()=> $$('#balloonScene .balloon').forEach(b=>b.remove()));
-    }
-
-    // ========= 11) Flower Bloom Trail =========
-    let flowerHandler=null; let flowerOn=false;
-    function initFlowers(){
-      const scene = $('#flowersScene');
-      const toggle = $('#flowerToggle');
-      toggle.addEventListener('click', ()=>{
-        flowerOn = !flowerOn; toggle.textContent = flowerOn? 'Disable Bloom Trail' : 'Enable Bloom Trail';
-        if(flowerOn && !flowerHandler){
-          flowerHandler = (e)=>{
-            const em = document.createElement('div'); em.className='bloom';
-            em.textContent = pick(['🌸','🌷','🌼','💮','🌺']);
-            em.style.left = (e.clientX - 10) + 'px';
-            em.style.top = (e.clientY - 10) + 'px';
-            scene.appendChild(em); setTimeout(()=>em.remove(), 1600);
-          };
-          scene.addEventListener('pointermove', flowerHandler);
-        } else if(!flowerOn && flowerHandler){
-          scene.removeEventListener('pointermove', flowerHandler); flowerHandler=null;
-        }
-      });
-      function pick(arr){ return arr[randInt(0, arr.length)]; }
-    }
-    function teardownFlowers(){ const toggle=$('#flowerToggle'); if(toggle) toggle.textContent='Enable Bloom Trail'; const scene=$('#flowersScene'); if(flowerHandler){ scene.removeEventListener('pointermove', flowerHandler); flowerHandler=null; flowerOn=false; }
-    }
-
-    // ========= 12) Fireworks =========
-    let fwAnim=null; let fwParticles=[]; let fwCtx=null; let fwCanvas=null;
-    function initFireworks(){
-      fwCanvas = $('#fwCanvas');
-      const dpr = Math.min(2, window.devicePixelRatio||1);
-      const fit = ()=>{ fwCanvas.width = fwCanvas.clientWidth * dpr; fwCanvas.height = fwCanvas.clientHeight * dpr; };
-      fwCanvas.style.position='absolute'; fwCanvas.style.inset=0; fit(); window.addEventListener('resize', fit);
-      fwCtx = fwCanvas.getContext('2d'); fwCtx.scale(1,1);
-      fwParticles=[];
-
-      function launch(x, y){
-        const color = `hsl(${randInt(280, 360)}, 90%, 60%)`;
-        const count = 120; const speed = rand(2.2, 3.2);
-        for(let i=0;i<count;i++){
-          const a = (Math.PI*2) * (i/count) + rand(-.02,.02);
-          fwParticles.push({ x, y, vx: Math.cos(a)*speed*rand(.6,1.4), vy: Math.sin(a)*speed*rand(.6,1.4), life: rand(60,90), color });
-        }
-      }
-
-      function loop(){
-        fwCtx.fillStyle = 'rgba(0,0,0,.25)'; fwCtx.fillRect(0,0,fwCanvas.width, fwCanvas.height);
-        for(let i=fwParticles.length-1;i>=0;i--){ const p=fwParticles[i];
-          p.x += p.vx; p.y += p.vy; p.vy += 0.02; p.life--; // gravity
-          fwCtx.beginPath(); fwCtx.fillStyle = p.color; fwCtx.globalAlpha = Math.max(0, p.life/90);
-          fwCtx.arc(p.x, p.y, 1.8, 0, Math.PI*2); fwCtx.fill();
-          if(p.life<=0) fwParticles.splice(i,1);
-        }
-        fwAnim = requestAnimationFrame(loop);
-      }
+    // ===== 2) Name Constellation =====
+    function initNameConstellation(){
+      const c=$('#ncCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2,devicePixelRatio||1);
+      const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;}; c.style.position='absolute'; c.style.inset=0; fit(); window.addEventListener('resize',fit);
+      const text='HAPPY BIRTHDAY GUDDU';
+      const off=document.createElement('canvas'); const octx=off.getContext('2d');
+      function targets(){ off.width=c.width; off.height=c.height; octx.clearRect(0,0,off.width,off.height); octx.fillStyle='#fff'; octx.font=`bold ${Math.max(36*dpr, c.width/14)}px system-ui`; octx.textAlign='center'; octx.textBaseline='middle'; octx.fillText(text,c.width/2,c.height/2); const img=octx.getImageData(0,0,off.width,off.height).data; const pts=[]; const gap=Math.max(5,Math.round(7*dpr)); for(let y=0;y<off.height;y+=gap){ for(let x=0;x<off.width;x+=gap){ if(img[(y*off.width+x)*4+3]>80) pts.push({x,y}); }} return pts; }
+      const PMAX=1000; const stars=[]; for(let i=0;i<PMAX;i++) stars.push({x:rand(0,c.width), y:rand(0,c.height), vx:0, vy:0, tx:null, ty:null});
+      let pts=targets();
+      function assign(){ for(let i=0;i<stars.length;i++){ const t=pts[i%pts.length]; stars[i].tx=t.x+rand(-2,2); stars[i].ty=t.y+rand(-2,2);} }
+      assign();
+      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(const s of stars){ if(s.tx!=null){ s.vx=(s.vx+(s.tx-s.x)*.02)*.9; s.vy=(s.vy+(s.ty-s.y)*.02)*.9; s.x+=s.vx; s.y+=s.vy; } else { s.x+=Math.sin(s.y*.003)*.3; s.y+=Math.cos(s.x*.003)*.3; } ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=.95; ctx.arc(s.x,s.y,1.6,0,Math.PI*2); ctx.fill(); }
+        requestAnimationFrame(loop); }
       loop();
-
-      $('#fwAuto').addEventListener('click', ()=>{
-        const w = fwCanvas.width, h = fwCanvas.height; let t=0;
-        const seq = setInterval(()=>{
-          launch(rand(w*0.2,w*0.8), rand(h*0.35,h*0.6));
-          t++; if(t>10){ clearInterval(seq); showMessage(); }
-        }, 500);
-      });
-      $('#fwClear').addEventListener('click', ()=>{ fwParticles=[]; });
-      $('#fireworksScene').addEventListener('click', (e)=>{
-        const r = fwCanvas.getBoundingClientRect(); const x=(e.clientX-r.left)*(fwCanvas.width/r.width); const y=(e.clientY-r.top)*(fwCanvas.height/r.height);
-        launch(x,y);
-      });
-
-      function showMessage(){
-        const text = 'Happy Birthday Guddu';
-        fwCtx.save();
-        fwCtx.fillStyle = 'rgba(255,255,255,.9)';
-        fwCtx.font = `bold ${Math.max(32, fwCanvas.width/22)}px system-ui, sans-serif`;
-        fwCtx.textAlign='center'; fwCtx.textBaseline='middle';
-        fwCtx.fillText(text, fwCanvas.width/2, fwCanvas.height*0.5);
-        fwCtx.restore();
-      }
+      $('#ncShow').addEventListener('click',()=>{ pts=targets(); assign(); });
+      $('#ncScatter').addEventListener('click',()=>{ for(const s of stars){ s.tx=null; s.ty=null; }});
     }
-    function teardownFireworks(){ if(fwAnim){ cancelAnimationFrame(fwAnim); fwAnim=null; } fwParticles=[]; }
 
+    // ===== 3) Lantern River =====
+    function initLanternRiver(){ const scene=$('#lrScene'); scene.addEventListener('pointerdown',()=>release(12)); release(10); function release(n){ for(let i=0;i<n;i++) setTimeout(()=>add(), i*180);} function add(){ const el=document.createElement('div'); el.className='lantern'; el.style.left=rand(8,92)+'vw'; el.style.animation=`rise ${rand(14,20)}s linear forwards`; el.innerHTML=`<div class=paper>${pick(['LOVE','JOY','SMILE','PEACE','HOPE','MAGIC'])}</div>`; scene.appendChild(el); setTimeout(()=>el.remove(),20000);} function pick(a){return a[rInt(0,a.length)];}}
+
+    // ===== 4) Shimmer Balloons =====
+    function initShimmerBalloons(){ const scene=$('#sbScene'); scene.addEventListener('pointerdown',()=>burst()); burst(); function add(txt){ const b=document.createElement('div'); b.className='balloon'; b.style.left=rand(6,94)+'vw'; b.style.animation=`rise ${rand(12,18)}s linear forwards`; b.innerHTML=`<div class=string></div>`; scene.appendChild(b); setTimeout(()=>b.remove(),18000);} function burst(){ for(let i=0;i<14;i++) setTimeout(()=>add(), i*120);} }
+
+    // ===== 5) Petal Rain (trail) =====
+    let petalHandler=null; function initPetalRain(){ const scene=$('#prScene'); const enable=()=>{ if(petalHandler) return; petalHandler=(e)=>{ const p=document.createElement('div'); p.className='petal'; p.textContent=pick(['🌸','🌷','💮','🌺','🌼']); p.style.left=(e.clientX-10)+'px'; p.style.top=(e.clientY-10)+'px'; scene.appendChild(p); setTimeout(()=>p.remove(),2200); }; scene.addEventListener('pointermove', petalHandler);}; const disable=()=>{ if(!petalHandler) return; scene.removeEventListener('pointermove', petalHandler); petalHandler=null; }; enable(); $('#modal-petals .close').addEventListener('click', disable, {once:true}); function pick(a){return a[rInt(0,a.length)];} }
+    function teardownPetals(){ const scene=$('#prScene'); if(petalHandler){ scene.removeEventListener('pointermove', petalHandler); petalHandler=null; } }
+
+    // ===== 6) Fireworks =====
+    let fwAnim=null, fwCtx=null, fwCv=null, fwParts=[];
+    function initFireworks(){ fwCv=$('#fwCanvas'); fwCv.style.position='absolute'; fwCv.style.inset=0; const dpr=Math.min(2,devicePixelRatio||1); const fit=()=>{ fwCv.width=fwCv.clientWidth*dpr; fwCv.height=fwCv.clientHeight*dpr; }; fit(); window.addEventListener('resize',fit); fwCtx=fwCv.getContext('2d'); function launch(x,y){ const hue=rInt(300,360); for(let i=0;i<140;i++){ const a=Math.PI*2*(i/140)+rand(-.02,.02); const s=rand(2.2,3.4); fwParts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(60,90), color:`hsl(${hue},90%,60%)`}); } }
+      function loop(){ fwCtx.fillStyle='rgba(5,6,16,.25)'; fwCtx.fillRect(0,0,fwCv.width, fwCv.height); for(let i=fwParts.length-1;i>=0;i--){ const p=fwParts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life--; fwCtx.beginPath(); fwCtx.fillStyle=p.color; fwCtx.globalAlpha=Math.max(0,p.life/90); fwCtx.arc(p.x,p.y,1.8,0,Math.PI*2); fwCtx.fill(); if(p.life<=0) fwParts.splice(i,1);} fwAnim=requestAnimationFrame(loop);} loop();
+      $('#fwScene').addEventListener('pointerdown', e=>{ const r=fwCv.getBoundingClientRect(); launch((e.clientX-r.left)*(fwCv.width/r.width),(e.clientY-r.top)*(fwCv.height/r.height)); });
+      $('#fwAuto').addEventListener('click',()=>{ let t=0; const seq=setInterval(()=>{ launch(rand(fwCv.width*.2,fwCv.width*.8), rand(fwCv.height*.35,fwCv.height*.6)); t++; if(t>12){ clearInterval(seq); showMsg(); } }, 450); });
+      $('#fwClear').addEventListener('click',()=>{ fwParts=[]; });
+      function showMsg(){ fwCtx.save(); fwCtx.fillStyle='rgba(255,255,255,.95)'; fwCtx.font=`bold ${Math.max(32, fwCv.width/20)}px system-ui`; fwCtx.textAlign='center'; fwCtx.textBaseline='middle'; fwCtx.fillText('HAPPY BIRTHDAY GUDDU', fwCv.width/2, fwCv.height*.5); fwCtx.restore(); }
+    }
+    function teardownFireworks(){ if(fwAnim) cancelAnimationFrame(fwAnim); fwAnim=null; fwParts=[]; }
+
+    // ===== 7) Mirror of Compliments =====
+    function initMirrorGlow(){ const scene=$('#mgScene'); const orb=document.createElement('div'); orb.style.width='200px'; orb.style.height='200px'; orb.style.borderRadius='50%'; orb.style.background='radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(170,210,255,.7) 40%, rgba(120,160,255,.35) 65%, rgba(60,90,220,.2) 80%, rgba(30,40,120,.1))'; orb.style.border='1px solid rgba(255,255,255,.5)'; orb.style.boxShadow='0 0 45px rgba(160,200,255,.35), inset 0 0 35px rgba(255,255,255,.55)'; orb.style.display='grid'; orb.style.placeItems='center'; orb.style.fontWeight='800'; orb.style.color='#0c1c3a'; orb.textContent='Tap Me'; const holder=document.createElement('div'); holder.style.position='absolute'; holder.style.inset='0'; holder.style.display='grid'; holder.style.placeItems='center'; holder.appendChild(orb); scene.appendChild(holder); const lines=['Most beautiful smile ✨','Kindest heart 💖','You light up my world 🌟','You are my favorite miracle 🔮','Happy Birthday, Star! 🎂']; let i=0; orb.addEventListener('pointerdown',()=>{ i=(i+1)%lines.length; orb.textContent=lines[i]; orb.style.boxShadow='0 0 65px rgba(255,255,255,.8), inset 0 0 40px rgba(255,255,255,.7)'; setTimeout(()=>orb.style.boxShadow='0 0 45px rgba(160,200,255,.35), inset 0 0 35px rgba(255,255,255,.55)',320); }); }
+
+    // ===== 8) Secret Letter =====
+    function initSecretLetter(){ const area=$('#typeArea'); const text=`My dearest Guddu,\n\nTonight the sky is brighter—because it carries my wish for you.\nThank you for your kindness, your laughter, and the magic you bring.\n\nI wish you calm mornings, brave dreams, and a thousand reasons to smile.\nI’m grateful for you today and every day.\n\nHappy Birthday, my star.\nAlways yours. 💖`; let i=0,timer=null; function render(){ area.innerHTML=`<span>${text.slice(0,i).replace(/\n/g,'<br>')}</span><span style="display:inline-block;width:10px;height:1.1em;background:currentColor;animation:blink 1s steps(2,start) infinite"></span>`;} $('#typeStart').addEventListener('click',()=>{ clearInterval(timer); i=0; render(); timer=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(timer); }, 26); }); $('#typeSkip').addEventListener('click',()=>{ clearInterval(timer); i=text.length; render(); }); }
+
+    // ===== 9) Make a Wish (email) =====
+    // EmailJS SDK — load once
+    ;(function(){ const s=document.createElement('script'); s.src='https://cdn.emailjs.com/sdk/3.11.0/email.min.js'; s.onload=()=>{ emailjs.init('EMAILJS_PUBLIC_KEY'); /* <-- replace */ }; document.head.appendChild(s); })();
+
+    function initWish(){
+      const c=$('#wishCanvas'); const ctx=c.getContext('2d'); const dpr=Math.min(2, devicePixelRatio||1); const fit=()=>{ c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr; }; c.style.position='absolute'; c.style.inset=0; fit(); window.addEventListener('resize', fit);
+      const stars=[]; function addStar(x,y){ for(let i=0;i<100;i++){ const a=Math.PI*2*(i/100)+rand(-.03,.03); const s=rand(1.2,2.2); stars.push({x,y,vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rInt(50,80)}); } }
+      function loop(){ ctx.fillStyle='rgba(5,6,16,.25)'; ctx.fillRect(0,0,c.width,c.height); for(let i=stars.length-1;i>=0;i--){ const p=stars[i]; p.x+=p.vx; p.y+=p.vy; p.life--; ctx.beginPath(); ctx.fillStyle='#fff'; ctx.globalAlpha=Math.max(0,p.life/90); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill(); if(p.life<=0) stars.splice(i,1);} requestAnimationFrame(loop);} loop();
+
+      $('#wishForm').addEventListener('submit', async (e)=>{
+        e.preventDefault(); const input=$('#wishInput'); const wish=input.value.trim(); if(!wish) return; // turn wish into a star
+        addStar(c.width/2, c.height*.58);
+        // send email via EmailJS
+        try{
+          const params={ wish_text: wish, from_name: 'Guddu', timestamp: new Date().toLocaleString() };
+          await emailjs.send('EMAILJS_SERVICE_ID', 'EMAILJS_TEMPLATE_ID', params); // <-- replace
+          toast('Wish sent to Rohit 💌');
+        }catch(err){ console.error(err); toast('Could not send email (check EmailJS keys)'); }
+        // store locally (optional)
+        const log = JSON.parse(localStorage.getItem('guddu_wishes')||'[]'); log.push({wish, time:Date.now()}); localStorage.setItem('guddu_wishes', JSON.stringify(log));
+        input.value='';
+      });
+    }
+
+    function toast(msg){ const t=document.createElement('div'); t.textContent=msg; t.style.position='fixed'; t.style.left='50%'; t.style.bottom='18px'; t.style.transform='translateX(-50%)'; t.style.padding='8px 14px'; t.style.border='1px solid rgba(255,255,255,.22)'; t.style.borderRadius='999px'; t.style.background='rgba(0,0,0,.35)'; t.style.backdropFilter='blur(4px)'; t.style.boxShadow='0 10px 24px rgba(0,0,0,.35)'; t.style.zIndex=99; document.body.appendChild(t); setTimeout(()=>t.remove(),1900); }
+
+    // ===== Notes for backend alternative (comment) =====
+    /*
+      🔒 Server route alternative (no third-party):
+      - Save wishes to Firestore and use a Cloud Function to email via SendGrid.
+      - Pseudocode:
+        1) In the web, do: fetch('/wish', { method:'POST', body: JSON.stringify({wish}) })
+        2) In Cloud Function: onRequest handler → send email with SendGrid using your API key to rohit's email
+      - This avoids exposing keys to client. If you prefer this path, tell me and I'll provide functions/index.js + security rules.
+    */
   </script>
 </body>
 </html>
