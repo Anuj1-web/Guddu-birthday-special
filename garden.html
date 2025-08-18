@@ -1,466 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Guddu’s Endless Surprise Garden — Birthday Edition 🎂🌟</title>
-  <meta name="description" content="A 3D endless-path garden with realistic grass, trees, birds, butterflies, hoardings with photos, clickable gifts/flowers/candies that show sweet messages, day/night switch and colorful visual effects. Mobile-optimized.">
-  
-  <!-- THREE.js (global) + helpers from CDN (no imports, no bundlers) -->
-  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
-  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guddu's Magical Garden</title>
   <style>
-    :root { --ui-bg: rgba(20,20,20,.55); --ui-br: 16px; }
-    html, body { height: 100%; margin: 0; overflow: hidden; background: #000; }
-    #app { position: fixed; inset: 0; }
-    canvas { display:block; }
-
-    /* UI */
-    #ui { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 20; display:flex; gap:10px; align-items:center; font-family: system-ui, ui-sans-serif, Segoe UI, Roboto, Helvetica, Arial; }
-    .chip { padding: 8px 12px; border-radius: 999px; background: var(--ui-bg); color: #fff; font-weight: 600; font-size: 12px; border:1px solid rgba(255,255,255,.2); backdrop-filter: blur(8px); white-space: nowrap; }
-    #toggleMode { padding: 8px 14px; border-radius: var(--ui-br); background: linear-gradient(135deg,#22d3ee,#a855f7); color:#fff; border:none; font-weight:700; box-shadow: 0 8px 24px rgba(168,85,247,.35); cursor:pointer; }
-    #toggleMode:active { transform: translateY(1px); }
-    #btnConfetti { padding: 8px 14px; border-radius: var(--ui-br); background: linear-gradient(135deg,#f97316,#f43f5e); color:#fff; border:none; font-weight:700; box-shadow: 0 8px 24px rgba(244,63,94,.35); cursor:pointer; }
-
-    #hint { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color:#fff; font-family: system-ui; font-size:12px; opacity:.9; z-index: 10; background: var(--ui-bg); padding:6px 10px; border-radius: var(--ui-br); border:1px solid rgba(255,255,255,.15); }
-    #error { position: fixed; bottom: 12px; right: 12px; color: #ffb4b4; background: rgba(0,0,0,.55); padding: 8px 10px; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; max-width: 50ch; z-index: 50; display:none; }
-
-    /* Fullscreen photo overlay */
-    #overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); z-index: 30; }
-    #overlay img { max-width: 96vw; max-height: 84vh; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
-    #overlay .caption { color:#fff; margin-top: 14px; font-family: system-ui; font-size: 14px; opacity:.92; text-align:center; }
-
-    /* Floating message bubble */
-    #msg { position: fixed; left: 50%; top: 14%; transform: translateX(-50%) scale(1); background: linear-gradient(135deg, rgba(45,212,191,.85), rgba(147,51,234,.85)); color: #fff; padding: 10px 14px; border-radius: 14px; font-family: system-ui; font-weight: 700; font-size: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.35); z-index: 25; display:none; border:1px solid rgba(255,255,255,.25); }
-
-    /* Mini toast for small tips */
-    #toast { position: fixed; right: 12px; top: 12px; background: rgba(0,0,0,.65); color:#fff; padding:8px 12px; border-radius: 10px; font-family: system-ui; font-size:12px; z-index: 40; display:none; }
+    body { margin: 0; overflow: hidden; background: #000; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <div id="app"></div>
-  <div id="ui">
-    <div class="chip" id="modeChip">🌞 Day</div>
-    <div class="chip" id="fps">FPS: --</div>
-    <button id="toggleMode">Switch Lights</button>
-    <button id="btnConfetti">🎉 Celebrate</button>
-  </div>
-  <div id="hint">Auto-exploring… tap gifts, flowers or candies for surprises ✨ Tap hoardings to view photos. Use “Switch Lights” for colorful night glow.</div>
-  <div id="overlay" aria-hidden="true">
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <img id="overlayImg" alt="Photo"/>
-      <div class="caption" id="overlayCaption"></div>
-    </div>
-  </div>
-  <div id="msg"></div>
-  <div id="toast"></div>
-  <div id="error"></div>
+  <!-- Your container for WebGL -->
+  <div id="garden"></div>
 
+  <!-- ✅ Load Three.js first (non-module version) -->
+  <script src="three.min.js"></script>
+
+  <!-- ✅ Then load OrbitControls.js (the one you pasted above) -->
+  <script src="OrbitControls.js"></script>
+
+  <!-- ✅ Finally, your garden script -->
   <script>
-  // ======= Base DOM refs =======
-  const app = document.getElementById('app');
-  const errorBox = document.getElementById('error');
-  const modeChip = document.getElementById('modeChip');
-  const fpsChip = document.getElementById('fps');
-  const toggleBtn = document.getElementById('toggleMode');
-  const btnConfetti = document.getElementById('btnConfetti');
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    let scene, camera, renderer, controls;
 
-  // ======= Renderer / Scene / Camera =======
-  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.outputColorSpace = THREE.sRGBEncoding; // r155
-  renderer.shadowMap.enabled = false; // keep mobile stable
-  app.appendChild(renderer.domElement);
+    init();
+    animate();
 
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x9cc8b0, 28, 170);
+    function init() {
+      scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1200);
-  camera.position.set(0, 2.2, 6);
+      camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 5, 15);
 
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enabled = !isMobile; // lock camera on mobile for auto-tour feel
-  controls.target.set(0, 1.2, -5);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-  // ======= Global Lights =======
-  const hemi = new THREE.HemisphereLight(0xbcd9ff, 0x2a3d2c, 0.9);
-  scene.add(hemi);
+      // ✅ OrbitControls works now
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.target.set(0, 2, 0);
 
-  const sun = new THREE.DirectionalLight(0xffffff, 0.85);
-  sun.position.set(8, 12, 6);
-  scene.add(sun);
+      // Add light
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 20, 10);
+      scene.add(light);
 
-  // Accent lights group (enabled in night)
-  const accentLights = new THREE.Group();
-  scene.add(accentLights);
+      // Add ground
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200),
+        new THREE.MeshPhongMaterial({ color: 0x228b22 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
 
-  // ======= Ground & Path =======
-  const groundGeo = new THREE.PlaneGeometry(240, 240);
-  const groundMatDay = new THREE.MeshStandardMaterial({ color: 0x6fbf73, roughness: 1, metalness: 0 });
-  const groundMatNight = new THREE.MeshStandardMaterial({ color: 0x1f3d27, roughness: 1, metalness: 0 });
-  const ground = new THREE.Mesh(groundGeo, groundMatDay);
-  ground.rotation.x = -Math.PI/2; ground.position.y = 0;
-  scene.add(ground);
-
-  const pathGeo = new THREE.PlaneGeometry(4.4, 240);
-  const pathMatDay = new THREE.MeshStandardMaterial({ color: 0xdcc6a0, roughness: 0.9 });
-  const pathMatNight = new THREE.MeshStandardMaterial({ color: 0x6d5430, roughness: 0.95 });
-  const path = new THREE.Mesh(pathGeo, pathMatDay);
-  path.rotation.x = -Math.PI/2; path.position.y = 0.01;
-  scene.add(path);
-
-  // Edge rails for path (soft visual)
-  const edgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.08 });
-  const edgeGeo = new THREE.PlaneGeometry(0.08, 240);
-  const edgeL = new THREE.Mesh(edgeGeo, edgeMat); edgeL.rotation.x=-Math.PI/2; edgeL.position.set(-2.3, 0.012, 0);
-  const edgeR = new THREE.Mesh(edgeGeo, edgeMat); edgeR.rotation.x=-Math.PI/2; edgeR.position.set( 2.3, 0.012, 0);
-  scene.add(edgeL, edgeR);
-
-  // ======= Photo Textures (Your hoardings) =======
-  const texLoader = new THREE.TextureLoader();
-  const HOARDING_IMAGES = [
-    "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?rlkey=snhn8qgohmv851usrxps09n9m&st=kqb90zz5&raw=1",
-    "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=coa9io67&raw=1",
-    "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?rlkey=9giowulkgwin4l9q0pnphmmiq&st=4eg4lvbs&raw=1",
-    "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?rlkey=tqlohjwragswplmwl9jgmim37&st=iu62z8rd&raw=1",
-    "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?rlkey=m4bcqn577zxvq69qt8gotci7y&st=xg32j4v0&raw=1"
-  ];
-
-  function makeCanvasTexture(text, bg, fg) {
-    const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = bg; ctx.fillRect(0,0,c.width,c.height);
-    ctx.fillStyle = fg; ctx.font = 'bold 80px system-ui, Segoe UI, Roboto';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(text, c.width/2, c.height/2);
-    return new THREE.CanvasTexture(c);
-  }
-  const fallbackPhotos = [
-    makeCanvasTexture('Happy Birthday, Guddu! 💖', '#ffdbe6', '#8a1353'),
-    makeCanvasTexture('Memories Together 📸', '#e1f5ff', '#0a4e7a'),
-    makeCanvasTexture('You are Special 🌟', '#fff7cc', '#665200'),
-    makeCanvasTexture('Always With You 💫', '#d9ffe5', '#084a2b')
-  ];
-
-  // ======= Grass (instanced with wind sway) =======
-  const bladeCount = isMobile ? 3500 : 10000;
-  const bladeGeo = new THREE.PlaneGeometry(0.06, 0.62, 1, 4);
-  bladeGeo.translate(0, 0.31, 0);
-  const grassMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uColorA: { value: new THREE.Color(0x4da069) }, uColorB: { value: new THREE.Color(0x7ccf8f) } },
-    vertexShader: `
-      uniform float uTime; varying float vY; void main(){ vY = position.y; vec3 pos = position.xyz; float sway = sin((position.y + instanceMatrix[3].z + uTime*1.4))*0.07; pos.x += sway * (position.y); gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 ); }
-    `,
-    fragmentShader: `
-      varying float vY; uniform vec3 uColorA; uniform vec3 uColorB; void main(){ float t = smoothstep(0.0, 0.6, vY); vec3 col = mix(uColorA, uColorB, t); gl_FragColor = vec4(col, 1.0); }
-    `,
-    side: THREE.DoubleSide
-  });
-  const grass = new THREE.InstancedMesh(bladeGeo, grassMat, bladeCount);
-  scene.add(grass);
-  (function scatterGrass(){
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < bladeCount; i++) {
-      const x = (Math.random() * 64 - 32);
-      const z = (Math.random() * 180 - 140);
-      if (Math.abs(x) < 2.4) { i--; continue; } // keep path clear
-      dummy.position.set(x, 0, z);
-      dummy.rotation.y = Math.random() * Math.PI;
-      const sx = 0.8 + Math.random()*0.6; const sy = sx*(0.85+Math.random()*0.6);
-      dummy.scale.set(sx, sy, sx);
-      dummy.updateMatrix(); grass.setMatrixAt(i, dummy.matrix);
-    }
-    grass.instanceMatrix.needsUpdate = true;
-  })();
-
-  // ======= Trees =======
-  function makeTree(){
-    const g = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0x7a4e2a, roughness: 1 }));
-    trunk.position.y = 1.1;
-    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 1), new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.9 }));
-    crown.position.y = 2.2;
-    const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 5), new THREE.MeshStandardMaterial({ color: 0x6b3f1d, roughness:1 }));
-    branch.rotation.z = Math.PI/2; branch.position.set(0.5, 1.6, 0);
-    g.add(trunk, crown, branch);
-    return g;
-  }
-
-  // ======= Birds =======
-  function makeBird(){
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.08, 14, 14), new THREE.MeshStandardMaterial({ color: 0x2248ff, roughness:0.6 }));
-    const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.06), new THREE.MeshStandardMaterial({ color: 0x2248ff }));
-    const wingR = wingL.clone(); wingL.position.set(-0.1, 0, 0); wingR.position.set(0.1, 0, 0);
-    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.06, 8), new THREE.MeshStandardMaterial({ color: 0xffcc00 })); beak.rotation.x=Math.PI/2; beak.position.set(0,0,0.08);
-    const bird = new THREE.Group(); bird.add(body, wingL, wingR, beak); bird.userData.wings=[wingL, wingR];
-    return bird;
-  }
-  function animateBird(bird, t){ const [L,R]=bird.userData.wings; const flap = Math.sin(t*8)*0.8+0.2; L.rotation.z = flap; R.rotation.z = -flap; }
-
-  // ======= Butterflies =======
-  function makeButterfly(){
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06, 6), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-    const wingGeo = new THREE.PlaneGeometry(0.12, 0.18);
-    const wingMat = new THREE.MeshStandardMaterial({ color: 0xff77aa, side: THREE.DoubleSide });
-    const wL = new THREE.Mesh(wingGeo, wingMat); const wR = new THREE.Mesh(wingGeo, wingMat);
-    wL.position.set(-0.06, 0, 0); wR.position.set(0.06, 0, 0); wL.rotation.y = Math.PI/2; wR.rotation.y = -Math.PI/2;
-    g.add(body, wL, wR); g.userData.wings=[wL, wR]; return g;
-  }
-  function animateButterfly(b, t){ const [L,R]=b.userData.wings; const flap=Math.sin(t*16)*0.8+0.2; L.rotation.z=flap; R.rotation.z=-flap; b.position.y += Math.sin(t*2 + (b.userData.seed||0))*0.003; }
-
-  // ======= Hoardings =======
-  function makeHoarding(texture){
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.8, 0.1), new THREE.MeshStandardMaterial({ color: 0x222222, metalness:0.15, roughness:0.6 }));
-    const pic = new THREE.Mesh(new THREE.PlaneGeometry(2.56, 1.46), new THREE.MeshBasicMaterial({ map: texture, toneMapped:false }));
-    pic.position.z = 0.055; const g = new THREE.Group(); g.add(frame, pic); g.userData.pic = pic; g.userData.type='hoarding'; return g;
-  }
-
-  // ======= Gifts / Flowers / Candies =======
-  function makeGift(){
-    const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.5), new THREE.MeshStandardMaterial({ color: 0xff4477, roughness:0.6 })); base.position.y=0.15;
-    const lid  = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.08, 0.52), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:0.5 })); lid.position.set(0,0.34,0); lid.userData.open=false;
-    const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.03, 8, 24), new THREE.MeshStandardMaterial({ color: 0xff99cc })); ribbon.rotation.x=Math.PI/2; ribbon.position.y=0.38;
-    const group = new THREE.Group(); group.add(base,lid,ribbon); group.userData.type='gift'; group.userData.lid=lid;
-    const glow = new THREE.PointLight(0xff66cc, 0, 3); glow.position.set(0,0.5,0); accentLights.add(glow); group.userData.glow = glow;
-    return group;
-  }
-  function makeFlower(){
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.4,6), new THREE.MeshStandardMaterial({color:0x1e8a44})); stem.position.y=0.2;
-    const petal = new THREE.Mesh(new THREE.SphereGeometry(0.1,12,12), new THREE.MeshStandardMaterial({color:0xffc0cb, emissive:0x000000})); petal.position.y=0.5;
-    const g = new THREE.Group(); g.add(stem, petal); g.userData.type='flower';
-    const light = new THREE.PointLight(0xff80b3, 0, 2); accentLights.add(light); g.userData.glow=light; return g;
-  }
-  function makeCandy(){
-    const wrap = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), new THREE.MeshStandardMaterial({color:0x00d1ff, metalness:0.2, roughness:0.4})); wrap.position.y=0.09;
-    const g = new THREE.Group(); g.add(wrap); g.userData.type='candy';
-    const light = new THREE.PointLight(0x66ccff, 0, 1.6); accentLights.add(light); g.userData.glow=light; return g;
-  }
-
-  // ======= Surprise Messages =======
-  const GIFT_MESSAGES = [
-    "🎁 Surprise! Guddu, this gift is filled with love 💖",
-    "✨ For the most special person in my life!",
-    "🎂 Sweetest wishes to my sweetest Guddu!",
-    "🌟 A little box of happiness, just for you!",
-    "💌 Opened with love — sealed with a kiss 💕"
-  ];
-  const FLOWER_MESSAGES = [
-    "🌸 A flower for my beautiful Guddu 🌸",
-    "💐 Your smile blooms brighter than any garden",
-    "🌹 Roses are red, but you’re my favorite color",
-    "🌼 You make every moment blossom",
-    "🌺 You’re the most special bloom in my life"
-  ];
-  const CANDY_MESSAGES = [
-    "🍫 Chocolate as sweet as you!",
-    "🍭 A tiny candy for a huge heart",
-    "🧁 Life is sweeter with you",
-    "🍬 Keep this candy, and keep my heart too",
-    "🍰 You’re the sugar in my world"
-  ];
-  const HOARDING_CAPTIONS = [
-    "📸 Our favorite memories together",
-    "💖 You + Me = Forever",
-    "🌈 The moments that made us smile",
-    "✨ Here’s to more adventures!",
-    "🎉 Happy Birthday, Guddu!"
-  ];
-
-  // ======= Visual FX (Confetti, Fireflies, Sparkles) =======
-  const fx = new THREE.Group(); scene.add(fx);
-  function spawnConfettiBurst(center){
-    const count = 120; const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count*3); const velocities = new Float32Array(count*3);
-    for(let i=0;i<count;i++){
-      positions[i*3+0] = center.x; positions[i*3+1] = center.y; positions[i*3+2] = center.z;
-      const ang = Math.random()*Math.PI*2; const spd = 1.2 + Math.random()*2.0;
-      velocities[i*3+0] = Math.cos(ang)*spd; velocities[i*3+1] = 1.5 + Math.random()*2.0; velocities[i*3+2] = Math.sin(ang)*spd;
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-    geo.setAttribute('velocity', new THREE.BufferAttribute(velocities,3));
-    const mat = new THREE.PointsMaterial({ size: 0.06, vertexColors: false, color: 0xffffff });
-    const pts = new THREE.Points(geo, mat); pts.userData.birth = performance.now(); pts.userData.type='confetti';
-    fx.add(pts);
-  }
-  function updateConfetti(dt){
-    fx.children = fx.children.filter(obj=>obj); // keep array stable
-    for(let i=fx.children.length-1;i>=0;i--){ const p=fx.children[i]; if(p.userData.type!=='confetti') continue; const pos=p.geometry.attributes.position; const vel=p.geometry.attributes.velocity; for(let j=0;j<pos.count;j++){ vel.array[j*3+1] -= 2.8*dt; pos.array[j*3+0]+=vel.array[j*3+0]*dt; pos.array[j*3+1]+=vel.array[j*3+1]*dt; pos.array[j*3+2]+=vel.array[j*3+2]*dt; } pos.needsUpdate=true; if(performance.now()-p.userData.birth>2600){ fx.remove(p); p.geometry.dispose(); } }
-  }
-
-  // Night fireflies
-  const fireflies = new THREE.Points(
-    new THREE.BufferGeometry(),
-    new THREE.PointsMaterial({ size: 0.05, color: 0xffffaa, transparent:true, opacity: 0 })
-  );
-  (function initFireflies(){ const count=240; const pos=new Float32Array(count*3); const phase=new Float32Array(count); for(let i=0;i<count;i++){ pos[i*3+0]=(Math.random()*14-7); pos[i*3+1]=0.6+Math.random()*1.6; pos[i*3+2]= (Math.random()*40-10); phase[i]=Math.random()*Math.PI*2; } fireflies.geometry.setAttribute('position', new THREE.BufferAttribute(pos,3)); fireflies.geometry.setAttribute('phase', new THREE.BufferAttribute(phase,1)); scene.add(fireflies); })();
-  function updateFireflies(t){ const pos=fireflies.geometry.attributes.position; const phase=fireflies.geometry.attributes.phase; for(let i=0;i<pos.count;i++){ pos.array[i*3+0]+=Math.sin(t*0.6+phase.array[i])*0.003; pos.array[i*3+1]+=Math.cos(t*0.8+phase.array[i])*0.003; } pos.needsUpdate=true; fireflies.material.opacity = isNight ? 0.85 : 0.0; fireflies.position.z = scene.position.z; }
-
-  // ======= Endless Chunks =======
-  const CHUNK_LEN = 22; const VISIBLE_CHUNKS = 11; const chunks = new Map();
-  function makeChunk(index){
-    const g = new THREE.Group(); g.position.z = -index*CHUNK_LEN;
-
-    // Trees + birds both sides
-    const treeCount = 2 + Math.floor(Math.random()*3);
-    for(let i=0;i<treeCount;i++){
-      const tL = makeTree(); tL.position.set(- (2.9 + Math.random()*2.0), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); g.add(tL);
-      const tR = makeTree(); tR.position.set(  (2.9 + Math.random()*2.0), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); g.add(tR);
-      if (Math.random()<0.7){ const b = makeBird(); b.position.copy(tL.position).add(new THREE.Vector3(0.5,1.7,0)); b.userData.seed=Math.random()*10; g.add(b); }
-      if (Math.random()<0.5){ const b = makeBird(); b.position.copy(tR.position).add(new THREE.Vector3(-0.4,1.8,0)); b.userData.seed=Math.random()*10; g.add(b); }
+      window.addEventListener("resize", onWindowResize, false);
     }
 
-    // Butterflies near path
-    const butterflies = 2 + Math.floor(Math.random()*3);
-    for(let i=0;i<butterflies;i++){ const b=makeButterfly(); b.position.set((Math.random()*2-1)*1.6, 0.6+Math.random()*0.7, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); b.userData.seed=Math.random()*10; b.userData.type='butterfly'; g.add(b); }
-
-    // Hoardings (every other chunk)
-    if (index % 2 === 0){
-      const idx = Math.floor(Math.random()*HOARDING_IMAGES.length);
-      let tex; try { tex = texLoader.load(HOARDING_IMAGES[idx]); } catch(e) { tex = fallbackPhotos[idx % fallbackPhotos.length]; }
-      const h = makeHoarding(tex);
-      const side = (index % 4 === 0) ? -1 : 1; // alternate sides
-      h.position.set(side * 3.6, 1.0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN);
-      g.add(h);
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // Gifts / Flowers / Candies
-    if (Math.random()<0.85){ const gift = makeGift(); gift.position.set((Math.random()<0.5?-1:1)*(1.2+Math.random()*1.2), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); g.add(gift); }
-    if (Math.random()<0.7){ const flower = makeFlower(); flower.position.set((Math.random()*2-1)*2.2, 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); g.add(flower); }
-    if (Math.random()<0.6){ const candy = makeCandy(); candy.position.set((Math.random()*2-1)*2.0, 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN); g.add(candy); }
-
-    return g;
-  }
-
-  let headIndex = -1; // furthest generated ahead
-  function ensureChunks(worldZ){
-    const currentIndex = Math.floor((-worldZ)/CHUNK_LEN) + 2; // generate ahead
-    while(headIndex < currentIndex){ headIndex++; const c = makeChunk(headIndex); scene.add(c); chunks.set(headIndex, c); }
-    const minIndex = headIndex - VISIBLE_CHUNKS; for(const [idx,grp] of chunks){ if(idx < minIndex){ grp.traverse(o=>{ if(o.userData && o.userData.glow){ accentLights.remove(o.userData.glow);} }); scene.remove(grp); chunks.delete(idx);} }
-  }
-
-  // ======= Tap / Click Interaction =======
-  const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2();
-  function onTap(event){
-    const rect = renderer.domElement.getBoundingClientRect();
-    const x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
-    const y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
-    pointer.set(x, y); raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(scene.children, true);
-    for(const hit of hits){
-      let p = hit.object; while(p){
-        if(p.userData && p.userData.type==='gift'){ toggleGift(p); fancyMessage(randomOf(GIFT_MESSAGES)); spawnConfettiBurst(p.getWorldPosition(new THREE.Vector3())); return; }
-        if(p.userData && p.userData.type==='flower'){ fancyMessage(randomOf(FLOWER_MESSAGES)); pulseObject(p); return; }
-        if(p.userData && p.userData.type==='candy'){ fancyMessage(randomOf(CANDY_MESSAGES)); bounceObject(p); return; }
-        if(p.userData && p.userData.type==='hoarding'){ const tex = p.userData.pic.material.map; const cap = randomOf(HOARDING_CAPTIONS); showPhoto(tex, cap); return; }
-        p = p.parent;
-      }
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
     }
-  }
-  renderer.domElement.addEventListener('pointerdown', onTap);
-
-  function toggleGift(g){ const lid=g.userData.lid; lid.userData.open = !lid.userData.open; }
-  function pulseObject(o){ o.userData._pulseT = performance.now(); }
-  function bounceObject(o){ o.userData._bounceT = performance.now(); }
-
-  // ======= Message & Toast =======
-  function randomOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-  const msgBox = document.getElementById('msg');
-  let msgTimer = null;
-  function fancyMessage(text){
-    msgBox.textContent = text; msgBox.style.display='block'; msgBox.style.opacity='0'; msgBox.style.transform='translateX(-50%) scale(0.96)';
-    requestAnimationFrame(()=>{ msgBox.style.transition='transform .28s ease, opacity .28s ease'; msgBox.style.opacity='1'; msgBox.style.transform='translateX(-50%) scale(1)'; });
-    if(msgTimer) clearTimeout(msgTimer);
-    msgTimer = setTimeout(()=>{ msgBox.style.opacity='0'; msgBox.style.transform='translateX(-50%) scale(.96)'; setTimeout(()=>{ msgBox.style.display='none'; }, 280); }, 2400);
-  }
-  const toast = document.getElementById('toast');
-  function showToast(text){ toast.textContent=text; toast.style.display='block'; toast.style.opacity='1'; setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.style.display='none', 300); }, 1800); }
-
-  // ======= Photo Overlay =======
-  const overlay = document.getElementById('overlay'); const overlayImg = document.getElementById('overlayImg'); const overlayCaption = document.getElementById('overlayCaption');
-  function showPhoto(tex, caption){ overlay.style.display='flex'; overlayCaption.textContent = caption || ''; try{ if(tex && tex.image instanceof HTMLCanvasElement){ overlayImg.src = tex.image.toDataURL('image/png'); } else if (tex && tex.image && tex.image.src){ overlayImg.src = tex.image.src; } else { const c=document.createElement('canvas'); c.width=1024;c.height=512; const ctx=c.getContext('2d'); ctx.fillStyle='#111';ctx.fillRect(0,0,c.width,c.height); ctx.fillStyle='#fff';ctx.font='bold 60px system-ui';ctx.textAlign='center';ctx.textBaseline='middle'; ctx.fillText('Photo',512,256); overlayImg.src=c.toDataURL('image/png'); } } catch(e){ overlayImg.removeAttribute('src'); }
-  }
-  overlay.addEventListener('click', ()=>{ overlay.style.display='none'; overlayImg.removeAttribute('src'); overlayCaption.textContent=''; });
-
-  // ======= Audio (bird chirps) =======
-  let audioCtx; let lastChirp = 0; function initAudio(){ if(audioCtx) return; try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); showToast('🔊 Sound on: birds will chirp'); }catch(e){ return; } }
-  window.addEventListener('pointerdown', initAudio, { once:true });
-  function playChirp(){ if(!audioCtx) return; const t = audioCtx.currentTime; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(1200+Math.random()*800,t); o.frequency.exponentialRampToValueAtTime(400+Math.random()*300,t+0.18); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.08,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+0.24); }
-
-  // ======= Day/Night Toggle with colorful accents =======
-  let isNight = false;
-  function applyMode(){
-    if(isNight){
-      scene.fog.color.set(0x0f1a13); renderer.setClearColor(0x020403,1);
-      ground.material = groundMatNight; path.material = pathMatNight;
-      hemi.intensity = 0.25; sun.intensity = 0.28; modeChip.textContent='🌙 Night';
-      accentLights.traverse(o=>{ if(o.isLight){ o.intensity = (o.color.getHex()===0xff66cc? 1.8 : 1.2); } });
-    } else {
-      scene.fog.color.set(0x9cc8b0); renderer.setClearColor(0x7fc8a9,1);
-      ground.material = groundMatDay; path.material = pathMatDay;
-      hemi.intensity = 0.9; sun.intensity = 0.85; modeChip.textContent='🌞 Day';
-      accentLights.traverse(o=>{ if(o.isLight){ o.intensity = 0.0; } });
-    }
-  }
-  toggleBtn.addEventListener('click', ()=>{ isNight = !isNight; applyMode(); fancyMessage(isNight? '🌙 Night magic on!':'🌞 Daylight returns!'); });
-  applyMode();
-
-  // ======= Confetti Button =======
-  btnConfetti.addEventListener('click', ()=>{ const cpos = new THREE.Vector3(0,1.2, camera.position.z - scene.position.z - 2); spawnConfettiBurst(cpos); fancyMessage('🎉 Happy Birthday, Guddu! 🎂'); });
-
-  // ======= Animation Loop =======
-  let last = performance.now(); let accum=0, frames=0;
-  function animate(now){
-    const dt = Math.min(0.033, (now-last)/1000); last = now;
-    const speed = isMobile ? 2.05 : 2.6; // m/s
-    scene.position.z += speed*dt; accentLights.position.z = scene.position.z;
-    camera.position.y = 2.1 + Math.sin(now*0.001)*0.06; controls.update();
-
-    ensureChunks(camera.position.z - scene.position.z);
-
-    // grass sway
-    grassMat.uniforms.uTime.value += dt;
-
-    // birds / butterflies / gift lids / pulse-bounce / glow positions
-    const t = now/1000;
-    scene.traverse(o=>{
-      if(o.userData){
-        if(o.userData.wings && o.userData.type!=='butterfly'){ animateBird(o, t + (o.userData.seed||0)); }
-        if(o.userData.type==='butterfly'){ animateButterfly(o, t + (o.userData.seed||0)); }
-        if(o.userData.lid){ const lid=o.userData.lid; const target = lid.userData.open ? Math.PI*0.8 : 0; lid.rotation.x += (target - lid.rotation.x) * 0.12; if(o.userData.glow){ const desired = (isNight && lid.userData.open) ? 2.0 : (isNight ? 0.6 : 0.0); o.userData.glow.intensity += (desired - o.userData.glow.intensity)*0.1; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.5,0)); } }
-        if(o.userData.glow && (o.userData.type==='flower' || o.userData.type==='candy')){ const desired = isNight ? 1.0 : 0.0; o.userData.glow.intensity += (desired - o.userData.glow.intensity)*0.08; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.38,0)); }
-        if(o.userData._pulseT){ const age=(now-o.userData._pulseT)/400; if(age<1){ const s=1+Math.sin(age*Math.PI)*0.25; o.scale.setScalar(s); } else { o.scale.setScalar(1); o.userData._pulseT=0; } }
-        if(o.userData._bounceT){ const age=(now-o.userData._bounceT)/600; if(age<1){ const off=Math.sin(age*Math.PI)*0.15; o.position.y = (o.userData._baseY||0)+off; } else { o.position.y=(o.userData._baseY||0); o.userData._bounceT=0; } }
-      }
-    });
-
-    if(audioCtx){ if(now - lastChirp > 1000 + Math.random()*1500){ playChirp(); lastChirp=now; } }
-
-    updateConfetti(dt);
-    updateFireflies(t);
-
-    renderer.render(scene, camera);
-
-    accum += dt; frames++; if(accum>0.5){ fpsChip.textContent = 'FPS: '+ Math.round(frames/accum); accum=0; frames=0; }
-    requestAnimationFrame(animate);
-  }
-  requestAnimationFrame(animate);
-
-  // ======= Resize =======
-  window.addEventListener('resize', ()=>{ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
-
-  // ======= Chunk manager =======
-  // Implemented above: makeChunk(), ensureChunks()
-
-  // ======= Utility: Show error =======
-  function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg; }
-
-  // ======= Initial hints =======
-  setTimeout(()=>{ showToast('Tip: Tap hoardings to see photos & wishes ✨'); }, 1000);
-  
   </script>
 </body>
 </html>
