@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Birthday City – Upgraded Demo</title>
+<title>Birthday City – Textures Embedded</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#0f1218}
@@ -23,7 +23,7 @@
 
 <script src="three.min.js"></script>
 
-<!-- PointerLockControls (non-module, with lock/unlock events) -->
+<!-- PointerLockControls -->
 <script>
 THREE.PointerLockControls=function(camera,dom){
   const S=this; this.domElement=dom||document.body; this.isLocked=false;
@@ -37,16 +37,15 @@ THREE.PointerLockControls=function(camera,dom){
     camera.quaternion.setFromEuler(euler); S.dispatchEvent(E.change);
   }
   function onPLC(){ S.isLocked=(document.pointerLockElement===S.domElement); S.dispatchEvent(S.isLocked?E.lock:E.unlock); }
-  function onPLE(){ console.error('Pointer Lock error'); }
   this.lock=()=>this.domElement.requestPointerLock();
   this.unlock=()=>document.exitPointerLock();
   this.connect=()=>{
-    document.addEventListener('mousemove',onMove); document.addEventListener('pointerlockchange',onPLC);
-    document.addEventListener('pointerlockerror',onPLE);
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('pointerlockchange',onPLC);
   };
   this.disconnect=()=>{
-    document.removeEventListener('mousemove',onMove); document.removeEventListener('pointerlockchange',onPLC);
-    document.removeEventListener('pointerlockerror',onPLE);
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('pointerlockchange',onPLC);
   };
   this.dispose=()=>this.disconnect(); this.connect();
 };
@@ -78,10 +77,8 @@ function init(){
   raycaster=new THREE.Raycaster();
 
   // ground
-  const gTex=makeRoadTex();
-  gTex.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),
-    new THREE.MeshStandardMaterial({map:gTex, roughness:.95}));
+    new THREE.MeshStandardMaterial({color:0x3b3f46, roughness:.95}));
   ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
 
   // lights
@@ -89,20 +86,28 @@ function init(){
   const sun=new THREE.DirectionalLight(0xffffff,.9); sun.position.set(40,80,20);
   sun.castShadow=true; sun.name='SUN'; scene.add(sun);
 
-  // one realistic building (higher res facade)
-  const facade=makeFacadeTex();
-  facade.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  const bMat=new THREE.MeshStandardMaterial({map:facade, roughness:.6, metalness:.1});
-  const building=new THREE.Mesh(new THREE.BoxGeometry(12,25,12), bMat);
-  building.position.set(0,12.5,-18); building.castShadow=true; building.receiveShadow=true; scene.add(building);
+  // building with embedded glass texture (base64 tiny image)
+  const glassTex=new THREE.TextureLoader().load(
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAIklEQVQoU2NkYGD4z0AEMFGKmSgFjKJqghJqRphIAAaTBACQpBoFYAAAAABJRU5ErkJggg=="
+  );
+  glassTex.wrapS=glassTex.wrapT=THREE.RepeatWrapping;
+  glassTex.repeat.set(8,16);
+  glassTex.anisotropy=renderer.capabilities.getMaxAnisotropy();
 
-  // hoarding
-  addHoarding(new THREE.Vector3(0,15,-12),
-    "https://dl.dropboxusercontent.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=odlchui1&dl=1",
-    8,5,new THREE.Vector3(0,15,30));
+  const building=new THREE.Mesh(new THREE.BoxGeometry(12,25,12),
+    new THREE.MeshStandardMaterial({map:glassTex, roughness:.6, metalness:.2}));
+  building.position.set(0,12.5,-18); building.castShadow=true; scene.add(building);
 
-  // gift with texture
-  const gift=createGift(new THREE.Vector3(3,1,0),"Happy Birthday Guddu! 🎂✨");
+  // hoarding (white placeholder with text)
+  const canvas=document.createElement("canvas"); canvas.width=512; canvas.height=256;
+  const ctx=canvas.getContext("2d"); ctx.fillStyle="#222"; ctx.fillRect(0,0,512,256);
+  ctx.fillStyle="#fff"; ctx.font="bold 40px sans-serif"; ctx.fillText("Happy Birthday Guddu 🎂",40,140);
+  const tex=new THREE.CanvasTexture(canvas);
+  const board=new THREE.Mesh(new THREE.PlaneGeometry(10,5), new THREE.MeshBasicMaterial({map:tex}));
+  board.position.set(0,15,-12); board.lookAt(new THREE.Vector3(0,15,30)); scene.add(board);
+
+  // gift
+  const gift=createGift(new THREE.Vector3(3,1,0),"Happy Birthday Guddu! 🎁✨");
   gifts.push(gift);
 
   // controls
@@ -138,7 +143,7 @@ function animate(){
 
 /* === INTERACTIONS === */
 function onMouseClick(){
-  raycaster.setFromCamera(new THREE.Vector2(0,0),camera); // center crosshair
+  raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
   const intersects=raycaster.intersectObjects(gifts.map(g=>g.mesh),false);
   if(intersects.length>0){
     const gift=gifts.find(g=>g.mesh===intersects[0].object);
@@ -167,33 +172,38 @@ function onKeyUp(e){
   }
 }
 
-/* === HELPERS (same as before but sharper) === */
-function setSky(isDay){ day=isDay; const col=isDay?0x87c9ff:0x0b0e15;
-  scene.background=new THREE.Color(col); if(scene.fog) scene.fog.color.set(col);
+/* === HELPERS === */
+function setSky(isDay){
+  day=isDay; const col=isDay?0x87c9ff:0x0b0e15;
+  scene.background=new THREE.Color(col);
   scene.traverse(o=>{ if(o.isDirectionalLight&&o.name==='SUN') o.intensity=isDay?.9:.15; });
 }
-function makeRoadTex(){ const s=1024,c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d');
-  x.fillStyle='#3b3f46';x.fillRect(0,0,s,s);x.fillStyle='#343842';for(let i=0;i<s;i+=16){x.fillRect(0,i,s,2);x.fillRect(i,0,2,s);}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(20,20);return t;}
-function makeFacadeTex(){ const w=256,h=512,c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');
-  ctx.fillStyle='#2f3549';ctx.fillRect(0,0,w,h);for(let y=8;y<h;y+=14){for(let x=8;x<w;x+=14){ctx.fillStyle=Math.random()<.25?'#ffe9b6':'#1a2235';ctx.fillRect(x,y,10,10);}}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,4);return t;}
-function addHoarding(pos,imgUrl,w,h,lookAtVec){ const loader=new THREE.TextureLoader();loader.load(imgUrl,(tex)=>{tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  const frame=new THREE.Mesh(new THREE.PlaneGeometry(w+0.5,h+0.5),new THREE.MeshBasicMaterial({color:0x0b0e14}));
-  const board=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex}));
-  frame.position.copy(pos);board.position.copy(pos);board.lookAt(lookAtVec);frame.lookAt(lookAtVec);frame.position.z-=0.01;scene.add(frame);scene.add(board);});}
-function createGift(pos,msg){ const tex=new THREE.TextureLoader().load("https://i.imgur.com/E5oVZbA.png");
-  const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.5}); const mesh=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,1.4),mat);
-  mesh.position.copy(pos); mesh.castShadow=true; scene.add(mesh); return {mesh,msg,collected:false}; }
-function sparkle(origin){ const geom=new THREE.SphereGeometry(0.05,6,6),group=new THREE.Group();scene.add(group);
-  for(let i=0;i<90;i++){const m=new THREE.MeshBasicMaterial({color:0xffe0ff,transparent:true,opacity:1});
-    const p=new THREE.Mesh(geom,m);p.position.copy(origin);p.userData.v=new THREE.Vector3((Math.random()-0.5)*3,Math.random()*3,(Math.random()-0.5)*3);
+function createGift(pos,msg){
+  const box=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,1.4),
+    new THREE.MeshStandardMaterial({color:0xff4d88}));
+  const ribbon1=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.15,0.3), new THREE.MeshStandardMaterial({color:0xffffff}));
+  const ribbon2=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.15,1.5), new THREE.MeshStandardMaterial({color:0xffffff}));
+  ribbon1.position.y=0.7; ribbon2.position.y=0.7;
+  box.add(ribbon1); box.add(ribbon2);
+  box.position.copy(pos); box.castShadow=true; scene.add(box);
+  return {mesh:box,msg,collected:false};
+}
+function sparkle(origin){
+  const geom=new THREE.SphereGeometry(0.06,6,6),group=new THREE.Group();scene.add(group);
+  for(let i=0;i<80;i++){const colors=[0xff66cc,0x66ccff,0xffff66,0x99ff99];
+    const m=new THREE.MeshBasicMaterial({color:colors[Math.floor(Math.random()*colors.length)],transparent:true,opacity:1});
+    const p=new THREE.Mesh(geom,m);p.position.copy(origin);
+    p.userData.v=new THREE.Vector3((Math.random()-0.5)*3,Math.random()*3,(Math.random()-0.5)*3);
     group.add(p);}const t0=performance.now();(function tick(){const t=(performance.now()-t0)/1000;
-    for(const p of group.children){p.position.addScaledVector(p.userData.v,0.016);p.userData.v.y-=3*0.016;p.material.opacity=Math.max(0,1-t);}if(t<1.0)requestAnimationFrame(tick);else scene.remove(group);})(); }
-function chime(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC(),o=ac.createOscillator(),g=ac.createGain();
-  o.type='triangle';o.frequency.value=880;g.gain.setValueAtTime(0.0001,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.25,ac.currentTime+0.03);
-  g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+0.5);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+0.55);}
-function showMsg(t){const el=document.getElementById('msg');el.textContent=t;el.style.display='block';clearTimeout(showMsg.t);showMsg.t=setTimeout(()=>el.style.display='none',3000);}
+    for(const p of group.children){p.position.addScaledVector(p.userData.v,0.016);p.userData.v.y-=3*0.016;p.material.opacity=Math.max(0,1-t);}if(t<1.2)requestAnimationFrame(tick);else scene.remove(group);})(); }
+function chime(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  const ac=new AC(),o=ac.createOscillator(),g=ac.createGain();
+  o.type='triangle';o.frequency.value=880;g.gain.setValueAtTime(0.0001,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.25,ac.currentTime+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+0.5);
+  o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+0.55);}
+function showMsg(t){const el=document.getElementById('msg');el.textContent=t;el.style.display='block';
+  clearTimeout(showMsg.t);showMsg.t=setTimeout(()=>el.style.display='none',3000);}
 </script>
 </body>
 </html>
