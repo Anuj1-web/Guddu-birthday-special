@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Birthday City – Mini Demo</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0f1218}
+  #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0009}
+  #btn{font:600 15px system-ui;padding:12px 16px;border:0;border-radius:12px;cursor:pointer}
+  #hud{position:fixed;left:50%;top:10px;transform:translateX(-50%);
+       color:#fff;background:#0008;border-radius:10px;padding:6px 10px;font:600 12px system-ui}
+  #msg{position:fixed;left:50%;top:50px;transform:translateX(-50%);
+       color:#fff;background:#000b;border-radius:10px;padding:10px 14px;font:700 14px system-ui;display:none}
+  #cross{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;opacity:.45;font:700 22px monospace}
+</style>
+</head>
+<body>
+<div id="overlay"><button id="btn">Click to enter • Mouse-look + WASD • Space jump</button></div>
+<div id="hud">Controls: click to lock • WASD move • Space jump • N day/night</div>
+<div id="msg"></div>
+<div id="cross">+</div>
+
+<script src="three.min.js"></script>
+
+<!-- PointerLockControls (non-module, with lock/unlock events) -->
+<script>
+THREE.PointerLockControls=function(camera,dom){
+  const S=this; this.domElement=dom||document.body; this.isLocked=false;
+  const E={change:{type:'change'},lock:{type:'lock'},unlock:{type:'unlock'}};
+  const euler=new THREE.Euler(0,0,0,'YXZ'), PI_2=Math.PI/2;
+  function onMove(ev){
+    if(!S.isLocked) return;
+    const mx=ev.movementX||0, my=ev.movementY||0;
+    euler.setFromQuaternion(camera.quaternion);
+    euler.y-=mx*0.002; euler.x-=my*0.002; euler.x=Math.max(-PI_2,Math.min(PI_2,euler.x));
+    camera.quaternion.setFromEuler(euler); S.dispatchEvent(E.change);
+  }
+  function onPLC(){ S.isLocked=(document.pointerLockElement===S.domElement); S.dispatchEvent(S.isLocked?E.lock:E.unlock); }
+  function onPLE(){ console.error('Pointer Lock error'); }
+  this.lock=()=>this.domElement.requestPointerLock();
+  this.unlock=()=>document.exitPointerLock();
+  this.connect=()=>{
+    document.addEventListener('mousemove',onMove); document.addEventListener('pointerlockchange',onPLC);
+    document.addEventListener('pointerlockerror',onPLE);
+  };
+  this.disconnect=()=>{
+    document.removeEventListener('mousemove',onMove); document.removeEventListener('pointerlockchange',onPLC);
+    document.removeEventListener('pointerlockerror',onPLE);
+  };
+  this.dispose=()=>this.disconnect(); this.connect();
+};
+THREE.PointerLockControls.prototype=Object.create(THREE.EventDispatcher.prototype);
+THREE.PointerLockControls.prototype.constructor=THREE.PointerLockControls;
+</script>
+
+<script>
+/* ===== minimal, stable demo ===== */
+let scene, camera, renderer, controls;
+let moveF=false, moveB=false, moveL=false, moveR=false, canJump=false, day=true;
+const velocity=new THREE.Vector3(), dir=new THREE.Vector3();
+const GRAV=30;
+const clock = new THREE.Clock(); // declared before animate—important
+
+init();
+animate();
+
+function init(){
+  scene=new THREE.Scene(); setSky(true);
+
+  camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
+  camera.position.set(0,1.1,6);
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(devicePixelRatio);
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=true;
+  document.body.appendChild(renderer.domElement);
+
+  // ground
+  const gTex=makeRoadTex();
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),
+    new THREE.MeshStandardMaterial({map:gTex, roughness:.95}));
+  ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+
+  // lights
+  const hemi=new THREE.HemisphereLight(0xbfd9ff,0x23262b,.9); scene.add(hemi);
+  const sun=new THREE.DirectionalLight(0xffffff,.9); sun.position.set(40,80,20);
+  sun.castShadow=true; sun.name='SUN'; scene.add(sun);
+
+  // one realistic(ish) building
+  const facade=makeFacadeTex();
+  const bMat=new THREE.MeshStandardMaterial({map:facade, roughness:.6, metalness:.1});
+  const building=new THREE.Mesh(new THREE.BoxGeometry(10,22,10), bMat);
+  building.position.set(0,11,-16); building.castShadow=true; building.receiveShadow=true; scene.add(building);
+
+  // hoarding (your photo via dl.dropboxusercontent.com for CORS-safe)
+  const boardPos=new THREE.Vector3(0,14,-11);
+  addHoarding(boardPos,
+    "https://dl.dropboxusercontent.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=odlchui1&dl=1",
+    8,5, new THREE.Vector3(0,14,40));
+
+  // gift box
+  const gift=createGift(new THREE.Vector3(2,1,0), "Happy Birthday Guddu! 🎂✨");
+
+  // controls / input
+  controls=new THREE.PointerLockControls(camera,document.body);
+  document.getElementById('btn').onclick=()=>{ controls.lock(); document.getElementById('overlay').style.display='none'; };
+  controls.addEventListener('unlock',()=>{ document.getElementById('overlay').style.display='flex'; });
+
+  addEventListener('keydown',onKeyDown);
+  addEventListener('keyup',onKeyUp);
+  addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+  // simple proximity check each frame
+  function giftCheck(){
+    if(!gift.collected && camera.position.distanceTo(gift.mesh.position)<1.6){
+      gift.collected=true; scene.remove(gift.mesh);
+      sparkle(gift.mesh.position); chime(); showMsg(gift.msg);
+    }
+    requestAnimationFrame(giftCheck);
+  }
+  giftCheck();
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(0.05,clock.getDelta());
+
+  dir.set(0,0,0);
+  if(moveF) dir.z-=1; if(moveB) dir.z+=1; if(moveL) dir.x-=1; if(moveR) dir.x+=1;
+  if(dir.lengthSq()>0) dir.normalize();
+
+  const speed=10*dt;
+  const yaw=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,camera.rotation.y,0));
+  const step=dir.clone().applyQuaternion(yaw).multiplyScalar(speed);
+  camera.position.add(new THREE.Vector3(step.x,0,step.z));
+
+  velocity.y -= GRAV*dt;
+  camera.position.y += velocity.y*dt;
+  if(camera.position.y<1.1){ camera.position.y=1.1; velocity.y=0; canJump=true; }
+
+  renderer.render(scene,camera);
+}
+
+/* ---------- helpers ---------- */
+function onKeyDown(e){
+  switch(e.code){
+    case'KeyW':case'ArrowUp':moveF=true;break;
+    case'KeyS':case'ArrowDown':moveB=true;break;
+    case'KeyA':case'ArrowLeft':moveL=true;break;
+    case'KeyD':case'ArrowRight':moveR=true;break;
+    case'Space':if(canJump){velocity.y=10;canJump=false;}break;
+    case'KeyN':setSky(!day);break;
+  }
+}
+function onKeyUp(e){
+  switch(e.code){
+    case'KeyW':case'ArrowUp':moveF=false;break;
+    case'KeyS':case'ArrowDown':moveB=false;break;
+    case'KeyA':case'ArrowLeft':moveL=false;break;
+    case'KeyD':case'ArrowRight':moveR=false;break;
+  }
+}
+
+function setSky(isDay){
+  day=isDay;
+  const col = isDay?0x87c9ff:0x0b0e15;
+  if(scene){ scene.background=new THREE.Color(col); if(scene.fog) scene.fog.color.set(col);
+    scene.traverse(o=>{ if(o.isDirectionalLight && o.name==='SUN') o.intensity=isDay?.9:.15; }); }
+}
+
+function makeRoadTex(){
+  const s=512,c=document.createElement('canvas'); c.width=c.height=s; const x=c.getContext('2d');
+  x.fillStyle='#3b3f46'; x.fillRect(0,0,s,s);
+  x.fillStyle='#343842'; for(let i=0;i<s;i+=8){ x.fillRect(0,i,s,2); x.fillRect(i,0,2,s); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(20,20); return t;
+}
+function makeFacadeTex(){
+  const w=128,h=256,c=document.createElement('canvas'); c.width=w; c.height=h; const ctx=c.getContext('2d');
+  ctx.fillStyle='#2f3549'; ctx.fillRect(0,0,w,h);
+  for(let y=8;y<h;y+=12){ for(let x=8;x<w;x+=12){
+    ctx.fillStyle=Math.random()<.22?'#ffe9b6':'#1a2235'; ctx.fillRect(x,y,8,8);
+  }}
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1,4); return t;
+}
+
+function addHoarding(position, imgUrl, width, height, lookAtVec){
+  const loader=new THREE.TextureLoader();
+  loader.load(imgUrl,(tex)=>{
+    tex.anisotropy=(renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
+    const frame=new THREE.Mesh(new THREE.PlaneGeometry(width+0.5,height+0.5), new THREE.MeshBasicMaterial({color:0x0b0e14}));
+    const board=new THREE.Mesh(new THREE.PlaneGeometry(width,height), new THREE.MeshBasicMaterial({map:tex}));
+    frame.position.copy(position); board.position.copy(position);
+    board.lookAt(lookAtVec); frame.lookAt(lookAtVec); frame.position.z-=0.01;
+    scene.add(frame); scene.add(board);
+  },undefined,()=>console.warn('Hoarding failed to load:',imgUrl));
+}
+
+function createGift(pos,msg){
+  const box=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,1.4),
+    new THREE.MeshStandardMaterial({color:0xff4d88, roughness:.45}));
+  const r1=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.12,0.3), new THREE.MeshStandardMaterial({color:0xffffff}));
+  const r2=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.12,1.5), new THREE.MeshStandardMaterial({color:0xffffff}));
+  r1.position.y=0.72; r2.position.y=0.72; box.add(r1); box.add(r2);
+  box.position.copy(pos); box.castShadow=true; scene.add(box);
+  return {mesh:box, msg, collected:false};
+}
+
+function sparkle(origin){
+  const geom=new THREE.SphereGeometry(0.05,6,6), group=new THREE.Group(); scene.add(group);
+  for(let i=0;i<90;i++){
+    const m=new THREE.MeshBasicMaterial({color:0xffe0ff, transparent:true, opacity:1});
+    const p=new THREE.Mesh(geom,m); p.position.copy(origin);
+    p.userData.v=new THREE.Vector3((Math.random()-0.5)*3, Math.random()*3, (Math.random()-0.5)*3);
+    group.add(p);
+  }
+  const t0=performance.now();
+  (function tick(){
+    const t=(performance.now()-t0)/1000;
+    for(const p of group.children){
+      p.position.addScaledVector(p.userData.v,0.016);
+      p.userData.v.y-=3*0.016; p.material.opacity=Math.max(0,1-t);
+    }
+    if(t<1.0) requestAnimationFrame(tick); else scene.remove(group);
+  })();
+}
+function chime(){
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  const ac=new AC(), o=ac.createOscillator(), g=ac.createGain();
+  o.type='triangle'; o.frequency.value=880;
+  g.gain.setValueAtTime(0.0001,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.25,ac.currentTime+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+0.5);
+  o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+0.55);
+}
+function showMsg(t){ const el=document.getElementById('msg'); el.textContent=t; el.style.display='block'; clearTimeout(showMsg.t); showMsg.t=setTimeout(()=>el.style.display='none', 3000); }
+</script>
+</body>
+</html>
