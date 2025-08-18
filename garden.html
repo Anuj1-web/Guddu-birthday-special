@@ -75,17 +75,14 @@
 <div class="hint">Tap flowers, gifts & chocolates for surprises 🌸🎁🍫</div>
 <div id="toast"></div>
 
-<!-- Fallback love note message (used when CSS2D labels aren't available) -->
 <div id="noteGeneric" class="msg hidden" style="bottom:14vh">
   <h2>You make my world softer & brighter ✨</h2>
   <p>Every little thing about you is magic.</p>
 </div>
 
-<!-- Your local Three.js + OrbitControls -->
 <script src="three.min.js"></script>
 <script src="OrbitControls.js"></script>
 
-<!-- CSS2DRenderer (for nice attached labels). If it fails, we safely fall back. -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/renderers/CSS2DRenderer.js"
         onerror="window.__noCSS2D__=true"></script>
 
@@ -131,8 +128,7 @@ function init(){
   renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
-  // r110 style:
-  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; // Fixed deprecated 'outputEncoding'
   app.appendChild(renderer.domElement);
 
   // Controls
@@ -149,12 +145,12 @@ function init(){
   scene.add(dir);
 
   // Sky dome gradient (basic material for r110)
-  const skyGeo = new THREE.SphereBufferGeometry(200, 32, 32);
+  const skyGeo = new THREE.SphereGeometry(200, 32, 32); // Fixed deprecated 'SphereBufferGeometry'
   const skyMat = new THREE.MeshBasicMaterial({color:0x0b0f2b, side:THREE.BackSide});
   const sky = new THREE.Mesh(skyGeo, skyMat); scene.add(sky);
 
   // Ground
-  const groundGeo = new THREE.PlaneBufferGeometry(240,240);
+  const groundGeo = new THREE.PlaneGeometry(240,240); // Fixed deprecated 'PlaneBufferGeometry'
   const groundMat = new THREE.MeshStandardMaterial({color:0x1a3a21, roughness:1, metalness:0});
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI/2; ground.position.y = 0;
@@ -173,11 +169,11 @@ function init(){
 
   // Hoardings with your photos
   addHoardings([
-    "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?dl=0",
-    "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?dl=0",
-    "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?dl=0",
-    "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?dl=0",
-    "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?dl=0"
+    "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?raw=1", // Fixed CORS issue
+    "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?raw=1", // Fixed CORS issue
+    "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?raw=1", // Fixed CORS issue
+    "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?raw=1", // Fixed CORS issue
+    "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?raw=1"  // Fixed CORS issue
   ]);
 
   // Fireflies
@@ -226,10 +222,10 @@ function addGardenDecor(count=36){
     const x = Math.cos(ang)*r, z = Math.sin(ang)*r;
     const h = rand(0.6, 1.8);
 
-    const trunk = new THREE.Mesh(new THREE.CylinderBufferGeometry(0.1,0.12,h,6), new THREE.MeshStandardMaterial({color:0x5c7a36, roughness:1}));
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,h,6), new THREE.MeshStandardMaterial({color:0x5c7a36, roughness:1})); // Fixed deprecated 'CylinderBufferGeometry'
     trunk.position.set(x, h/2, z);
 
-    const crown = new THREE.Mesh(new THREE.ConeBufferGeometry(rand(0.5,1.1), rand(0.9,1.7), 8), shrubMat);
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(rand(0.5,1.1), rand(0.9,1.7), 8), shrubMat); // Fixed deprecated 'ConeBufferGeometry'
     crown.position.set(x, h+crown.geometry.parameters.height/2, z);
 
     group.add(trunk, crown);
@@ -244,7 +240,7 @@ function makeCenterHeart(){
   heartShape.bezierCurveTo(0.6, 0.9, 0.9, 0.55, 0.6, 0.25);
   heartShape.bezierCurveTo(0.3, 0, 0, 0.25, 0, 0.25);
 
-  const extrude = new THREE.ExtrudeBufferGeometry(heartShape, {depth:0.38, bevelEnabled:true, bevelThickness:0.08, bevelSize:0.06, bevelSegments:8, steps:2});
+  const extrude = new THREE.ExtrudeGeometry(heartShape, {depth:0.38, bevelEnabled:true, bevelThickness:0.08, bevelSize:0.06, bevelSegments:8, steps:2}); // Fixed deprecated 'ExtrudeBufferGeometry'
   const mat = new THREE.MeshStandardMaterial({color:0xff2a74, metalness:0.25, roughness:0.2, emissive:0x330014, emissiveIntensity:0.45});
   heartMesh = new THREE.Mesh(extrude, mat);
   heartMesh.scale.set(2.8, 2.8, 2.8);
@@ -253,7 +249,7 @@ function makeCenterHeart(){
   heartMesh.userData.type='centerHeart';
   scene.add(heartMesh);
 
-  const ped = new THREE.Mesh(new THREE.CylinderBufferGeometry(1.7,1.9,0.55,24), new THREE.MeshStandardMaterial({color:0x2a2f48, roughness:1}));
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.7,1.9,0.55,24), new THREE.MeshStandardMaterial({color:0x2a2f48, roughness:1})); // Fixed deprecated 'CylinderBufferGeometry'
   ped.position.set(0,0.28,0); scene.add(ped);
 }
 
@@ -262,10 +258,10 @@ function scatterFlowers(n=16){
     const r=rand(5,16), ang=rand(0,Math.PI*2);
     const x=Math.cos(ang)*r + rand(-6,6), z=Math.sin(ang)*r + rand(-6,6);
 
-    const stem = new THREE.Mesh(new THREE.CylinderBufferGeometry(0.06,0.06,0.85,8), new THREE.MeshStandardMaterial({color:0x2aa84a}));
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.85,8), new THREE.MeshStandardMaterial({color:0x2aa84a})); // Fixed deprecated 'CylinderBufferGeometry'
     stem.position.set(x,0.42,z);
     const petalMat = new THREE.MeshStandardMaterial({color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6)});
-    const head = new THREE.Mesh(new THREE.SphereBufferGeometry(0.24, 16, 16), petalMat);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), petalMat); // Fixed deprecated 'SphereBufferGeometry'
     head.position.set(x,1.0,z);
     head.userData.type='flower';
     head.userData.baseY=head.position.y;
@@ -289,7 +285,7 @@ function scatterChocolates(n=8){
   const mat = new THREE.MeshStandardMaterial({color:0x4b2b1a, roughness:.75, metalness:.1});
   for(let i=0;i<n;i++){
     const r=rand(7,18), ang=rand(0,Math.PI*2);
-    const mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(0.5,0.22,0.5), mat);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.22,0.5), mat); // Fixed deprecated 'BoxBufferGeometry'
     mesh.position.set(Math.cos(ang)*r, 0.12, Math.sin(ang)*r);
     mesh.userData.type='choco';
     mesh.userData.message = pick([
@@ -305,9 +301,9 @@ function scatterChocolates(n=8){
 function scatterGifts(n=6){
   for(let i=0;i<n;i++){
     const r=rand(6,17), ang=rand(0,Math.PI*2);
-    const box = new THREE.Mesh(new THREE.BoxBufferGeometry(0.95,0.62,0.95), new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),.7,.6)}));
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.95,0.62,0.95), new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),.7,.6)})); // Fixed deprecated 'BoxBufferGeometry'
     box.position.set(Math.cos(ang)*r, 0.31, Math.sin(ang)*r);
-    const rib = new THREE.Mesh(new THREE.BoxBufferGeometry(0.98,0.08,0.16), new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x222222, emissiveIntensity:0.3}));
+    const rib = new THREE.Mesh(new THREE.BoxGeometry(0.98,0.08,0.16), new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x222222, emissiveIntensity:0.3})); // Fixed deprecated 'BoxBufferGeometry'
     rib.position.set(box.position.x, box.position.y+0.35, box.position.z);
     box.userData.type='gift';
     box.userData.message = pick([
@@ -324,11 +320,12 @@ function addHoardings(urls){
   const radius=20;
   const loader = new THREE.TextureLoader();
   urls.forEach((u,i)=>{
+    // The `rawLink` function is a great idea to handle Dropbox, so it's kept.
     const tex = loader.load(rawLink(u));
-    tex.encoding = THREE.sRGBEncoding;
+    tex.colorSpace = THREE.SRGBColorSpace; // Fixed deprecated 'encoding'
 
     const plane = new THREE.Mesh(
-      new THREE.PlaneBufferGeometry(5.4, 7.8),
+      new THREE.PlaneGeometry(5.4, 7.8), // Fixed deprecated 'PlaneBufferGeometry'
       new THREE.MeshStandardMaterial({map:tex, roughness:.9, metalness:0, emissive:0x111111, emissiveIntensity:0.18})
     );
     const angle = (i/urls.length)*Math.PI*2;
@@ -341,7 +338,7 @@ function addHoardings(urls){
 
     // thin glow frame
     const frame = new THREE.Mesh(
-      new THREE.PlaneBufferGeometry(5.6, 8.0),
+      new THREE.PlaneGeometry(5.6, 8.0), // Fixed deprecated 'PlaneBufferGeometry'
       new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.06})
     );
     frame.position.copy(plane.position); frame.quaternion.copy(plane.quaternion);
@@ -353,7 +350,7 @@ function addHoardings(urls){
 
 /* ===================== Fireflies & Particles ===================== */
 function spawnFireflies(count=60){
-  const geo = new THREE.SphereBufferGeometry(0.04, 6, 6);
+  const geo = new THREE.SphereGeometry(0.04, 6, 6); // Fixed deprecated 'SphereBufferGeometry'
   const mat = new THREE.MeshBasicMaterial({color:0xffffcc});
   for(let i=0;i<count;i++){
     const f = new THREE.Mesh(geo, mat);
@@ -437,7 +434,7 @@ function onPointerDown(e){
     showMessage(obj.userData.message || "A gift of a thousand hugs 🎁");
   } else if(obj.userData.type==='hoarding'){
     pulse(obj); fairyDust(obj.position, 90, 0xffffff);
-    showMessage(obj.userData.message || "Happy Birthday, Guddu 💖");
+    showMessage(obj.userData.message || "Happy Birthday, Beautiful Guddu 💖 Keep shining!");
   } else if(obj.userData.type==='centerHeart'){
     strongPulse(obj); fairyDust(obj.position, 160, 0xff66aa);
     showMessage("Guddu, you are the heartbeat of my life 💓", "Always, forever — Anuj");
