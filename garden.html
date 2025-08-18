@@ -1,606 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>🌸 Guddu’s Magical 3D Garden</title>
-<style>
-  :root { color-scheme: dark; }
-  html, body { height: 100%; }
-  body {
-    margin: 0; overflow: hidden;
-    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    background: radial-gradient(1200px 600px at 25% -10%, #2a2a69 10%, #0f1427 60%, #0a0f1f 100%);
-  }
-  #ui {
-    position: fixed; inset: 0; pointer-events: none;
-    display:flex; align-items:flex-start; justify-content:center;
-    padding-top: env(safe-area-inset-top, 10px);
-  }
-  .chip {
-    pointer-events:auto; user-select:none;
-    background: rgba(0,0,0,.45);
-    padding: 8px 12px; border-radius: 12px; margin: 10px;
-    color: #fff; font-size: 13px; letter-spacing:.2px;
-    backdrop-filter: blur(6px);
-  }
-  #toast {
-    position: fixed; bottom: max(10px, env(safe-area-inset-bottom, 10px));
-    left: 50%; transform: translateX(-50%);
-    background: rgba(10,12,24,.78); color:#fff;
-    padding: 10px 14px; border-radius: 12px; font-size: 13px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.35);
-    opacity: 0; transition: opacity .25s ease; pointer-events: none;
-    white-space: nowrap;
-  }
-  canvas { display:block; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D Birthday Garden 🌸</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: "Poppins", sans-serif;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      color: white;
+      text-align: center;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+    }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-<div id="ui">
-  <div class="chip">👆 Tap flowers, gifts, chocolates & fruits to reveal surprises</div>
-</div>
-<div id="toast"></div>
+  <div id="loading">🌱 Growing your magical garden...</div>
 
-<script type="module">
-/* ====== Imports (ESM) ====== */
-import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
-import { OrbitControls } from "https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js";
-import { EffectComposer } from "https://unpkg.com/three@0.161.0/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "https://unpkg.com/three@0.161.0/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "https://unpkg.com/three@0.161.0/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { FXAAShader } from "https://unpkg.com/three@0.161.0/examples/jsm/shaders/FXAAShader.js";
-import { ShaderPass } from "https://unpkg.com/three@0.161.0/examples/jsm/postprocessing/ShaderPass.js";
+  <!-- ✅ Load your local Three.js and OrbitControls -->
+  <script src="three.min.js"></script>
+  <script src="OrbitControls.js"></script>
 
-/* ====== Setup ====== */
-const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x0a0f1f, 22, 140);
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      let scene, camera, renderer, controls, heart;
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
+      // Scene
+      scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 300);
-camera.position.set(12, 9, 16);
+      // Camera
+      camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 2, 6);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.06;
-controls.minDistance = 6;
-controls.maxDistance = 60;
-controls.maxPolarAngle = Math.PI * 0.49;
-controls.target.set(0, 1.1, 0);
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-/* ====== Postprocessing ====== */
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.0, 0.5, 0.85);
-composer.addPass(bloom);
-const fxaa = new ShaderPass(FXAAShader);
-fxaa.material.uniforms["resolution"].value.set(1/innerWidth, 1/innerHeight);
-composer.addPass(fxaa);
+      // Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-/* ====== Sky Dome (gradient) ====== */
-(function makeSky(){
-  const geo = new THREE.SphereGeometry(180, 32, 24);
-  const mat = new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    uniforms: {
-      top:   { value: new THREE.Color(0x0b1130) },
-      mid:   { value: new THREE.Color(0x121c4b) },
-      bot:   { value: new THREE.Color(0x0a0f1f) }
-    },
-    vertexShader: `
-      varying vec3 vPos;
-      void main() { vPos = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }
-    `,
-    fragmentShader: `
-      varying vec3 vPos;
-      uniform vec3 top; uniform vec3 mid; uniform vec3 bot;
-      void main(){
-        float h = normalize(vPos).y*0.5 + 0.5;
-        vec3 col = mix(bot, mid, smoothstep(0.15, 0.7, h));
-        col = mix(col, top, smoothstep(0.75, 1.0, h));
-        gl_FragColor = vec4(col, 1.0);
+      // Lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+      const point = new THREE.PointLight(0xffffff, 1.2);
+      point.position.set(5, 5, 5);
+      scene.add(point);
+
+      // Ground (garden base)
+      const groundGeo = new THREE.CircleGeometry(8, 64);
+      const groundMat = new THREE.MeshPhongMaterial({ color: 0x2e7d32 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -1;
+      scene.add(ground);
+
+      // Heart in center
+      const heartShape = new THREE.Shape();
+      heartShape.moveTo(0, 0.25);
+      heartShape.bezierCurveTo(0, 0.25, -0.3, 0, -0.6, 0.25);
+      heartShape.bezierCurveTo(-0.9, 0.55, -0.6, 0.9, 0, 1.1);
+      heartShape.bezierCurveTo(0.6, 0.9, 0.9, 0.55, 0.6, 0.25);
+      heartShape.bezierCurveTo(0.3, 0, 0, 0.25, 0, 0.25);
+
+      const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
+        depth: 0.3,
+        bevelEnabled: true,
+        bevelSize: 0.05,
+        bevelThickness: 0.05,
+      });
+      const heartMat = new THREE.MeshPhongMaterial({ color: 0xff3b7d });
+      heart = new THREE.Mesh(heartGeo, heartMat);
+      heart.position.set(-0.5, -0.5, 0);
+      scene.add(heart);
+
+      // Example flowers (simple spheres for now)
+      for (let i = 0; i < 10; i++) {
+        const flowerGeo = new THREE.SphereGeometry(0.2, 16, 16);
+        const flowerMat = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(`hsl(${Math.random() * 360},100%,50%)`),
+        });
+        const flower = new THREE.Mesh(flowerGeo, flowerMat);
+        const angle = (i / 10) * Math.PI * 2;
+        flower.position.set(Math.cos(angle) * 3, -0.5, Math.sin(angle) * 3);
+        scene.add(flower);
       }
-    `
-  });
-  const sky = new THREE.Mesh(geo, mat);
-  scene.add(sky);
-})();
 
-/* ====== Lights ====== */
-scene.add(new THREE.HemisphereLight(0xf7f9ff, 0x1b2a1f, 0.35));
-const sun = new THREE.DirectionalLight(0xfff2e0, 1.1);
-sun.position.set(12, 18, 8);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.camera.near = 2;
-sun.shadow.camera.far = 60;
-sun.shadow.camera.left = sun.shadow.camera.bottom = -18;
-sun.shadow.camera.right = sun.shadow.camera.top = 18;
-scene.add(sun);
+      // Resize
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-/* ====== Ground & clue path ====== */
-const ground = new THREE.Mesh(
-  new THREE.CircleGeometry(36, 128),
-  new THREE.MeshStandardMaterial({ color: 0x1e6b31, roughness: 1.0 })
-);
-ground.rotation.x = -Math.PI/2;
-ground.receiveShadow = true;
-scene.add(ground);
+      // Animate
+      function animate() {
+        requestAnimationFrame(animate);
+        heart.rotation.y += 0.01;
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
 
-const path = new THREE.Mesh(
-  new THREE.RingGeometry(10.5, 12.2, 120),
-  new THREE.MeshStandardMaterial({ color: 0xb88967, roughness: .95 })
-);
-path.rotation.x = -Math.PI/2;
-path.position.y = 0.001;
-scene.add(path);
-
-// Glow breadcrumbs (lead to gifts & chocolates)
-const breadcrumbMat = new THREE.MeshBasicMaterial({ color: 0xffe082 });
-for (let i=0;i<28;i++){
-  const a = (i/28)*Math.PI*2 + 0.3;
-  const r = 11.5 + Math.sin(i*0.6)*0.5;
-  const b = new THREE.Mesh(new THREE.CircleGeometry(0.14, 16), breadcrumbMat);
-  b.rotation.x = -Math.PI/2;
-  b.position.set(Math.cos(a)*r, 0.002, Math.sin(a)*r);
-  b.userData.blink = (i%2)*0.5 + Math.random()*0.4;
-  scene.add(b);
-}
-
-/* ====== Fairy dust system ====== */
-const bursts = [];
-function spawnDust(pos, color=0xffa6e6, count=isMobile?60:120){
-  const geo = new THREE.BufferGeometry();
-  const positions = new Float32Array(count*3);
-  const vels = new Float32Array(count*3);
-  for (let i=0;i<count;i++){
-    const ang = Math.random()*Math.PI*2, r = Math.random()*0.25;
-    positions[i*3]   = pos.x + Math.cos(ang)*r;
-    positions[i*3+1] = pos.y + Math.random()*0.15 + 0.25;
-    positions[i*3+2] = pos.z + Math.sin(ang)*r;
-    vels[i*3]   = (Math.random()-.5)*0.35;
-    vels[i*3+1] = Math.random()*0.8 + 0.2;
-    vels[i*3+2] = (Math.random()-.5)*0.35;
-  }
-  geo.setAttribute("position", new THREE.BufferAttribute(positions,3));
-  geo.setAttribute("velocity", new THREE.BufferAttribute(vels,3));
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({
-    size: 0.04, color, transparent:true, opacity:1, depthWrite:false
-  }));
-  pts.userData.birth = clock.getElapsedTime();
-  scene.add(pts); bursts.push(pts);
-}
-
-/* ====== Text Sprites (no CORS) ====== */
-function makeTextSprite(text, {fill="#fff", stroke="#ff6fb4"}={}){
-  const lines = String(text).split(/\n/);
-  const ctx = document.createElement("canvas").getContext("2d");
-  const padding = 18;
-  ctx.font = "700 22px Poppins, system-ui, Arial";
-  const widths = lines.map(l=>ctx.measureText(l).width);
-  const w = Math.ceil(Math.max(...widths)+padding*2);
-  const h = Math.ceil(lines.length*28+padding*2);
-  ctx.canvas.width = w*2; ctx.canvas.height = h*2; ctx.scale(2,2);
-  // bg & stroke
-  ctx.fillStyle = "rgba(10,12,24,.80)";
-  roundRect(ctx, 0,0,w,h,12,true,false);
-  ctx.strokeStyle = stroke; ctx.lineWidth = 3;
-  roundRect(ctx, 1.5,1.5,w-3,h-3,10,false,true);
-  // text
-  ctx.fillStyle = fill; ctx.textBaseline = "top";
-  lines.forEach((l,i)=>ctx.fillText(l, padding, padding+28*i));
-  const tex = new THREE.CanvasTexture(ctx.canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
-  const sp = new THREE.Sprite(mat);
-  const scale = 0.01;
-  sp.scale.set(w*scale, h*scale, 1);
-  sp.renderOrder = 999;
-  sp.userData.__isMessage = true;
-  return sp;
-}
-function roundRect(ctx,x,y,w,h,r,fill,stroke){
-  r = Math.min(r,w/2,h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
-  ctx.closePath();
-  if(fill) ctx.fill();
-  if(stroke) ctx.stroke();
-}
-
-/* ====== Grass (instanced blades with wind) ====== */
-(function makeGrass(){
-  const count = isMobile ? 1800 : 4200;
-  const blade = new THREE.PlaneGeometry(0.08, 0.8, 1, 3);
-  blade.translate(0, 0.4, 0);
-  const mat = new THREE.MeshStandardMaterial({
-    color: 0x2ea043, metalness: 0, roughness: 1, side: THREE.DoubleSide
-  });
-  const inst = new THREE.InstancedMesh(blade, mat, count);
-  inst.castShadow = false; inst.receiveShadow = true;
-  const dummy = new THREE.Object3D();
-  for (let i=0;i<count;i++){
-    let r = (Math.random()**0.8) * 33;
-    const a = Math.random()*Math.PI*2;
-    const x = Math.cos(a)*r, z = Math.sin(a)*r;
-    if (Math.hypot(x,z) < 9.5) { i--; continue; } // not on inner circle path
-    dummy.position.set(x, 0.02, z);
-    dummy.rotation.y = Math.random()*Math.PI;
-    const s = 0.75 + Math.random()*0.6;
-    dummy.scale.setScalar(s);
-    dummy.updateMatrix();
-    inst.setMatrixAt(i, dummy.matrix);
-    // color variation
-    const c = new THREE.Color().setHSL(0.33 + Math.random()*0.04, 0.7, 0.38 + Math.random()*0.1);
-    inst.setColorAt(i, c);
-  }
-  inst.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(count*3),3);
-  scene.add(inst);
-  // wind sway (vertex shader trick via onBeforeCompile)
-  mat.onBeforeCompile = (shader)=>{
-    shader.uniforms.time = { value: 0 };
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <common>',
-      `#include <common>
-       uniform float time;`
-    ).replace(
-      '#include <beginnormal_vertex>',
-      `#include <beginnormal_vertex>
-       float sway = sin(time*1.4 + position.y*3.0) * 0.06;
-       objectNormal.xz += vec2(sway, sway);`
-    ).replace(
-      '#include <begin_vertex>',
-      `#include <begin_vertex>
-       transformed.x += sin(time*1.4 + position.y*3.0)*0.06*position.y;
-       transformed.z += cos(time*1.4 + position.y*3.0)*0.06*position.y;`
-    );
-    inst.userData.shader = shader;
-  };
-  grassTickers.push(()=>{ if(inst.userData.shader) inst.userData.shader.uniforms.time.value = clock.getElapsedTime(); });
-})();
-const grassTickers = [];
-
-/* ====== Flowers, Trees, Gifts, Chocolates ====== */
-const clickable = [];
-const clock = new THREE.Clock();
-const tmpV = new THREE.Vector3();
-
-function makeFlower(x,z,opts={}){
-  const { petal=0xff7cc9, center=0xffe082, stem=0x2e7d32, msg="You are loved ✨" } = opts;
-  const g = new THREE.Group(); g.position.set(x,0,z);
-  // stem
-  const stemM = new THREE.MeshStandardMaterial({ color: stem, roughness:.95 });
-  const stemMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,1.2,10), stemM);
-  stemMesh.position.y = 0.6; stemMesh.castShadow = true; stemMesh.receiveShadow=true;
-  g.add(stemMesh);
-  // leaves
-  const leafM = new THREE.MeshStandardMaterial({ color: 0x39a85a, roughness:.95 });
-  const leafG = new THREE.SphereGeometry(0.14, 12, 10);
-  const leaf1 = new THREE.Mesh(leafG, leafM); leaf1.position.set(0.18,0.55,0); leaf1.scale.set(1.2,0.55,1.0);
-  const leaf2 = leaf1.clone(); leaf2.position.x *= -1;
-  g.add(leaf1, leaf2);
-  // petals
-  const petalM = new THREE.MeshStandardMaterial({ color: petal, roughness:.6, metalness:.1, emissive:0x240215, emissiveIntensity:.1 });
-  const petalG = new THREE.ConeGeometry(0.22, 0.42, 18);
-  const crown = new THREE.Group();
-  for (let i=0;i<9;i++){
-    const p = new THREE.Mesh(petalG, petalM);
-    const a = i/9 * Math.PI * 2;
-    p.position.set(Math.cos(a)*0.24,1.25,Math.sin(a)*0.24);
-    p.rotation.z = Math.PI;
-    p.lookAt(g.position.x, 1.25, g.position.z);
-    p.castShadow = true;
-    crown.add(p);
-  }
-  g.add(crown);
-  // center
-  const centerM = new THREE.MeshStandardMaterial({ color: center, emissive: 0x662255, emissiveIntensity:.25, roughness:.3 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 16), centerM);
-  core.position.y = 1.25; core.castShadow = true;
-  g.add(core);
-
-  g.userData = { type:"flower", opened:false, message: msg, sparkle:0 };
-  clickable.push(g); scene.add(g); return g;
-}
-
-function makeTree(x,z,msgs){
-  const g = new THREE.Group(); g.position.set(x,0,z);
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,2.6,10), new THREE.MeshStandardMaterial({ color:0x8d5a34, roughness:.9 }));
-  trunk.position.y = 1.3; trunk.castShadow = true; trunk.receiveShadow = true;
-  const foliage = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.4, 10), new THREE.MeshStandardMaterial({ color: 0x2f7f4f, roughness:.95 }));
-  foliage.position.y = 2.9; foliage.castShadow = true;
-  g.add(trunk, foliage);
-
-  // fruits
-  const fruitM = new THREE.MeshStandardMaterial({ color: 0xff6f61, emissive:0x1c0503, emissiveIntensity:.25, roughness:.5 });
-  for (let i=0;i<6;i++){
-    const a = (i/6)*Math.PI*2 + Math.random()*0.4;
-    const r = 0.9 + Math.random()*0.2;
-    const f = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 12), fruitM);
-    f.position.set(Math.cos(a)*r, 2.6+Math.random()*0.4, Math.sin(a)*r);
-    f.userData = { type:"fruit", parent:g, message: msgs[i%msgs.length] };
-    clickable.push(f);
-    g.add(f);
-  }
-  clickable.push(g); scene.add(g); return g;
-}
-
-function makeGiftBox(x,z,message){
-  const box = new THREE.Group(); box.position.set(x,0.01,z);
-  const base = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.6,1.1), new THREE.MeshStandardMaterial({ color:0xd4af37, metalness:.6, roughness:.3 }));
-  base.position.y = 0.3; base.castShadow = true; base.receiveShadow=true;
-  const lid  = new THREE.Mesh(new THREE.BoxGeometry(1.16,0.2,1.16), new THREE.MeshStandardMaterial({ color:0xffd54f, metalness:.4, roughness:.4 }));
-  lid.position.y = 0.62; lid.castShadow = true;
-  const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.06,10,22), new THREE.MeshStandardMaterial({ color:0xff6fb4, metalness:.2, roughness:.5 }));
-  ribbon.rotation.x = Math.PI/2; ribbon.position.y = 0.72;
-  box.add(base,lid,ribbon);
-  box.userData = { type:"gift", lid, openT:0, message: message };
-  clickable.push(box); scene.add(box); return box;
-}
-
-function makeChocolate(x,z,message){
-  const g = new THREE.Group(); g.position.set(x,0.01,z);
-  const choc = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,0.3,24), new THREE.MeshStandardMaterial({ color:0x55301a, roughness:.6 }));
-  choc.position.y = 0.15; choc.castShadow = true; choc.receiveShadow = true;
-  const wrap = new THREE.Mesh(new THREE.TorusGeometry(0.38,0.08,14,18), new THREE.MeshStandardMaterial({ color:0xf06292, metalness:.5, roughness:.4 }));
-  wrap.rotation.x = Math.PI/2; wrap.position.y = 0.32;
-  g.add(choc,wrap);
-  g.userData = { type:"choc", message };
-  clickable.push(g); scene.add(g); return g;
-}
-
-/* ====== Magic Heart (glow + aura + fireflies) ====== */
-const heart = (()=> {
-  const s = new THREE.Shape();
-  s.moveTo(0, 0.25);
-  s.bezierCurveTo(0, 0.25, -0.3, 0, -0.6, 0.25);
-  s.bezierCurveTo(-0.9, 0.55, -0.6, 0.9, 0, 1.1);
-  s.bezierCurveTo(0.6, 0.9, 0.9, 0.55, 0.6, 0.25);
-  s.bezierCurveTo(0.3, 0, 0, 0.25, 0, 0.25);
-  const geo = new THREE.ExtrudeGeometry(s, { depth: 0.28, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05 });
-  const mat = new THREE.MeshStandardMaterial({ color: 0xff4d93, roughness:.35, metalness:.1, emissive:0x95194e, emissiveIntensity:.5 });
-  const m = new THREE.Mesh(geo, mat);
-  m.position.set(0, 0.3, 0); m.rotation.y = Math.PI/8; m.castShadow = true;
-  scene.add(m);
-  // aura
-  const aura = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.7, 64), new THREE.MeshBasicMaterial({ color:0xff77c7, transparent:true, opacity:.8, side: THREE.DoubleSide }));
-  aura.rotation.x = -Math.PI/2; aura.position.y = 0.11; scene.add(aura);
-  m.userData.aura = aura;
-  // fireflies orbiting
-  const flyGeo = new THREE.BufferGeometry();
-  const N = isMobile?40:90;
-  const pos = new Float32Array(N*3), phase = new Float32Array(N);
-  for (let i=0;i<N;i++){ pos[i*3]=0; pos[i*3+1]=0.6; pos[i*3+2]=0; phase[i]=Math.random()*Math.PI*2; }
-  flyGeo.setAttribute("position", new THREE.BufferAttribute(pos,3));
-  const flies = new THREE.Points(flyGeo, new THREE.PointsMaterial({ size: 0.06, color: 0xffa6e6, transparent: true, opacity: .9 }));
-  flies.userData.phase = phase; flies.userData.radius = 1.6; scene.add(flies);
-  m.userData.flies = flies;
-  return m;
-})();
-
-/* ====== Messages pool (no repeats until we cycle) ====== */
-const messagePool = shuffle([
-  "You make ordinary days magical ✨",
-  "Your smile is my sunrise 🌅",
-  "Every petal whispers: I love you 💖",
-  "With you, forever feels short 💫",
-  "You’re my favorite human in the universe 🌌",
-  "You are the poem my heart keeps writing 📝💗",
-  "I choose you. Today, tomorrow, always ♾️",
-  "Your laugh is the sweetest melody 🎶",
-  "You’re the color in my sky 🌈",
-  "Let’s collect sunsets together 🌇",
-  "You + Me = Home 🏡",
-  "You are my safest place 🤍",
-  "Thank you for being you ✨",
-  "You make everything softer & brighter 🌟",
-  "You are my wish come true 🌠",
-  "I fall for you daily—no breaks 😌",
-  "Your magic is contagious ✨💫",
-  "I adore your heart, your chaos, your light 💞",
-  "You are my once-in-a-lifetime 🍀",
-  "Let’s be ridiculous together forever 😄",
-  "You’re the plot twist I prayed for 📖",
-  "I love you to every galaxy 🚀",
-  "Happy Birthday, love—let today sparkle! 🎂✨",
-  "A year older, a million times lovelier 🌷",
-  "Here’s to more us, more joy, more magic ✨",
-  "You’re my favorite adventure 🗺️",
-  "Your kindness is my favorite superpower 🦸‍♀️",
-  "You’re the calm & the storm I adore ⛈️💗",
-  "My heart picked you. Permanently 💘",
-  "You’re not perfect—you're better: you’re you 🤍"
-]);
-let messageIndex = 0;
-function nextMessage(){ const m = messagePool[messageIndex++ % messagePool.length]; return m; }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()* (i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
-
-/* ====== Populate Garden ====== */
-// Flowers ring
-for (let i=0;i<34;i++){
-  const a = i/34 * Math.PI*2;
-  const r = 14 + (Math.random()*3 - 1.5);
-  const x = Math.cos(a)*r, z = Math.sin(a)*r;
-  const hue = (i/34 + Math.random()*0.1) % 1;
-  const petal = new THREE.Color().setHSL(hue, 0.7, 0.6).getHex();
-  makeFlower(x,z,{ petal, msg: nextMessage() });
-}
-// Flower cluster
-for (let i=0;i<10;i++){
-  makeFlower((Math.random()-0.5)*6, (Math.random()-0.5)*6, { petal: 0xff9dbb, msg: "You are precious, Guddu 💗" });
-}
-
-// Trees with fruit messages
-makeTree(-10, -6, [nextMessage(), nextMessage(), nextMessage(), "You’re peach-perfect 🍑", "Pick me! I’m sweet for you 🍎", "A little vitamin ‘us’ 💞"]);
-makeTree(11, 7,  [nextMessage(), "Hold me like a secret 🤫💗", nextMessage(), "Love, piped fresh daily 🧁", nextMessage(), "Bite of happiness!"]);
-
-// Gifts & chocolates
-makeGiftBox(-4.2, -10.5, "A surprise for you 🎁\nOpen me with a tap!");
-makeGiftBox(8.6, 10.5,  "My heart is wrapped for you 💛");
-makeChocolate(3, -12.2, "Sweet like your laugh 🍫");
-makeChocolate(-12.5, 4.2, "Cocoa kisses for you! 💋");
-
-/* ====== Interaction (raycaster) ====== */
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-renderer.domElement.addEventListener("pointerdown", onPointerDown, { passive: true });
-
-function onPointerDown(e){
-  const rect = renderer.domElement.getBoundingClientRect();
-  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-  const intersects = raycaster.intersectObjects(clickable, true);
-  if(!intersects.length) return;
-  const obj = rootOf(intersects[0].object);
-
-  if (obj.userData.type === "flower") {
-    if (!obj.userData.opened){
-      obj.userData.opened = true;
-      showMessage(obj, obj.userData.message);
-      obj.userData.rise = 0;
-      spawnDust(obj.getWorldPosition(tmpV), 0xffa6e6);
-    } else {
-      clearMessage(obj); obj.userData.opened = false;
-    }
-  } else if (obj.userData.type === "gift") {
-    obj.userData.openT = Math.min(1, obj.userData.openT + 1);
-    showMessage(obj, obj.userData.message, "#ffd54f");
-    spawnDust(obj.getWorldPosition(tmpV), 0xfff59d);
-  } else if (obj.userData.type === "choc") {
-    showMessage(obj, obj.userData.message, "#a5d6a7");
-    spawnDust(obj.getWorldPosition(tmpV), 0xb2ff59);
-  } else if (obj.userData.type === "fruit") {
-    // pop fruit and show message on its parent tree
-    obj.visible = false;
-    showMessage(obj.userData.parent, obj.userData.message, "#ff8a65");
-    spawnDust(obj.getWorldPosition(tmpV), 0xffab91);
-  }
-}
-function rootOf(mesh){
-  let p = mesh;
-  while (p && !clickable.includes(p)) p = p.parent;
-  return p || mesh;
-}
-function showMessage(host, text, stroke="#ff6fb4"){
-  const prev = host.children.find(c=>c.userData && c.userData.__isMessage);
-  if (prev) host.remove(prev);
-  const sprite = makeTextSprite(text, { stroke });
-  sprite.position.set(0, 2.0, 0);
-  sprite.material.opacity = 0;
-  sprite.userData.fade = 0;
-  host.add(sprite);
-}
-function clearMessage(host){
-  const spr = host.children.find(c=>c.userData && c.userData.__isMessage);
-  if (spr) host.remove(spr);
-}
-
-/* ====== Animation Loop ====== */
-const tickers = [];
-function showToast(msg){
-  const el = document.getElementById("toast");
-  el.textContent = msg; el.style.opacity = 1;
-  setTimeout(()=> el.style.opacity = 0, 2400);
-}
-
-// breadcrumbs blink
-for (const c of scene.children){
-  if (c.type === "Mesh" && c.material === undefined) continue;
-}
-
-function animate(){
-  const dt = Math.min(0.033, clock.getDelta());
-  controls.update();
-
-  // heart motion
-  heart.rotation.y += dt * 0.7;
-  heart.userData.aura.scale.setScalar(1.2 + Math.sin(clock.elapsedTime*2.0)*0.12);
-  heart.userData.aura.material.opacity = 0.5 + Math.sin(clock.elapsedTime*2.2)*0.35;
-
-  // fireflies orbit
-  const flies = heart.userData.flies;
-  const ph = flies.userData.phase, r = flies.userData.radius;
-  const pos = flies.geometry.attributes.position;
-  for (let i=0;i<ph.length;i++){
-    const a = ph[i] + clock.elapsedTime*(0.35 + (i%5)*0.02);
-    pos.array[i*3]   = Math.cos(a)*r;
-    pos.array[i*3+1] = 0.6 + Math.sin(a*2)*0.18;
-    pos.array[i*3+2] = Math.sin(a)*r;
-  }
-  pos.needsUpdate = true;
-
-  // gifts lid anim
-  for (const obj of clickable){
-    if (obj.userData.type === "gift" && obj.userData.openT>0){
-      const lid = obj.userData.lid;
-      lid.rotation.z = Math.min(Math.PI*0.9, lid.rotation.z + dt*1.7);
-      lid.position.y = Math.min(1.25, lid.position.y + dt*0.55);
-    }
-    if (obj.userData.rise !== undefined && obj.userData.rise < 1){
-      obj.userData.rise += dt*1.2;
-      obj.position.y = Math.sin(obj.userData.rise * Math.PI) * 0.18;
-    } else if (obj.userData.rise !== undefined) {
-      obj.position.y *= 0.96;
-    }
-    // message fade in
-    const msg = obj.children.find(c=>c.userData && c.userData.__isMessage);
-    if (msg && msg.material.opacity < 1){
-      msg.material.opacity = Math.min(1, msg.material.opacity + dt*2.2);
-    }
-  }
-
-  // fairy dust update
-  for (let i=bursts.length-1;i>=0;i--){
-    const pts = bursts[i];
-    const t = clock.getElapsedTime() - pts.userData.birth;
-    const P = pts.geometry.attributes.position;
-    const V = pts.geometry.attributes.velocity;
-    for (let j=0;j<P.count;j++){
-      const idx=j*3;
-      P.array[idx  ] += V.array[idx  ] * dt;
-      P.array[idx+1] += V.array[idx+1] * dt;
-      P.array[idx+2] += V.array[idx+2] * dt;
-      V.array[idx+1] -= 0.98 * dt * 0.45;
-    }
-    P.needsUpdate = true;
-    pts.material.opacity = Math.max(0, 1 - t*1.2);
-    if (pts.material.opacity <= 0.02){
-      scene.remove(pts); pts.geometry.dispose(); pts.material.dispose(); bursts.splice(i,1);
-    }
-  }
-
-  // grass wind
-  for (const fn of grassTickers) fn();
-
-  composer.render();
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-
-/* ====== Resize ====== */
-addEventListener("resize", ()=>{
-  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
-  fxaa.material.uniforms["resolution"].value.set(1/innerWidth, 1/innerHeight);
-});
-
-/* ====== First-run tip for mobile ====== */
-if (isMobile) showToast("Pinch to zoom • drag to orbit • tap to reveal");
-
-</script>
+      // Hide loading
+      document.getElementById("loading").style.display = "none";
+    });
+  </script>
 </body>
 </html>
