@@ -1,593 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Guddu’s Endless Surprise Garden 🌿✨</title>
-  <meta name="description" content="A 3D endless-path garden with realistic grass, trees, birds, butterflies, photo hoardings, gifts that open, and day/night cycle. Mobile-optimized." />
+  <meta charset="UTF-8">
+  <title>Guddu's Endless Surprise Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- THREE.js -->
+  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.155.0/examples/js/geometries/TextGeometry.js"></script>
+
   <style>
-    html, body { height: 100%; margin: 0; overflow: hidden; background: #000; }
-    #app { position: fixed; inset: 0; }
-    #overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 20; }
-    #overlay img { max-width: 96vw; max-height: 90vh; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.7); }
-    #ui { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 15; display:flex; gap:8px; align-items:center; font-family: system-ui, ui-sans-serif, Segoe UI, Roboto, Helvetica, Arial; }
-    .chip { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 12px; backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,0.2); }
-    .chip small{opacity:.85;font-weight:500}
-    #hint { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); color:#fff; font-family: system-ui; font-size:12px; opacity:.7; z-index: 10; }
-    #error { position: fixed; bottom: 12px; right: 12px; color: #ffb4b4; background: rgba(0,0,0,.5); padding: 8px 10px; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; max-width: 50ch; z-index: 50; display:none; }
+    body { margin:0; overflow:hidden; background:black; }
     canvas { display:block; }
-    button{ cursor:pointer; }
   </style>
 </head>
 <body>
-  <div id="app"></div>
-  <div id="ui">
-    <div class="chip" id="modeChip">🌞 <small>Day</small></div>
-    <div class="chip" id="fps">FPS: --</div>
-  </div>
-  <div id="hint">Auto-exploring… tap gifts to open, tap hoardings to view photos. Tap outside image to close.</div>
-  <div id="overlay" aria-hidden="true"><img id="overlayImg" alt="Photo"/></div>
-  <div id="error"></div>
+<script>
+  // ---------------- CONFIG ----------------
+  const HOARDING_IMAGES = [
+    "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?raw=1",
+    "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?raw=1",
+    "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?raw=1",
+    "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?raw=1",
+    "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?raw=1"
+  ];
 
-  <script type="module">
-    // ======= Imports (Three.js from CDN) =======
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import { RGBELoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/RGBELoader.js';
+  const CHUNK_LEN = 50;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-    // ======= Basic Setup =======
-    const app = document.getElementById('app');
-    const errorBox = document.getElementById('error');
-    const modeChip = document.getElementById('modeChip');
-    const fpsChip = document.getElementById('fps');
+  // ---------------- CONTROLS ----------------
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 2, -5);
+  camera.position.set(0, 3, 10);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    app.appendChild(renderer.domElement);
+  // ---------------- LIGHTING ----------------
+  const ambient = new THREE.AmbientLight(0x666666);
+  scene.add(ambient);
+  const sun = new THREE.DirectionalLight(0xffffff, 1);
+  sun.position.set(50,100,0);
+  scene.add(sun);
 
-    const scene = new THREE.Scene();
+  // ---------------- GROUND WITH GRASS ----------------
+  const groundGeo = new THREE.PlaneGeometry(200,200);
+  const groundMat = new THREE.MeshLambertMaterial({color:0x228822});
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI/2;
+  scene.add(ground);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 2.2, 0); // start slightly above path
+  // grass blades
+  const grassGeo = new THREE.PlaneGeometry(0.1,0.5);
+  const grassMat = new THREE.MeshBasicMaterial({color:0x44aa44, side:THREE.DoubleSide});
+  for (let i=0;i<2000;i++){
+    const blade = new THREE.Mesh(grassGeo, grassMat);
+    blade.position.set((Math.random()-0.5)*200,0,(Math.random()-0.5)*200);
+    blade.rotation.y = Math.random()*Math.PI;
+    scene.add(blade);
+  }
 
-    // Optional controls for debugging on desktop (disabled by default on mobile)
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enabled = !isMobile; // only desktop can orbit to peek around
-    controls.target.set(0, 1.2, -5);
+  // ---------------- TREES ----------------
+  function createTree(x,z){
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.5,4), new THREE.MeshLambertMaterial({color:0x8b5a2b}));
+    trunk.position.set(x,2,z);
+    scene.add(trunk);
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(2,12,12), new THREE.MeshLambertMaterial({color:0x228b22}));
+    leaves.position.set(x,5,z);
+    scene.add(leaves);
+    return leaves;
+  }
+  createTree(-5,-10);
+  createTree(6,-30);
+  createTree(-8,-50);
 
-    // Subtle fog for depth
-    scene.fog = new THREE.Fog(0x99c1a9, 30, 160);
+  // ---------------- HOARDINGS ----------------
+  const texLoader = new THREE.TextureLoader();
+  function makeHoarding(tex){
+    const mat = new THREE.MeshBasicMaterial({map:tex, side:THREE.DoubleSide});
+    const geo = new THREE.PlaneGeometry(8,6);
+    return new THREE.Mesh(geo, mat);
+  }
 
-    // ======= Lighting (balanced for mobile) =======
-    const hemi = new THREE.HemisphereLight(0xbcd9ff, 0x29422a, 0.85);
-    scene.add(hemi);
+  function addHoarding(z){
+    const idx = Math.floor(Math.random()*HOARDING_IMAGES.length);
+    const tex = texLoader.load(HOARDING_IMAGES[idx]);
+    const h = makeHoarding(tex);
+    const side = Math.random()>0.5 ? -1:1;
+    h.position.set(side*6,3,z);
+    scene.add(h);
+  }
 
-    const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-    sun.position.set(5, 10, 2);
-    sun.castShadow = false;
-    scene.add(sun);
+  // ---------------- GIFT BOX ----------------
+  function createGift(x,z){
+    const geo = new THREE.BoxGeometry(1,1,1);
+    const mat = new THREE.MeshLambertMaterial({color:0xff0000});
+    const box = new THREE.Mesh(geo,mat);
+    box.position.set(x,0.5,z);
+    scene.add(box);
 
-    // Night lights container (enabled during night)
-    const nightGroup = new THREE.Group();
-    scene.add(nightGroup);
+    box.userData.isGift=true;
+    return box;
+  }
 
-    // ======= Ground & Path =======
-    const groundGeo = new THREE.PlaneGeometry(200, 200, 1, 1);
-    const groundMatDay = new THREE.MeshStandardMaterial({ color: 0x6fbf73, roughness: 1, metalness: 0 });
-    const groundMatNight = new THREE.MeshStandardMaterial({ color: 0x274c2c, roughness: 1, metalness: 0 });
-    const ground = new THREE.Mesh(groundGeo, groundMatDay);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = false;
-    scene.add(ground);
+  // ---------------- BUTTERFLIES ----------------
+  const butterflies=[];
+  function createButterfly(){
+    const geo=new THREE.PlaneGeometry(0.5,0.5);
+    const mat=new THREE.MeshBasicMaterial({color:0xff00ff, side:THREE.DoubleSide});
+    const b=new THREE.Mesh(geo,mat);
+    b.position.set((Math.random()-0.5)*10,2+Math.random()*2,(Math.random()-0.5)*10);
+    scene.add(b);
+    butterflies.push(b);
+  }
+  for(let i=0;i<10;i++) createButterfly();
 
-    // Path strip (never-ending illusion: we move world backwards)
-    const pathGeo = new THREE.PlaneGeometry(4, 200);
-    const pathMatDay = new THREE.MeshStandardMaterial({ color: 0xdcc6a0, roughness: 0.9 });
-    const pathMatNight = new THREE.MeshStandardMaterial({ color: 0x7a5f3a, roughness: 0.9 });
-    const path = new THREE.Mesh(pathGeo, pathMatDay);
-    path.rotation.x = -Math.PI / 2;
-    path.position.y = 0.01;
+  // ---------------- BIRDS ----------------
+  const birdGeo=new THREE.ConeGeometry(0.2,0.5,8);
+  const birdMat=new THREE.MeshLambertMaterial({color:0x0000ff});
+  const birds=[];
+  for(let i=0;i<5;i++){
+    const b=new THREE.Mesh(birdGeo,birdMat);
+    b.position.set(-5+Math.random()*10,5+Math.random()*2,-20-Math.random()*20);
+    scene.add(b);
+    birds.push(b);
+  }
+
+  // ---------------- ENDLESS PATH ----------------
+  let chunkIndex=0;
+  function generateChunk(){
+    const z = -chunkIndex*CHUNK_LEN;
+
+    // path
+    const pathGeo=new THREE.PlaneGeometry(4,CHUNK_LEN);
+    const pathMat=new THREE.MeshLambertMaterial({color:0x444444});
+    const path=new THREE.Mesh(pathGeo,pathMat);
+    path.rotation.x=-Math.PI/2;
+    path.position.z=z-CHUNK_LEN/2;
     scene.add(path);
 
-    // ======= Procedural Chunks =======
-    const CHUNK_LEN = 20; // length along -Z to +Z (we move world -Z to simulate forward motion)
-    const VISIBLE_CHUNKS = 10; // keep this many chunks in scene
-    const objects = new Map(); // key: chunkIndex => group
+    if(chunkIndex%2===0) addHoarding(z-CHUNK_LEN/2+10);
+    if(Math.random()>0.7) createGift((Math.random()>0.5?2:-2),z-20);
 
-    // Preload simple assets (procedural textures)
-    const texLoader = new THREE.TextureLoader();
+    chunkIndex++;
+  }
+  for(let i=0;i<5;i++) generateChunk();
 
-    function makeCanvasTexture(text, bg, fg) {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = bg; ctx.fillRect(0,0,c.width,c.height);
-      ctx.fillStyle = fg; ctx.font = 'bold 80px system-ui, Segoe UI, Roboto';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(text, c.width/2, c.height/2);
-      return new THREE.CanvasTexture(c);
-    }
-
-   // 🖼️ Real hoarding images (Dropbox direct links)
-const HOARDING_IMAGES = [
-  "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?rlkey=snhn8qgohmv851usrxps09n9m&st=kqb90zz5&raw=1",
-  "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=coa9io67&raw=1",
-  "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?rlkey=9giowulkgwin4l9q0pnphmmiq&st=4eg4lvbs&raw=1",
-  "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?rlkey=tqlohjwragswplmwl9jgmim37&st=iu62z8rd&raw=1",
-  "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?rlkey=m4bcqn577zxvq69qt8gotci7y&st=xg32j4v0&raw=1"
-];
-
-
-    const fallbackPhotos = [
-      makeCanvasTexture('Happy Birthday, Guddu! 💖', '#ffdbe6', '#8a1353'),
-      makeCanvasTexture('Memories Together 📸', '#e1f5ff', '#0a4e7a'),
-      makeCanvasTexture('You are Special 🌟', '#fff7cc', '#665200'),
-      makeCanvasTexture('Always With You 💫', '#d9ffe5', '#084a2b')
-    ];
-
-    // ======= Grass (instanced blades with sway) =======
-    const bladeCount = isMobile ? 3000 : 9000;
-    const bladeGeo = new THREE.PlaneGeometry(0.05, 0.6, 1, 4);
-    bladeGeo.translate(0, 0.3, 0);
-
-    const grassMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uColorA: { value: new THREE.Color(0x4da069) },
-        uColorB: { value: new THREE.Color(0x7ccf8f) },
-      },
-      vertexShader: `
-        uniform float uTime;
-        varying float vY;
-        void main(){
-          vY = position.y;
-          vec3 pos = position.xyz;
-          // bend towards camera forward (Z-)
-          float sway = sin((position.y + instanceMatrix[3].z + uTime*1.2))*0.06;
-          pos.x += sway * (position.y);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
-        }
-      `,
-      fragmentShader: `
-        varying float vY;
-        uniform vec3 uColorA; uniform vec3 uColorB;
-        void main(){
-          float t = smoothstep(0.0, 0.6, vY);
-          vec3 col = mix(uColorA, uColorB, t);
-          gl_FragColor = vec4(col, 1.0);
-        }
-      `,
-      side: THREE.DoubleSide
-    });
-
-    const grass = new THREE.InstancedMesh(bladeGeo, grassMat, bladeCount);
-    scene.add(grass);
-
-    function scatterGrass() {
-      const dummy = new THREE.Object3D();
-      for (let i = 0; i < bladeCount; i++) {
-        const x = (Math.random() * 60 - 30);
-        const z = (Math.random() * 160 - 120); // spread ahead
-        // Keep path clear (|x| > 3)
-        if (Math.abs(x) < 2.2) { i--; continue; }
-        const y = 0;
-        dummy.position.set(x, y, z);
-        dummy.rotation.y = Math.random() * Math.PI;
-        const s = 0.8 + Math.random()*0.6;
-        dummy.scale.set(s, s*(0.8+Math.random()*0.6), s);
-        dummy.updateMatrix();
-        grass.setMatrixAt(i, dummy.matrix);
-      }
-      grass.instanceMatrix.needsUpdate = true;
-    }
-    scatterGrass();
-
-    // ======= Trees (simple low-poly) =======
-    function makeTree() {
-      const g = new THREE.Group();
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.18, 2.2, 6),
-        new THREE.MeshStandardMaterial({ color: 0x7a4e2a, roughness: 1 })
-      );
-      trunk.position.y = 1.1;
-      const crown = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.1, 1),
-        new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.9 })
-      );
-      crown.position.y = 2.2;
-      g.add(trunk, crown);
-      // Add a simple branch for birds to sit
-      const branch = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.03, 0.8, 5),
-        new THREE.MeshStandardMaterial({ color: 0x6b3f1d, roughness:1 })
-      );
-      branch.rotation.z = Math.PI/2;
-      branch.position.set(0.5, 1.6, 0);
-      g.add(branch);
-      return g;
-    }
-
-    // ======= Birds (simple animated) =======
-    function makeBird() {
-      const body = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08, 12, 12),
-        new THREE.MeshStandardMaterial({ color: 0x2248ff, emissive: 0x00000, roughness:0.6 })
-      );
-      const wingL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.06), new THREE.MeshStandardMaterial({ color: 0x2248ff }));
-      const wingR = wingL.clone();
-      wingL.position.set(-0.1, 0, 0); wingR.position.set(0.1, 0, 0);
-      const bird = new THREE.Group();
-      bird.add(body, wingL, wingR);
-      bird.userData.wings = [wingL, wingR];
-      return bird;
-    }
-
-    function animateBird(bird, t) {
-      const [L, R] = bird.userData.wings;
-      const flap = Math.sin(t*8) * 0.8 + 0.2;
-      L.rotation.z = flap;
-      R.rotation.z = -flap;
-    }
-
-    // ======= Butterflies =======
-    function makeButterfly() {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06, 6), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-      const wingGeo = new THREE.PlaneGeometry(0.12, 0.18);
-      const wingMat = new THREE.MeshStandardMaterial({ color: 0xff77aa, side: THREE.DoubleSide });
-      const wL = new THREE.Mesh(wingGeo, wingMat);
-      const wR = new THREE.Mesh(wingGeo, wingMat);
-      wL.position.set(-0.06, 0, 0); wR.position.set(0.06, 0, 0);
-      wL.rotation.y = Math.PI/2; wR.rotation.y = -Math.PI/2;
-      g.add(body, wL, wR);
-      g.userData.wings = [wL, wR];
-      return g;
-    }
-    function animateButterfly(b, t) {
-      const [L, R] = b.userData.wings;
-      const flap = Math.sin(t*16)*0.8 + 0.2;
-      L.rotation.z = flap; R.rotation.z = -flap;
-      b.position.y += Math.sin(t*2 + b.userData.seed) * 0.003; // gentle bob
-    }
-
-    // ======= Hoarding (photo board) =======
-    function makeHoarding(texture) {
-      const frame = new THREE.Mesh(
-        new THREE.BoxGeometry(2.4, 1.5, 0.08),
-        new THREE.MeshStandardMaterial({ color: 0x222222, metalness:0.1, roughness:0.7 })
-      );
-      const pic = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.2, 1.3),
-        new THREE.MeshBasicMaterial({ map: texture, toneMapped:false })
-      );
-      pic.position.z = 0.05; pic.position.y = 0.0;
-      const g = new THREE.Group();
-      g.add(frame, pic);
-      g.userData.pic = pic;
-      g.userData.type = 'hoarding';
-      return g;
-    }
-
-    // ======= Gift Box (opens when clicked) =======
-    function makeGift() {
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 0.3, 0.5),
-        new THREE.MeshStandardMaterial({ color: 0xff4477, roughness:0.6 })
-      );
-      base.position.y = 0.15;
-      const lid = new THREE.Mesh(
-        new THREE.BoxGeometry(0.52, 0.08, 0.52),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive:0x000000, roughness:0.5 })
-      );
-      lid.position.set(0, 0.34, 0);
-      lid.userData.open = false;
-
-      const group = new THREE.Group();
-      group.add(base, lid);
-      group.userData.type = 'gift';
-      group.userData.lid = lid;
-
-      // subtle glow for night
-      const glow = new THREE.PointLight(0xff66cc, 0, 3);
-      glow.position.set(0, 0.5, 0);
-      nightGroup.add(glow);
-      group.userData.glow = glow;
-
-      return group;
-    }
-
-    function toggleGift(lid) {
-      lid.userData.open = !lid.userData.open;
-    }
-
-    // ======= Chunk factory =======
-    function makeChunk(index) {
-      const g = new THREE.Group();
-      g.position.z = -index * CHUNK_LEN; // chunks placed along -Z (we move world backwards)
-
-      // Trees on both sides
-      const treeCount = 2 + Math.floor(Math.random()*3);
-      for (let i=0;i<treeCount;i++){
-        const tL = makeTree();
-        tL.position.set(- (2.8 + Math.random()*2.0), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN);
-        const tR = makeTree();
-        tR.position.set(  (2.8 + Math.random()*2.0), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN);
-        g.add(tL, tR);
-
-        // Birds: some sit, some fly
-        if (Math.random()<0.7){
-          const bird = makeBird();
-          bird.position.copy(tL.position).add(new THREE.Vector3(0.5, 1.7, 0));
-          bird.userData.seed = Math.random()*10;
-          g.add(bird);
-        }
-        if (Math.random()<0.5){
-          const bird = makeBird();
-          bird.position.copy(tR.position).add(new THREE.Vector3(-0.4, 1.8, 0));
-          bird.userData.seed = Math.random()*10;
-          g.add(bird);
-        }
-      }
-
-      // Butterflies near path
-      const butterflies = 2 + Math.floor(Math.random()*3);
-      for (let i=0;i<butterflies;i++){
-        const b = makeButterfly();
-        b.position.set((Math.random()*2-1)*1.5, 0.6+Math.random()*0.6, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN);
-        b.userData.seed = Math.random()*10;
-        b.userData.type = 'butterfly';
-        g.add(b);
-      }
-
-    // Hoardings (every other chunk)
-if (index % 2 === 0) {
-  const idx = Math.floor(Math.random() * HOARDING_IMAGES.length);
-  const tex = texLoader.load(
-    HOARDING_IMAGES[idx],
-    undefined,
-    undefined,
-    (err) => console.error("Failed to load hoarding:", HOARDING_IMAGES[idx], err)
-  );
-
-  const h = makeHoarding(tex);
-  // makeHoarding must use MeshBasicMaterial so hoardings glow at night
-  const side = (index % 4 === 0) ? -1 : 1;
-  h.position.set(side * 3.5, 1.5, -CHUNK_LEN/2 + Math.random() * CHUNK_LEN);
-  g.add(h);
-}
-
-      // Gifts (random)
-      if (Math.random()<0.85){
-        const gift = makeGift();
-        gift.position.set((Math.random()<0.5?-1:1)*(1.2+Math.random()*1.2), 0, -CHUNK_LEN/2 + Math.random()*CHUNK_LEN);
-        g.add(gift);
-      }
-
-      return g;
-    }
-
-    // Seed initial chunks
-    let headIndex = -1; // most-forward index generated
-    let tailIndex = -VISIBLE_CHUNKS; // farthest behind
-    function ensureChunks(camZ){
-      const currentIndex = Math.floor((-camZ)/CHUNK_LEN) + 2; // generate a bit ahead
-      // Add new chunks ahead
-      while (headIndex < currentIndex){
-        headIndex++;
-        const c = makeChunk(headIndex);
-        scene.add(c);
-        objects.set(headIndex, c);
-      }
-      // Remove chunks far behind
-      const minIndex = headIndex - VISIBLE_CHUNKS;
-      for (const [idx, grp] of objects){
-        if (idx < minIndex){
-          // detach night glows from deleted gifts
-          grp.traverse(o=>{
-            if (o.userData && o.userData.glow){ nightGroup.remove(o.userData.glow); }
-          });
-          scene.remove(grp);
-          objects.delete(idx);
-        }
+  // ---------------- INTERACTIONS ----------------
+  const raycaster=new THREE.Raycaster();
+  const mouse=new THREE.Vector2();
+  window.addEventListener("click",(e)=>{
+    mouse.x=(e.clientX/window.innerWidth)*2-1;
+    mouse.y=-(e.clientY/window.innerHeight)*2+1;
+    raycaster.setFromCamera(mouse,camera);
+    const intersects=raycaster.intersectObjects(scene.children);
+    if(intersects.length>0){
+      const obj=intersects[0].object;
+      if(obj.userData.isGift){
+        alert("🎁 Surprise for Guddu! 💖");
       }
     }
+  });
 
-    // ======= Day/Night Cycle =======
-    let isNight = false; let dayTimer = 0; const DAY_LENGTH = 70; // seconds per phase
-    function setDayNight(night){
-      isNight = night;
-      if (night){
-        scene.fog.color.set(0x0e1a12);
-        renderer.setClearColor(0x020403, 1);
-        ground.material = groundMatNight;
-        path.material = pathMatNight;
-        hemi.intensity = 0.25; sun.intensity = 0.25;
-        nightGroup.traverse(o=>{ if (o.isLight) o.intensity = 1.6; });
-        modeChip.innerHTML = '🌙 <small>Night</small>';
-      } else {
-        scene.fog.color.set(0x99c1a9);
-        renderer.setClearColor(0x7fc8a9, 1);
-        ground.material = groundMatDay;
-        path.material = pathMatDay;
-        hemi.intensity = 0.85; sun.intensity = 0.8;
-        nightGroup.traverse(o=>{ if (o.isLight) o.intensity = 0.0; });
-        modeChip.innerHTML = '🌞 <small>Day</small>';
-      }
-    }
-    setDayNight(false);
-
-    // ======= Interaction (raycasting) =======
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    function onTap(event){
-      const rect = renderer.domElement.getBoundingClientRect();
-      const x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
-      const y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
-      pointer.set(x, y);
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(scene.children, true);
-      for (const hit of hits){
-        const obj = hit.object;
-        // gift box lid toggle
-        const g = obj.parent; // could be lid or base
-        if (g && g.userData && g.userData.type === 'gift'){
-          toggleGift(g.userData.lid);
-          return;
-        }
-        // hoarding
-        let h = obj;
-        while (h && h.parent){
-          if (h.userData && h.userData.type === 'hoarding'){
-            const tex = h.userData.pic.material.map;
-            showPhoto(tex);
-            return;
-          }
-          h = h.parent;
-        }
-      }
-    }
-
-    renderer.domElement.addEventListener('pointerdown', onTap);
-
-    // ======= Photo Overlay =======
-    const overlay = document.getElementById('overlay');
-    const overlayImg = document.getElementById('overlayImg');
-    function showPhoto(tex){
-      if (!tex) return;
-      overlay.style.display = 'flex';
-      try {
-        // If CanvasTexture, convert to dataURL
-        if (tex.image && tex.image instanceof HTMLCanvasElement){
-          overlayImg.src = tex.image.toDataURL('image/png');
-        } else if (tex.image && tex.image.src){
-          overlayImg.src = tex.image.src;
-        } else {
-          // Fallback: draw canvas from texture
-          const c = document.createElement('canvas');
-          c.width = 1024; c.height = 512;
-          const ctx = c.getContext('2d');
-          ctx.fillStyle = '#111'; ctx.fillRect(0,0,c.width,c.height);
-          ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = 'bold 60px system-ui';
-          ctx.fillText('Photo', c.width/2, c.height/2);
-          overlayImg.src = c.toDataURL('image/png');
-        }
-      } catch(e){ overlayImg.removeAttribute('src'); }
-    }
-    overlay.addEventListener('click', ()=>{ overlay.style.display = 'none'; overlayImg.removeAttribute('src'); });
-
-    // ======= Audio (birds chirping, lightweight WebAudio synth) =======
-    let audioCtx; let lastChirp = 0;
-    function initAudio(){
-      if (audioCtx) return;
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
-    }
-    window.addEventListener('pointerdown', initAudio, { once:true });
-
-    function playChirp(){
-      if (!audioCtx) return;
-      const t = audioCtx.currentTime;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(1200 + Math.random()*800, t);
-      o.frequency.exponentialRampToValueAtTime(400 + Math.random()*300, t+0.18);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.08, t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t+0.22);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(t); o.stop(t+0.24);
-    }
-
-    // ======= Animation Loop =======
-    let last = performance.now();
-    let accum = 0; // for fps
-    let frames = 0;
-
-    function animate(now){
-      const dt = Math.min(0.033, (now - last)/1000);
-      last = now;
-
-      // auto forward movement: move world backwards along -Z
-      const speed = isMobile ? 2.2 : 2.8; // meters per second
-      scene.position.z += speed * dt;
-      nightGroup.position.z = scene.position.z; // keep lights aligned
-
-      // Camera gently bob
-      camera.position.y = 2.1 + Math.sin(now*0.001)*0.06;
-      controls.update();
-
-      // Update chunks
-      ensureChunks(camera.position.z - scene.position.z);
-
-      // Day/Night
-      dayTimer += dt;
-      if (dayTimer > DAY_LENGTH){ dayTimer = 0; setDayNight(!isNight); }
-
-      // Update grass shader
-      grassMat.uniforms.uTime.value += dt;
-
-      // Animate birds and butterflies
-      const t = now/1000;
-      scene.traverse(o=>{
-        if (o.userData){
-          if (o.userData.wings && o.userData.type !== 'butterfly'){ animateBird(o, t + (o.userData.seed||0)); }
-          if (o.userData.type === 'butterfly'){ animateButterfly(o, t + (o.userData.seed||0)); }
-          if (o.userData.lid){
-            // open/close animation
-            const lid = o.userData.lid;
-            const target = lid.userData.open ? Math.PI*0.8 : 0;
-            lid.rotation.x += (target - lid.rotation.x) * 0.12;
-            // night glow intensity depends on open state
-            if (o.userData.glow){
-              const desired = (isNight && lid.userData.open) ? 2.0 : (isNight ? 0.6 : 0.0);
-              o.userData.glow.intensity += (desired - o.userData.glow.intensity) * 0.1;
-              o.userData.glow.position.copy(o.position).add(new THREE.Vector3(0,0.5,0));
-            }
-          }
-        }
-      });
-
-      // Random chirps near camera
-      if (audioCtx){
-        if (now - lastChirp > 800 + Math.random()*1200){ playChirp(); lastChirp = now; }
-      }
-
-      renderer.render(scene, camera);
-
-      // fps display
-      accum += dt; frames++;
-      if (accum > 0.5){
-        const fps = Math.round(frames/accum);
-        fpsChip.textContent = `FPS: ${fps}`;
-        accum = 0; frames = 0;
-      }
-
-      requestAnimationFrame(animate);
-    }
+  // ---------------- ANIMATION LOOP ----------------
+  function animate(){
     requestAnimationFrame(animate);
+    controls.update();
 
-    // ======= Resize =======
-    window.addEventListener('resize', ()=>{
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    // butterflies
+    butterflies.forEach(b=>{
+      b.position.x+=Math.sin(Date.now()*0.001+b.position.z)*0.01;
+      b.position.y+=Math.cos(Date.now()*0.001+b.position.x)*0.01;
     });
 
-    // ======= Safety / Error reporting =======
-    function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg; }
-    renderer.getContext().getExtension('OES_standard_derivatives'); // hint driver to prep extensions
+    // move camera forward
+    camera.position.z-=0.05;
+    if(camera.position.z < -chunkIndex*CHUNK_LEN + 100){
+      generateChunk();
+    }
 
-    // ======= Developer tips (customize photos) =======
-    // To set real hoarding photos, replace nulls in HOARDING_IMAGES with URLs:
-    // e.g., HOARDING_IMAGES[0] = 'https://yourcdn/photo1.jpg';
-    // e.g., HOARDING_IMAGES[1] = 'images/memories.png';
+    renderer.render(scene,camera);
+  }
+  animate();
 
-  </script>
+</script>
 </body>
 </html>
