@@ -34,10 +34,10 @@
 
     function init() {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x222233);
+      scene.background = new THREE.Color(0x87ceeb); // sky blue
 
       camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 2000);
-      camera.position.set(10, 15, 25);
+      camera.position.set(50, 40, 60);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -50,48 +50,52 @@
       controls.dampingFactor = 0.05;
 
       // Lights
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambient);
-      const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-      dir.position.set(10, 20, 10);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const dir = new THREE.DirectionalLight(0xffffff, 1);
+      dir.position.set(50, 100, 50);
       scene.add(dir);
 
-      // Ground
+      // Ground (asphalt color)
       const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(200, 200),
-        new THREE.MeshPhongMaterial({ color: 0x333333 })
+        new THREE.PlaneGeometry(500, 500),
+        new THREE.MeshPhongMaterial({ color: 0x444444 })
       );
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Two simple buildings
-      const buildingMat = new THREE.MeshPhongMaterial({ color: 0x666699 });
-      const b1 = new THREE.Mesh(new THREE.BoxGeometry(6, 15, 6), buildingMat);
-      b1.position.set(-8, 7.5, 0);
-      scene.add(b1);
+      // Generate simple city (grid of buildings)
+      const buildingMat = new THREE.MeshPhongMaterial({ color: 0x666699, flatShading: true });
+      for (let i = -4; i <= 4; i++) {
+        for (let j = -4; j <= 4; j++) {
+          if (Math.random() > 0.3) { // leave some empty
+            const height = 10 + Math.random() * 30;
+            const bldg = new THREE.Mesh(new THREE.BoxGeometry(8, height, 8), buildingMat);
+            bldg.position.set(i * 12, height / 2, j * 12);
+            scene.add(bldg);
 
-      const b2 = new THREE.Mesh(new THREE.BoxGeometry(10, 25, 10), buildingMat);
-      b2.position.set(12, 12.5, -5);
-      scene.add(b2);
-
-      // Billboard (Hoarding)
-      const loader = new THREE.TextureLoader();
-      loader.load(
-        "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=odlchui1&dl=1",
-        (texture) => {
-          const billboard = new THREE.Mesh(
-            new THREE.PlaneGeometry(12, 8),
-            new THREE.MeshBasicMaterial({ map: texture })
-          );
-          billboard.position.set(-8, 16, 3.5);
-          scene.add(billboard);
+            // put a hoarding on ONE building
+            if (i === 0 && j === 0) {
+              const loader = new THREE.TextureLoader();
+              loader.load(
+                "https://dl.dropboxusercontent.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=odlchui1&dl=1",
+                (texture) => {
+                  const billboard = new THREE.Mesh(
+                    new THREE.PlaneGeometry(12, 8),
+                    new THREE.MeshBasicMaterial({ map: texture })
+                  );
+                  billboard.position.set(i * 12, height + 5, j * 12 + 4.5);
+                  scene.add(billboard);
+                }
+              );
+            }
+          }
         }
-      );
+      }
 
       // Gift Box
       const giftMat = new THREE.MeshPhongMaterial({ color: 0xff3366 });
       giftBox = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), giftMat);
-      giftBox.position.set(0, 1, 5);
+      giftBox.position.set(0, 2, 15);
       scene.add(giftBox);
 
       window.addEventListener("resize", onWindowResize);
@@ -99,15 +103,12 @@
     }
 
     function onClick(event) {
-      // raycast for gift click
       const mouse = new THREE.Vector2(
         (event.clientX / window.innerWidth) * 2 - 1,
         -(event.clientY / window.innerHeight) * 2 + 1
       );
-
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouse, camera);
-
       const intersects = raycaster.intersectObject(giftBox);
       if (intersects.length > 0) {
         scene.remove(giftBox);
@@ -118,9 +119,9 @@
 
     function spawnFairyDust(position) {
       const dustGeometry = new THREE.SphereGeometry(0.05, 6, 6);
-      const dustMaterial = new THREE.MeshBasicMaterial({ color: 0xffccff });
+      const dustMaterial = new THREE.MeshBasicMaterial({ color: 0xffccff, transparent: true, opacity: 1 });
       for (let i = 0; i < 50; i++) {
-        const particle = new THREE.Mesh(dustGeometry, dustMaterial);
+        const particle = new THREE.Mesh(dustGeometry, dustMaterial.clone());
         particle.position.copy(position);
         particle.velocity = new THREE.Vector3(
           (Math.random()-0.5)*2,
@@ -143,7 +144,6 @@
       requestAnimationFrame(animate);
       controls.update();
 
-      // Update fairy dust
       particleGroup.forEach((p, i) => {
         p.position.add(p.velocity.clone().multiplyScalar(0.1));
         p.material.opacity -= 0.01;
