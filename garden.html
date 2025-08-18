@@ -1,596 +1,527 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Guddu’s Secret Garden 🌸💖</title>
-<meta name="description" content="A 3D garden for Guddu: draggable scene with flowers, fairy dust, gift boxes, chocolates, photo hoardings, and a central beating heart with love notes." />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Guddu’s 3D Love Garden ✨</title>
+<meta name="description" content="A magical 3D garden for Guddu — flowers, gifts, chocolates, hoardings, fairy dust, and love messages. Drag to explore.">
 <style>
   :root{
-    --ink:#eef2ff; --muted:#c8d1ff; --deep:#040611;
-    --rose:#ff8fdc; --gold:#ffd98a; --mint:#9ff9cf; --vio:#c9a8ff;
+    --ink:#eef2ff; --muted:#c9d2ff; --deep:#070a18; --rose:#ff92dc; --gold:#ffd98a; --mint:#9ff9cf;
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0; background: radial-gradient(1100px 700px at 12% -8%, #241d66 0%, #0d1236 45%, #050818 85%); color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; overflow:hidden}
+  html,body{margin:0;height:100%; background:radial-gradient(1200px 800px at 10% -10%, #201b5a 0%, #0b0f2b 45%, #070a18 85%); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
 
-  /* Loading */
-  #loading{position:fixed; inset:0; display:grid; place-items:center; z-index:10;
-    background:rgba(5,8,24,.9); font-weight:800; letter-spacing:.3px; text-align:center}
-  #loading .txt{padding:18px 20px; border:1px solid rgba(255,255,255,.16); border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-    box-shadow:0 20px 60px rgba(0,0,0,.55)}
-  #loading .dots::after{content:'…'; animation:dots 1.5s steps(3,end) infinite}
-  @keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
-
-  /* Canvas + label renderer */
-  #scene{position:fixed; inset:0; display:block}
-  .label { color:#fff; font-weight:800; padding:6px 10px; border-radius:999px;
-    font-size:12px; letter-spacing:.2px; white-space:nowrap;
-    background:linear-gradient(90deg, #ffbde8, #fff0a6);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 12px rgba(255,220,220,.35), 0 0 24px rgba(255,230,170,.25); }
-
-  /* Top banner */
-  .banner{position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:5;
-    padding:8px 14px; border-radius:999px; font-weight:900; font-size:13px; letter-spacing:.3px;
-    background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.07));
-    border:1px solid rgba(255,255,255,.18); box-shadow:0 12px 30px rgba(0,0,0,.35)}
-
-  /* Message banner (center, pretty & twinkling) */
-  .msgWrap{position:fixed; left:50%; top:12vh; transform:translateX(-50%); z-index:6; text-align:center; pointer-events:none}
-  .msg{
-    display:inline-block; padding:10px 16px; border-radius:14px; font-weight:900;
-    font-size:clamp(16px, 4.6vw, 30px); letter-spacing:.3px; line-height:1.15;
-    background:linear-gradient(90deg, #ffe6a8 0%, #ffb6e5 45%, #ffffff 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 18px rgba(255,230,170,.35), 0 0 32px rgba(255,200,200,.22);
-    animation:twink 3.3s ease-in-out infinite;
+  .banner{
+    position:fixed;left:50%;top:10px;transform:translateX(-50%);
+    padding:6px 12px;border-radius:999px;font-weight:800;font-size:12px;letter-spacing:.2px;
+    background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.07));
+    border:1px solid rgba(255,255,255,.18);z-index:7
   }
-  @keyframes twink{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
 
-  /* Music pill */
-  .music{position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:7;
-    background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2); border-radius:999px;
-    padding:6px 12px; font-size:.9rem; display:flex; gap:10px; align-items:center;
-    box-shadow:0 10px 28px rgba(0,0,0,.35)}
-  .music button{background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:800}
+  /* Message bubble (fallback + generic) */
+  .msg{
+    position:fixed;left:50%;transform:translateX(-50%);max-width:min(92vw, 800px);
+    text-align:center;z-index:8;padding:10px 16px;border-radius:16px;
+    background:rgba(4,6,20,.55);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+  }
+  .msg h2{
+    margin:0;
+    font-family:Georgia,"Times New Roman",ui-serif; font-weight:900; letter-spacing:.3px;
+    font-size:clamp(18px,5.6vw,42px); line-height:1.2;
+    background:linear-gradient(90deg,#ffe4a6 0%,#ffb6e5 45%,#ffffff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 18px rgba(255,230,170,.35), 0 0 36px rgba(255,200,200,.22);
+    animation:glowFloat 5.8s ease-in-out infinite;
+  }
+  .msg p{margin:.4rem 0 0;color:var(--muted);font-size:clamp(12px,3.8vw,18px)}
+  .hidden{display:none}
+  @keyframes glowFloat {0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-  /* Little hint */
-  .hint{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:4;
-    font-size:12px; color:var(--muted); opacity:.9}
+  /* Tiny UI hint (tap) */
+  .hint{position:fixed;right:10px;bottom:10px;opacity:.65;font-size:12px;z-index:6}
+
+  /* Sparkle emoji trail */
+  .spark{position:fixed;pointer-events:none;z-index:9;opacity:.9;font-size:16px;animation:rise 1.2s ease-out forwards}
+  @keyframes rise{from{transform:translateY(0);opacity:.9}to{transform:translateY(-40px);opacity:0}}
+
+  /* Loading overlay */
+  #loading{position:fixed;inset:0;display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:.3px;z-index:10;
+    background: radial-gradient(800px 600px at 20% -5%, rgba(120,100,255,.20), transparent 60%)}
+
+  /* Toast for errors */
+  #toast{
+    position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+    padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;z-index:12;
+    border:1px solid rgba(255,255,255,.15);font-weight:700;letter-spacing:.2px;display:none
+  }
+
+  /* CSS2D label style */
+  .label{
+    color:#fff; font-weight:800;
+    text-shadow:0 0 10px rgba(255,160,240,.9), 0 0 18px rgba(255,220,180,.7);
+    padding:2px 6px; border-radius:8px; background:rgba(20, 8, 30, .35); border:1px solid rgba(255,255,255,.15);
+    font-size:14px; white-space:nowrap;
+  }
 </style>
-
-<!-- Three.js & helpers (global THREE namespace) -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/renderers/CSS2DRenderer.js"></script>
 </head>
 <body>
-  <div class="banner">Guddu’s Secret Garden ✨ (drag to look around)</div>
-  <div id="loading"><div class="txt">🌸 Preparing Guddu’s Garden<span class="dots"></span></div></div>
-  <canvas id="scene"></canvas>
-  <div class="msgWrap"><div id="msg" class="msg">Tap a flower, gift, chocolate… or the heart in the center 💖</div></div>
-  <div class="hint">Tip: pinch to zoom, drag to rotate • gifts open, flowers rise with fairy dust ✨</div>
+<div id="loading">Preparing Guddu’s Garden… ✨</div>
+<div id="app"></div>
+<div class="banner">A 3D Love Garden for Guddu ✨ — Drag to explore</div>
+<div class="hint">Tap flowers, gifts & chocolates for surprises 🌸🎁🍫</div>
+<div id="toast"></div>
 
-  <!-- Music (same tone as surprises page; autoplay-safe) -->
-  <audio id="bgm" src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/hum%20marjayenge.mp3" preload="auto" autoplay loop playsinline></audio>
-  <div class="music" id="musicCtl"><span id="musicLabel">Sound: On</span><button id="toggleMusic">⏸︎</button><button id="tapSound" style="display:none">Tap for sound 🎵</button></div>
+<!-- Fallback love note message (used when CSS2D labels aren't available) -->
+<div id="noteGeneric" class="msg hidden" style="bottom:14vh">
+  <h2>You make my world softer & brighter ✨</h2>
+  <p>Every little thing about you is magic.</p>
+</div>
+
+<!-- Your local Three.js + OrbitControls -->
+<script src="three.min.js"></script>
+<script src="OrbitControls.js"></script>
+
+<!-- CSS2DRenderer (for nice attached labels). If it fails, we safely fall back. -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/renderers/CSS2DRenderer.js"
+        onerror="window.__noCSS2D__=true"></script>
 
 <script>
-/* ---------- Helpers ---------- */
-const $=(s,el=document)=>el.querySelector(s);
-const $$=(s,el=document)=>[...el.querySelectorAll(s)];
-function showMsg(text){ const el=$('#msg'); el.textContent=text; el.style.opacity='1'; clearTimeout(showMsg._t); showMsg._t=setTimeout(()=>{ el.style.opacity='.0'; }, 3600); }
-function rand(a,b){ return Math.random()*(b-a)+a; }
-function rInt(a,b){ return Math.floor(rand(a,b)); }
-
-/* ---------- Scene globals ---------- */
-let scene, camera, renderer, labelRenderer, controls, raycaster, pointer;
-let interactables = []; // clickable objects
-let mixers = []; // for simple per-frame animations if needed
-let clock = new THREE.Clock();
-
-/* ---------- Texture helpers ---------- */
-const T = new THREE.TextureLoader(); T.setCrossOrigin('anonymous');
-function canvasCircleTexture(color='#ffffff'){
-  const s=64, c=document.createElement('canvas'); c.width=c.height=s;
-  const ctx=c.getContext('2d'); const g=ctx.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
-  g.addColorStop(0,color); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,s,s);
-  const tex=new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
+/* ===================== Utilities ===================== */
+const $=s=>document.querySelector(s);
+const show=el=>el.classList.remove('hidden');
+const hide=el=>el.classList.add('hidden');
+function flashSparkle(x,y,emoji='✨'){
+  const s=document.createElement('div'); s.className='spark'; s.textContent=emoji;
+  s.style.left=x+'px'; s.style.top=y+'px'; document.body.appendChild(s);
+  setTimeout(()=>s.remove(),1200);
 }
-const fairyTex = canvasCircleTexture('rgba(255,255,255,0.95)');
-const confettiColors = [0xff8fdc,0xffd98a,0x9ff9cf,0xc9a8ff,0xffffff];
+function toast(msg, ms=2400){
+  const t=$('#toast'); t.textContent=msg; t.style.display='inline-block';
+  setTimeout(()=>t.style.display='none', ms);
+}
+// Convert Dropbox link to direct raw
+const rawLink = url => url.replace(/\?dl=0(?:$|)/,'?raw=1');
 
-/* ---------- Init ---------- */
+/* ===================== Core Scene ===================== */
+let scene, camera, renderer, controls, labelRenderer;
+let raycaster, pointer, interactables=[];
+let heartMesh, fireflies=[];
+
 init();
 animate();
 
 function init(){
-  // Base
+  // Safety: verify Three + Controls exist
+  if(typeof THREE==='undefined'){ toast('Three.js failed to load. Place garden.html with three.min.js'); return; }
+  if(typeof THREE.OrbitControls==='undefined'){ toast('OrbitControls not found. Keep OrbitControls.js next to garden.html'); }
+
+  const app = $('#app');
+  const w = app.clientWidth, h = app.clientHeight;
+
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x070a18, 20, 120);
+  scene.fog = new THREE.FogExp2(0x0b0f2b, 0.018);
 
-  camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 300);
-  camera.position.set(0, 6, 16);
+  camera = new THREE.PerspectiveCamera(60, w/h, 0.1, 1000);
+  camera.position.set(0, 7.5, 22);
 
-  renderer = new THREE.WebGLRenderer({canvas:$('#scene'), antialias:true});
-  renderer.setPixelRatio(Math.min(2, devicePixelRatio||1));
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setClearColor(0x050818, 1);
-
-  // CSS2D labels
-  labelRenderer = new THREE.CSS2DRenderer();
-  labelRenderer.setSize(innerWidth, innerHeight);
-  labelRenderer.domElement.style.position='fixed';
-  labelRenderer.domElement.style.top='0';
-  labelRenderer.domElement.style.pointerEvents='none';
-  document.body.appendChild(labelRenderer.domElement);
+  renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+  // r110 style:
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  app.appendChild(renderer.domElement);
 
   // Controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.06;
-  controls.minDistance = 8;
-  controls.maxDistance = 38;
-  controls.maxPolarAngle = Math.PI*0.49;
+  controls.enableDamping=true; controls.dampingFactor=0.06;
+  controls.minDistance=8; controls.maxDistance=48;
+  controls.target.set(0,3,0);
 
   // Lights
-  const hemi = new THREE.HemisphereLight(0xbdd8ff, 0x213020, 0.8); scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xffefcc, 1.1); dir.position.set(8, 18, 8); dir.castShadow=false; scene.add(dir);
-  scene.add(new THREE.AmbientLight(0x304070, 0.25));
+  const hemi = new THREE.HemisphereLight(0x9fd6ff, 0x304050, 0.9);
+  scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+  dir.position.set(6,12,6);
+  scene.add(dir);
 
-  // Ground (soft grass)
-  const grassTex = makeGrassTexture();
-  grassTex.wrapS = grassTex.wrapT = THREE.RepeatWrapping;
-  grassTex.repeat.set(40,40);
-  const ground = new THREE.Mesh(
-    new THREE.CircleGeometry(40, 96),
-    new THREE.MeshStandardMaterial({map:grassTex, roughness:1, metalness:0})
-  );
-  ground.rotation.x = -Math.PI/2;
-  ground.receiveShadow = false;
+  // Sky dome gradient (basic material for r110)
+  const skyGeo = new THREE.SphereBufferGeometry(200, 32, 32);
+  const skyMat = new THREE.MeshBasicMaterial({color:0x0b0f2b, side:THREE.BackSide});
+  const sky = new THREE.Mesh(skyGeo, skyMat); scene.add(sky);
+
+  // Ground
+  const groundGeo = new THREE.PlaneBufferGeometry(240,240);
+  const groundMat = new THREE.MeshStandardMaterial({color:0x1a3a21, roughness:1, metalness:0});
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI/2; ground.position.y = 0;
   scene.add(ground);
 
-  // Edge shrubs & decorative plants
-  addDecorativePlants();
+  // Decorative shrubs / mini trees
+  addGardenDecor(42);
 
-  // Center beating heart
-  const heart = makeHeart();
-  heart.position.set(0, 2.2, 0);
-  scene.add(heart);
-  addInteractable(heart, ()=> {
-    pulse(heart, 1.25, 420);
-    spark(heart.position, 22);
-    showMsg("A heart that beats only for you, Guddu 💖");
-  }, "Tap the heart");
+  // Center heart
+  makeCenterHeart();
 
-  // Flowers ring with messages
-  const flowerMsgs = [
-    "Your smile is my sunrise ✨",
-    "You make everything brighter 💫",
-    "Kindest heart I know 💖",
-    "Beautiful, brave, unstoppable 🌟",
-    "My favorite miracle 🔮",
-    "Forever my sunshine ☀️",
-    "You are truly special ✨",
-    "Loved today & always 💞",
-    "You make life magical ✨",
-    "Endless reasons to smile 🌸"
-  ];
-  addFlowersRing(12, 9, 16, flowerMsgs);
+  // Flowers / chocolates / gifts
+  scatterFlowers(18);
+  scatterChocolates(9);
+  scatterGifts(7);
 
-  // Gift boxes
-  addGiftBoxes([
-    "A box of hugs for you 🤗",
-    "Surprise! You are priceless 💝",
-    "Wishes wrapped in love 🎁"
-  ]);
-
-  // Chocolates
-  addChocolates([
-    "The sweetest person I know 🍫",
-    "A treat for my sweetie 🧁",
-    "You’re my forever favorite 💘"
-  ]);
-
-  // Photo hoardings (using your Dropbox images; fallback to a canvas note if any image fails)
+  // Hoardings with your photos
   addHoardings([
-    "https://dl.dropboxusercontent.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?raw=1",
-    "https://dl.dropboxusercontent.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?raw=1",
-    "https://dl.dropboxusercontent.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?raw=1",
-    "https://dl.dropboxusercontent.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?raw=1",
-    "https://dl.dropboxusercontent.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?raw=1"
+    "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?dl=0",
+    "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?dl=0",
+    "https://www.dropbox.com/scl/fi/2mcpq9fuoqqdrfncxo17f/IMG-20250304-WA0006.jpg?dl=0",
+    "https://www.dropbox.com/scl/fi/pnr4hg3cszl67aojrz5yb/IMG-20250815-WA0008.jpg?dl=0",
+    "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?dl=0"
   ]);
+
+  // Fireflies
+  spawnFireflies(70);
 
   // Raycaster
   raycaster = new THREE.Raycaster();
   pointer = new THREE.Vector2();
-  window.addEventListener('pointerdown', onPointer);
-  window.addEventListener('touchstart', (e)=>{ if(e.touches && e.touches[0]) onTouch(e.touches[0]); }, {passive:true});
+  renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
+  // CSS2D labels (if available)
+  if(!window.__noCSS2D__ && THREE.CSS2DRenderer){
+    labelRenderer = new THREE.CSS2DRenderer();
+    labelRenderer.setSize(w, h);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.left = '0';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.body.appendChild(labelRenderer.domElement);
+
+    // Title label above heart
+    const div = document.createElement('div');
+    div.className='label';
+    div.textContent = '💖 Guddu’s Magical Garden 🌸';
+    const heartLabel = new THREE.CSS2DObject(div);
+    heartLabel.position.set(0, 2.2, 0);
+    // will attach after heart created
+    heartMesh.add(heartLabel);
+  }else{
+    toast('Labels loaded in fallback mode (no CSS2D).', 1800);
+  }
+
+  // Resize
   window.addEventListener('resize', onResize);
 
-  // Hide loading when first frame draws
-  setTimeout(()=>{ $('#loading').style.display='none'; showMsg("Welcome to your magical garden, Guddu ✨"); }, 600);
-
-  // Music handling (autoplay-safe)
-  setupMusic();
+  // Hide loading
+  setTimeout(()=>$('#loading').remove(), 350);
 }
 
-/* ---------- Music ---------- */
-function setupMusic(){
-  const bgm=$('#bgm'), label=$('#musicLabel'), btn=$('#toggleMusic'), tap=$('#tapSound');
-  async function start(){ try{ bgm.muted=true; await bgm.play(); setTimeout(()=>{ bgm.muted=false; }, 120); }catch{ tap.style.display='inline-block'; label.textContent='Sound: Off'; btn.textContent='▶︎'; } }
-  start();
-  btn.addEventListener('click', async ()=>{
-    if(bgm.paused){ try{ await bgm.play(); bgm.muted=false; label.textContent='Sound: On'; btn.textContent='⏸︎'; tap.style.display='none'; }catch{} }
-    else { bgm.pause(); label.textContent='Sound: Off'; btn.textContent='▶︎'; }
-  });
-  tap.addEventListener('click', async ()=>{ try{ await bgm.play(); bgm.muted=false; label.textContent='Sound: On'; tap.style.display='none'; $('#toggleMusic').textContent='⏸︎'; }catch{} });
-}
-
-/* ---------- Resize ---------- */
-function onResize(){
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  labelRenderer.setSize(innerWidth, innerHeight);
-}
-
-/* ---------- Interactions ---------- */
-function addInteractable(obj, onHit, labelText){
-  obj.userData.onHit = onHit;
-  obj.userData.interactable = true;
-  interactables.push(obj);
-  if(labelText){
-    const el=document.createElement('div'); el.className='label'; el.textContent=labelText;
-    const lbl=new THREE.CSS2DObject(el); lbl.position.set(0, obj.userData.labelOffsetY||1.8, 0);
-    obj.add(lbl);
-  }
-}
-function onPointer(e){
-  const rect = renderer.domElement.getBoundingClientRect();
-  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-  raycast();
-}
-function onTouch(t){
-  const rect = renderer.domElement.getBoundingClientRect();
-  pointer.x = ((t.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((t.clientY - rect.top) / rect.height) * 2 + 1;
-  raycast();
-}
-function raycast(){
-  raycaster.setFromCamera(pointer, camera);
-  const objs = interactables.flatMap(g=>g.isGroup ? g.children.concat(g) : g);
-  const hits = raycaster.intersectObjects(objs, true);
-  if(hits.length){
-    let o = hits[0].object;
-    while(o && !o.userData.onHit && o.parent) o=o.parent;
-    if(o && o.userData && o.userData.onHit){ o.userData.onHit(); }
-  }
-}
-
-/* ---------- Animate ---------- */
-function animate(){
-  const dt = clock.getDelta();
-  requestAnimationFrame(animate);
-  controls.update();
-
-  // Gentle heart beat animation loop (if present)
-  if(scene.__heart){
-    const t = performance.now()*0.002;
-    const s = 1 + Math.sin(t*2)*0.04;
-    scene.__heart.scale.set(s,s,s);
-  }
-
-  // Update particles (fairy/conffeti)
-  updateParticles(dt);
-
-  renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
-}
-
-/* ---------- Grass texture (procedural) ---------- */
-function makeGrassTexture(){
-  const c=document.createElement('canvas'); c.width=c.height=256;
-  const ctx=c.getContext('2d');
-  const g=ctx.createLinearGradient(0,0,0,256);
-  g.addColorStop(0,'#0a2a14'); g.addColorStop(1,'#145c2a'); ctx.fillStyle=g; ctx.fillRect(0,0,256,256);
-  for(let i=0;i<1400;i++){
-    ctx.strokeStyle=`rgba(255,255,255,${Math.random()*0.06})`;
-    ctx.beginPath();
-    const x=Math.random()*256, y=128+Math.random()*128, h=4+Math.random()*18;
-    ctx.moveTo(x,y); ctx.quadraticCurveTo(x-2,y-h*0.5, x, y-h); ctx.stroke();
-  }
-  return new THREE.CanvasTexture(c);
-}
-
-/* ---------- Heart mesh ---------- */
-function makeHeart(){
-  // 2D heart path
-  const s = 0.8;
-  const shape = new THREE.Shape();
-  const x = 0, y = 0;
-  shape.moveTo(x, y);
-  shape.bezierCurveTo(x, y-1.2*s, x-1.8*s, y-1.4*s, x-2.0*s, y-0.4*s);
-  shape.bezierCurveTo(x-2.1*s, y+0.6*s, x-0.8*s, y+1.4*s, x, y+2.0*s);
-  shape.bezierCurveTo(x+0.8*s, y+1.4*s, x+2.1*s, y+0.6*s, x+2.0*s, y-0.4*s);
-  shape.bezierCurveTo(x+1.8*s, y-1.4*s, x, y-1.2*s, x, y);
-
-  const geo = new THREE.ExtrudeGeometry(shape, {depth:0.6, bevelEnabled:true, bevelSegments:6, steps:1, bevelSize:0.18, bevelThickness:0.18});
-  geo.center();
-  const mat = new THREE.MeshStandardMaterial({color:0xff4fb9, metalness:0.1, roughness:0.3, emissive:0x7a003e, emissiveIntensity:0.25});
-  const heart = new THREE.Mesh(geo, mat);
-  heart.castShadow=false;
-  heart.rotation.x = -0.15;
-  scene.__heart = heart;
-  heart.userData.labelOffsetY = 2.2;
-  return heart;
-}
-function pulse(obj, scale=1.2, ms=400){
-  const s0 = obj.scale.x; const s1 = s0*scale;
-  const t0 = performance.now();
-  function step(now){
-    const k = Math.min(1, (now - t0)/ms);
-    const s = s0 + (s1 - s0)*Math.sin(k*Math.PI);
-    obj.scale.set(s,s,s);
-    if(k<1) requestAnimationFrame(step); else obj.scale.set(s0,s0,s0);
-  }
-  requestAnimationFrame(step);
-}
-
-/* ---------- Flowers ---------- */
-function makeFlower(color=0xff9adf, size=1){
-  const g = new THREE.Group();
-  // stem
-  const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.05*size, 0.06*size, 1.0*size, 12),
-    new THREE.MeshStandardMaterial({color:0x2fa26d, roughness:0.9})
-  );
-  stem.position.y = 0.5*size; g.add(stem);
-  // petals
-  for(let i=0;i<8;i++){
-    const petal = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18*size, 16, 16),
-      new THREE.MeshStandardMaterial({color, roughness:0.5, metalness:0})
-    );
-    const a = i/8*Math.PI*2;
-    petal.position.set(Math.cos(a)*0.28*size, 1.0*size, Math.sin(a)*0.28*size);
-    g.add(petal);
-  }
-  // center
-  const core = new THREE.Mesh(
-    new THREE.SphereGeometry(0.12*size, 16, 16),
-    new THREE.MeshStandardMaterial({color:0xffd98a, emissive:0x5a3000, emissiveIntensity:0.2})
-  );
-  core.position.y = 1.02*size; g.add(core);
-  g.userData.labelOffsetY = 1.6*size;
-  return g;
-}
-function addFlowersRing(count=10, rMin=8, rMax=14, messages=[]){
+/* ===================== Garden Pieces ===================== */
+function addGardenDecor(count=36){
+  const group = new THREE.Group(); scene.add(group);
+  const shrubMat = new THREE.MeshStandardMaterial({color:0x2e7d4b, roughness:.95});
   for(let i=0;i<count;i++){
-    const ang = i/count*Math.PI*2 + rand(-0.2,0.2);
-    const r = rand(rMin, rMax);
-    const f = makeFlower([0xff9adf,0xff8fdc,0xffb6e5,0xc9a8ff,0xffd98a][i%5], rand(0.9,1.2));
-    f.position.set(Math.cos(ang)*r, 0, Math.sin(ang)*r);
-    f.rotation.y = rand(0,Math.PI*2);
-    scene.add(f);
-    const msg = messages[i % messages.length] || "You are amazing ✨";
-    addInteractable(f, ()=>{
-      riseWithFairy(f);
-      showMsg(msg);
-    }, "Make a wish ✨");
+    const r = rand(12, 46), ang = rand(0, Math.PI*2);
+    const x = Math.cos(ang)*r, z = Math.sin(ang)*r;
+    const h = rand(0.6, 1.8);
+
+    const trunk = new THREE.Mesh(new THREE.CylinderBufferGeometry(0.1,0.12,h,6), new THREE.MeshStandardMaterial({color:0x5c7a36, roughness:1}));
+    trunk.position.set(x, h/2, z);
+
+    const crown = new THREE.Mesh(new THREE.ConeBufferGeometry(rand(0.5,1.1), rand(0.9,1.7), 8), shrubMat);
+    crown.position.set(x, h+crown.geometry.parameters.height/2, z);
+
+    group.add(trunk, crown);
   }
 }
-function riseWithFairy(obj){
-  const y0 = obj.position.y;
-  const t0 = performance.now(); const dur=650;
-  spark(obj.position, 28);
-  function step(now){
-    const k=Math.min(1,(now-t0)/dur);
-    obj.position.y = y0 + Math.sin(k*Math.PI)*0.6;
-    if(k<1) requestAnimationFrame(step); else obj.position.y=y0;
-  }
-  requestAnimationFrame(step);
+
+function makeCenterHeart(){
+  const heartShape = new THREE.Shape();
+  heartShape.moveTo(0, 0.25);
+  heartShape.bezierCurveTo(0, 0.25, -0.3, 0, -0.6, 0.25);
+  heartShape.bezierCurveTo(-0.9, 0.55, -0.6, 0.9, 0, 1.1);
+  heartShape.bezierCurveTo(0.6, 0.9, 0.9, 0.55, 0.6, 0.25);
+  heartShape.bezierCurveTo(0.3, 0, 0, 0.25, 0, 0.25);
+
+  const extrude = new THREE.ExtrudeBufferGeometry(heartShape, {depth:0.38, bevelEnabled:true, bevelThickness:0.08, bevelSize:0.06, bevelSegments:8, steps:2});
+  const mat = new THREE.MeshStandardMaterial({color:0xff2a74, metalness:0.25, roughness:0.2, emissive:0x330014, emissiveIntensity:0.45});
+  heartMesh = new THREE.Mesh(extrude, mat);
+  heartMesh.scale.set(2.8, 2.8, 2.8);
+  heartMesh.rotation.x = -0.28;
+  heartMesh.position.set(0, 3.2, 0);
+  heartMesh.userData.type='centerHeart';
+  scene.add(heartMesh);
+
+  const ped = new THREE.Mesh(new THREE.CylinderBufferGeometry(1.7,1.9,0.55,24), new THREE.MeshStandardMaterial({color:0x2a2f48, roughness:1}));
+  ped.position.set(0,0.28,0); scene.add(ped);
 }
-function spark(pos, n=20){
+
+function scatterFlowers(n=16){
   for(let i=0;i<n;i++){
-    particles.push({
-      x: pos.x + rand(-0.2,0.2), y: pos.y + 1.0 + rand(-0.1,0.2), z: pos.z + rand(-0.2,0.2),
-      vx: rand(-0.03,0.03), vy: rand(0.02,0.08), vz: rand(-0.03,0.03),
-      life: rInt(40,70), sprite: true, size: rand(10,18)
-    });
-  }
-}
+    const r=rand(5,16), ang=rand(0,Math.PI*2);
+    const x=Math.cos(ang)*r + rand(-6,6), z=Math.sin(ang)*r + rand(-6,6);
 
-/* ---------- Gift Boxes ---------- */
-function makeGift(color=0xff6fa8){
-  const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.6,1.1), new THREE.MeshStandardMaterial({color, roughness:0.6}));
-  base.position.y = 0.3; g.add(base);
-  const lid = new THREE.Mesh(new THREE.BoxGeometry(1.14,0.18,1.14), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4, metalness:0.05}));
-  lid.position.y = 0.6 + 0.09; lid.userData.isLid = true; g.add(lid);
-  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(1.12,0.04,0.2), new THREE.MeshStandardMaterial({color:0xffffff}));
-  ribbon.position.y = 0.6; g.add(ribbon);
-  const ribbon2 = ribbon.clone(); ribbon2.rotation.y=Math.PI/2; g.add(ribbon2);
-  g.userData.labelOffsetY = 1.2;
-  return g;
-}
-function addGiftBoxes(messages){
-  const spots = [[-6, -5], [6, 5], [-10, 3]];
-  spots.forEach((p,idx)=>{
-    const g=makeGift([0xff6fa8,0x8cd4ff,0xffd98a][idx%3]);
-    g.position.set(p[0],0,p[1]);
-    scene.add(g);
-    addInteractable(g, ()=>{
-      openGift(g);
-      confetti(g.position);
-      showMsg(messages[idx % messages.length] || "A gift full of love 🎁");
-    }, "Open me 🎁");
-  });
-}
-function openGift(g){
-  const lid = g.children.find(c=>c.userData.isLid);
-  const t0=performance.now(), dur=700, start=lid.rotation.x, end=-Math.PI/1.8;
-  function step(now){
-    const k=Math.min(1,(now-t0)/dur);
-    lid.rotation.x = start + (end-start)*Math.sin(k*Math.PI);
-    if(k<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-function confetti(pos){
-  for(let i=0;i<140;i++){
-    particles.push({
-      x: pos.x, y: pos.y+0.8, z: pos.z,
-      vx: Math.cos(i/20)*rand(0.02,0.08), vy: rand(0.04,0.12), vz: Math.sin(i/20)*rand(0.02,0.08),
-      life: rInt(70,120), color: confettiColors[i%confettiColors.length], box: true, size: rand(0.06,0.12)
-    });
-  }
-}
+    const stem = new THREE.Mesh(new THREE.CylinderBufferGeometry(0.06,0.06,0.85,8), new THREE.MeshStandardMaterial({color:0x2aa84a}));
+    stem.position.set(x,0.42,z);
+    const petalMat = new THREE.MeshStandardMaterial({color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6)});
+    const head = new THREE.Mesh(new THREE.SphereBufferGeometry(0.24, 16, 16), petalMat);
+    head.position.set(x,1.0,z);
+    head.userData.type='flower';
+    head.userData.baseY=head.position.y;
+    head.userData.message = pick([
+      "You’re my favorite bloom 🌸",
+      "Your smile makes everything blossom ✨",
+      "You’re sunshine on petals ☀️🌼",
+      "Sweet as spring, bright as you 💖"
+    ]);
+    scene.add(stem, head);
+    interactables.push(head);
 
-/* ---------- Chocolates ---------- */
-function makeChocolate(hue=30){
-  const mat = new THREE.MeshStandardMaterial({color:new THREE.Color(`hsl(${hue}, 50%, 35%)`)});
-  const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.22,20), mat); base.position.y=0.11; g.add(base);
-  const top = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 20, 0, Math.PI*2, 0, Math.PI/2), mat); top.position.y=0.22; g.add(top);
-  g.userData.labelOffsetY = 0.9;
-  return g;
-}
-function addChocolates(messages){
-  const spots=[[4,-6],[-4,6],[9,-2]];
-  spots.forEach((p,idx)=>{
-    const ch=makeChocolate(20+idx*30); ch.position.set(p[0],0,p[1]); scene.add(ch);
-    addInteractable(ch, ()=>{
-      bounce(ch);
-      spark(ch.position, 14);
-      showMsg(messages[idx % messages.length] || "Sweet like you 🍫");
-    }, "Tap for a treat 🍫");
-  });
-}
-function bounce(obj){
-  const y0=obj.position.y; const t0=performance.now(), dur=520;
-  function step(now){ const k=Math.min(1,(now-t0)/dur); const e = Math.sin(k*Math.PI); obj.position.y=y0+e*0.7; if(k<1) requestAnimationFrame(step); else obj.position.y=y0; }
-  requestAnimationFrame(step);
-}
-
-/* ---------- Decorative plants ---------- */
-function addDecorativePlants(){
-  const ringR=22;
-  for(let i=0;i<28;i++){
-    const ang = i/28*Math.PI*2 + rand(-0.1,0.1);
-    const r = ringR + rand(-2,2);
-    const shrub = new THREE.Mesh(
-      new THREE.SphereGeometry(rand(0.4,0.8), 14, 14),
-      new THREE.MeshStandardMaterial({color: new THREE.Color().setHSL(rand(0.28,0.36), 0.6, 0.32), roughness:0.9})
-    );
-    shrub.position.set(Math.cos(ang)*r, shrub.geometry.parameters.radius, Math.sin(ang)*r);
-    scene.add(shrub);
-  }
-}
-
-/* ---------- Hoardings with photos ---------- */
-function addHoardings(urls){
-  const positions = [
-    {x:-16, z:-10, rot:0.35},
-    {x: 16, z:  10, rot:-0.35},
-    {x:-10, z: 14, rot: -0.1},
-    {x: 12, z:-14, rot: 0.15},
-    {x:  0, z: 18, rot: 0}
-  ];
-  urls.forEach((url, i)=>{
-    const p = positions[i % positions.length];
-    makeHoarding(url, new THREE.Vector3(p.x, 3.8, p.z), p.rot);
-  });
-}
-function makeHoarding(url, pos, yRot=0){
-  // board
-  const w=6, h=3.8;
-  const board = new THREE.Group();
-  const frame = new THREE.Mesh(new THREE.BoxGeometry(w+0.25, h+0.25, 0.2), new THREE.MeshStandardMaterial({color:0x222733, metalness:0.2, roughness:0.6}));
-  const panel = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({color:0x111111}));
-  panel.position.z = 0.12; board.add(frame); board.add(panel);
-  board.position.copy(pos); board.rotation.y = yRot;
-  // legs
-  const legMat = new THREE.MeshStandardMaterial({color:0x3a3f4f, roughness:0.8});
-  const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.6, 0.2), legMat);
-  const leg2 = leg1.clone(); leg1.position.set(-w*0.4, -h*0.5-1.4, 0.05); leg2.position.set(w*0.4, -h*0.5-1.4, 0.05);
-  board.add(leg1); board.add(leg2);
-
-  // load texture (with fallback canvas)
-  T.load(url, (tex)=>{
-    tex.colorSpace = THREE.SRGBColorSpace;
-    panel.material.map = tex; panel.material.needsUpdate = true;
-  }, undefined, ()=>{
-    // fallback if image fails: canvas with text
-    const c=document.createElement('canvas'); c.width=1024; c.height=640; const ctx=c.getContext('2d');
-    ctx.fillStyle='#111'; ctx.fillRect(0,0,c.width,c.height);
-    ctx.fillStyle='#fff'; ctx.font='bold 64px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('Happy Birthday Guddu 💖', c.width/2, c.height/2);
-    const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
-    panel.material.map=tex; panel.material.needsUpdate=true;
-  });
-
-  scene.add(board);
-}
-
-/* ---------- Particles (fairy/confetti) ---------- */
-const particles=[];
-const particleGeo = new THREE.BufferGeometry();
-particleGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(3), 3)); // dummy; we render as individual sprites/boxes manually
-
-function updateParticles(dt){
-  for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i];
-    p.x += p.vx; p.y += p.vy; p.z += p.vz||0;
-    p.vy += p.box ? -0.003 : -0.0006;
-    p.life--;
-    // draw
-    if(p.sprite){
-      drawSprite(p);
-    } else if(p.box){
-      drawConfetti(p);
+    // Label if CSS2D available
+    if(labelReady()){
+      addLabel(head, "🌸 Tap me");
     }
-    if(p.life<=0) particles.splice(i,1);
   }
-}
-const spriteScene = new THREE.Scene(); // overlay drawing via immediate sprites
-const spriteCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1); // not used (we draw billboards directly)
-const spriteMat = new THREE.SpriteMaterial({map: fairyTex, transparent:true, depthWrite:false});
-function drawSprite(p){
-  if(!p._s){
-    p._s = new THREE.Sprite(spriteMat.clone());
-    p._s.material.opacity = 1;
-    p._s.scale.setScalar((p.size||14)/18);
-    scene.add(p._s);
-  }
-  p._s.position.set(p.x, p.y, p.z);
-  p._s.material.opacity = Math.max(0, p.life/70);
-  if(p.life<=0){ scene.remove(p._s); if(p._s.material) p._s.material.dispose(); }
-}
-function drawConfetti(p){
-  if(!p._m){
-    const mat = new THREE.MeshBasicMaterial({color: p.color||0xffffff});
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(p.size||0.1, p.size||0.1), mat);
-    m.rotation.set(rand(0,Math.PI), rand(0,Math.PI), rand(0,Math.PI));
-    scene.add(m); p._m=m;
-  }
-  p._m.position.set(p.x, p.y, p.z);
-  p._m.rotation.x += 0.05; p._m.rotation.y += 0.03;
-  if(p.life<=0){ scene.remove(p._m); if(p._m.material) p._m.material.dispose(); if(p._m.geometry) p._m.geometry.dispose(); }
 }
 
-/* ---------- Utility drawing ---------- */
-function textTexture(str, w=1024, h=512){
-  const c=document.createElement('canvas'); c.width=w; c.height=h; const ctx=c.getContext('2d');
-  const g=ctx.createLinearGradient(0,0,w,0); g.addColorStop(0,'#ffe6a8'); g.addColorStop(0.5,'#ffb6e5'); g.addColorStop(1,'#ffffff');
-  ctx.fillStyle='#111'; ctx.fillRect(0,0,w,h);
-  ctx.fillStyle=g; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.font='900 84px Georgia'; ctx.fillText(str, w/2, h/2);
-  const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; return tex;
+function scatterChocolates(n=8){
+  const mat = new THREE.MeshStandardMaterial({color:0x4b2b1a, roughness:.75, metalness:.1});
+  for(let i=0;i<n;i++){
+    const r=rand(7,18), ang=rand(0,Math.PI*2);
+    const mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(0.5,0.22,0.5), mat);
+    mesh.position.set(Math.cos(ang)*r, 0.12, Math.sin(ang)*r);
+    mesh.userData.type='choco';
+    mesh.userData.message = pick([
+      "You’re the sweetest part of me 🍫",
+      "Cocoa kisses for you, Guddu 💋",
+      "Sugar, spice, and you — so nice ✨"
+    ]);
+    scene.add(mesh); interactables.push(mesh);
+    if(labelReady()) addLabel(mesh, "🍫 Chocolate");
+  }
+}
+
+function scatterGifts(n=6){
+  for(let i=0;i<n;i++){
+    const r=rand(6,17), ang=rand(0,Math.PI*2);
+    const box = new THREE.Mesh(new THREE.BoxBufferGeometry(0.95,0.62,0.95), new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),.7,.6)}));
+    box.position.set(Math.cos(ang)*r, 0.31, Math.sin(ang)*r);
+    const rib = new THREE.Mesh(new THREE.BoxBufferGeometry(0.98,0.08,0.16), new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x222222, emissiveIntensity:0.3}));
+    rib.position.set(box.position.x, box.position.y+0.35, box.position.z);
+    box.userData.type='gift';
+    box.userData.message = pick([
+      "A gift of a thousand hugs 🎁",
+      "Open me: it’s love, forever 💞",
+      "Surprise wrapped in starlight ✨"
+    ]);
+    scene.add(box, rib); interactables.push(box);
+    if(labelReady()) addLabel(box, "🎁 Gift");
+  }
+}
+
+function addHoardings(urls){
+  const radius=20;
+  const loader = new THREE.TextureLoader();
+  urls.forEach((u,i)=>{
+    const tex = loader.load(rawLink(u));
+    tex.encoding = THREE.sRGBEncoding;
+
+    const plane = new THREE.Mesh(
+      new THREE.PlaneBufferGeometry(5.4, 7.8),
+      new THREE.MeshStandardMaterial({map:tex, roughness:.9, metalness:0, emissive:0x111111, emissiveIntensity:0.18})
+    );
+    const angle = (i/urls.length)*Math.PI*2;
+    plane.position.set(Math.cos(angle)*radius, 3.9, Math.sin(angle)*radius);
+    plane.lookAt(0,3.5,0);
+    plane.userData.type='hoarding';
+    plane.userData.message = "Happy Birthday, Beautiful Guddu 💖 Keep shining!";
+    scene.add(plane);
+    interactables.push(plane);
+
+    // thin glow frame
+    const frame = new THREE.Mesh(
+      new THREE.PlaneBufferGeometry(5.6, 8.0),
+      new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.06})
+    );
+    frame.position.copy(plane.position); frame.quaternion.copy(plane.quaternion);
+    scene.add(frame);
+
+    if(labelReady()) addLabel(plane, "📸 For Guddu");
+  });
+}
+
+/* ===================== Fireflies & Particles ===================== */
+function spawnFireflies(count=60){
+  const geo = new THREE.SphereBufferGeometry(0.04, 6, 6);
+  const mat = new THREE.MeshBasicMaterial({color:0xffffcc});
+  for(let i=0;i<count;i++){
+    const f = new THREE.Mesh(geo, mat);
+    f.position.set(rand(-16,16), rand(1,7), rand(-16,16));
+    f.userData.t = rand(0, 1000);
+    scene.add(f); fireflies.push(f);
+  }
+}
+
+function fairyDust(pos, count=80, color=0xffffff){
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(count*3);
+  const velocities = [];
+  for(let i=0;i<count;i++){
+    positions[i*3] = pos.x + rand(-0.1,0.1);
+    positions[i*3+1] = pos.y + rand(-0.1,0.1);
+    positions[i*3+2] = pos.z + rand(-0.1,0.1);
+    const a = Math.random()*Math.PI*2, v = rand(0.6,1.8), u=rand(-0.2,0.8);
+    velocities.push(new THREE.Vector3(Math.cos(a)*v, u, Math.sin(a)*v));
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  const mat = new THREE.PointsMaterial({color, size:0.06, transparent:true, opacity:1});
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+  const start = performance.now();
+  (function loop(t){
+    const arr=geo.attributes.position.array;
+    for(let i=0;i<count;i++){
+      const v=velocities[i];
+      arr[i*3]+=v.x*0.06; arr[i*3+1]+=v.y*0.06; arr[i*3+2]+=v.z*0.06;
+      v.y -= 0.01;
+    }
+    geo.attributes.position.needsUpdate=true;
+    mat.opacity -= 0.018;
+    if(mat.opacity>0) requestAnimationFrame(loop); else { scene.remove(points); geo.dispose(); }
+  })(performance.now());
+}
+
+function burst(pos, count=150){ fairyDust(pos, count, 0xffff88); }
+
+/* ===================== Labels & Notes ===================== */
+function labelReady(){ return (typeof THREE!=='undefined' && THREE.CSS2DObject && labelRenderer); }
+function addLabel(object3D, text){
+  const el = document.createElement('div'); el.className='label'; el.textContent=text;
+  const lbl = new THREE.CSS2DObject(el);
+  lbl.position.set(0, 0.7, 0);
+  object3D.add(lbl);
+}
+
+let noteTimer;
+function popNoteHTML(title, sub){
+  const el = $('#noteGeneric');
+  el.querySelector('h2').textContent = title;
+  el.querySelector('p').textContent = sub || '';
+  show(el); clearTimeout(noteTimer);
+  noteTimer = setTimeout(()=>hide(el), 3400);
+}
+
+/* ===================== Interaction ===================== */
+function onPointerDown(e){
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
+  pointer.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(interactables, false);
+  if(!hits.length){ return; }
+  const obj = hits[0].object;
+
+  flashSparkle(e.clientX, e.clientY, Math.random()<.5?'✨':'💖');
+
+  if(obj.userData.type==='flower'){
+    animateRise(obj, obj.userData.baseY || obj.position.y);
+    fairyDust(obj.position, 70, 0xffc7ff);
+    showMessage(obj.userData.message || "You’re my favorite bloom 🌸");
+  } else if(obj.userData.type==='choco'){
+    bump(obj); fairyDust(obj.position, 90, 0xffaa66);
+    showMessage(obj.userData.message || "You’re the sweetest part of me 🍫");
+  } else if(obj.userData.type==='gift'){
+    bump(obj); burst(obj.position, 160);
+    showMessage(obj.userData.message || "A gift of a thousand hugs 🎁");
+  } else if(obj.userData.type==='hoarding'){
+    pulse(obj); fairyDust(obj.position, 90, 0xffffff);
+    showMessage(obj.userData.message || "Happy Birthday, Guddu 💖");
+  } else if(obj.userData.type==='centerHeart'){
+    strongPulse(obj); fairyDust(obj.position, 160, 0xff66aa);
+    showMessage("Guddu, you are the heartbeat of my life 💓", "Always, forever — Anuj");
+  }
+}
+
+function showMessage(title, sub=""){
+  if(labelReady()){
+    // Make a temporary floating label near the camera center
+    const anchor = new THREE.Object3D();
+    anchor.position.copy( camera.position.clone().add( camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(6) ) );
+    scene.add(anchor);
+    const el = document.createElement('div');
+    el.className='label';
+    el.style.fontSize='16px'; el.style.padding='6px 10px';
+    el.style.border='1px solid rgba(255,255,255,.25)';
+    el.innerHTML = `<span style="font-size:18px">${title}</span>${sub?`<div style="opacity:.9;font-weight:600">${sub}</div>`:''}`;
+    const lbl = new THREE.CSS2DObject(el);
+    anchor.add(lbl);
+    setTimeout(()=>{ scene.remove(anchor); }, 3200);
+  }else{
+    // Fallback HTML bubble
+    popNoteHTML(title, sub);
+  }
+}
+
+function animateRise(head, baseY){
+  const targetY = baseY + 0.9;
+  (function step(){
+    head.position.y += (targetY - head.position.y)*0.15;
+    if(Math.abs(head.position.y - targetY) > 0.01) requestAnimationFrame(step);
+  })();
+}
+function bump(obj){
+  const s0 = obj.scale.x || 1;
+  let t=0;
+  (function step(){
+    t+=0.12; const s = 1 + Math.sin(t)*0.16;
+    obj.scale.setScalar(s*s0);
+    if(t<Math.PI) requestAnimationFrame(step); else obj.scale.setScalar(s0);
+  })();
+}
+function pulse(obj){
+  let t=0; (function step(){ t+=0.2; const s=1+Math.sin(t)*0.12; obj.scale.setScalar(s); if(t<Math.PI*2) requestAnimationFrame(step); else obj.scale.setScalar(1); })();
+}
+function strongPulse(obj){
+  let t=0; (function step(){ t+=0.28; const s=1+Math.sin(t)*0.22; obj.scale.setScalar(s); if(t<Math.PI*2) requestAnimationFrame(step); else obj.scale.setScalar(1); })();
+}
+
+/* ===================== Helpers ===================== */
+function rand(a,b){ return Math.random()*(b-a)+a; }
+function pick(arr){ return arr[(Math.random()*arr.length)|0]; }
+
+/* ===================== Resize & Animate ===================== */
+function onResize(){
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+  if(labelRenderer) labelRenderer.setSize(w,h);
+}
+
+let t0 = performance.now();
+function animate(){
+  const t = performance.now(), dt = (t - t0)/1000; t0 = t;
+
+  // heart subtle beat + rotate
+  if(heartMesh){
+    const s = 1 + Math.sin(t*0.004)*0.06 + Math.sin(t*0.009)*0.03;
+    heartMesh.scale.set(2.8*s, 2.8*s, 2.8*s);
+    heartMesh.rotation.y += 0.003;
+  }
+
+  // fireflies wander
+  for(const f of fireflies){
+    f.userData.t += 0.01;
+    f.position.x += Math.sin(f.userData.t*2.0)*0.01;
+    f.position.y += Math.sin(f.userData.t*1.6)*0.008;
+    f.position.z += Math.cos(f.userData.t*1.8)*0.01;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+  if(labelRenderer) labelRenderer.render(scene, camera);
+  requestAnimationFrame(animate);
 }
 </script>
 </body>
