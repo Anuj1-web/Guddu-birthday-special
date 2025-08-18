@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Guddu — Magical Birthday Show ✨</title>
-<meta name="description" content="A 100-second mobile-friendly sky show for Guddu: stars forming text, shooting stars, lanterns, balloons, aurora, compliments, secret letter, fireworks messages, shimmering finale — with music and gentle fade-out.">
+<meta name="description" content="A 100-second mobile-friendly sky show for Guddu: stars forming text, shooting stars, balloons, aurora, compliments, secret letter, fireworks messages, shimmering finale — with music and gentle fade-out.">
 <style>
   :root{
     --ink:#eef2ff; --muted:#c8d1ff; --deep:#030616; --deep2:#0a0f2b;
@@ -43,7 +43,7 @@
     font-weight:800; letter-spacing:.2px; font-size:12px; opacity:.9; z-index:3
   }
 
-  /* Professional warm message styling */
+  /* Professional warm message styling (twinkling, bold, elegant) */
   .msgWrap{position:absolute; left:50%; transform:translateX(-50%); max-width:min(92vw, 880px); text-align:center; padding:0 4vw; z-index:4}
   .pos-bottom{bottom:30px}
   .pos-top{top:36px}
@@ -52,19 +52,38 @@
   .pos-above-bottom{bottom:18vh}
   .msg{
     font-family: Georgia, "Times New Roman", ui-serif, system-ui;
-    font-weight:800; letter-spacing:.3px;
-    font-size:clamp(20px, 5.6vw, 46px);
+    font-weight:900; letter-spacing:.3px;
+    font-size:clamp(22px, 6vw, 50px);
     line-height:1.2;
-    background:linear-gradient(90deg, #ffe4a6 0%, #ffb6e5 45%, #ffffff 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 18px rgba(255,230,170,.35), 0 0 36px rgba(255,200,200,.22);
-    animation:floaty 6s ease-in-out infinite;
+    color:#fff;
+    text-shadow:
+      0 0 10px rgba(255,255,255,.35),
+      0 0 30px rgba(255,200,230,.25),
+      0 0 60px rgba(255,200,230,.18);
+    animation:floaty 6s ease-in-out infinite, twinkle 2.4s linear infinite;
   }
+  .msg.gold{ text-shadow:
+      0 0 10px rgba(255,240,180,.55),
+      0 0 30px rgba(255,200,120,.35),
+      0 0 70px rgba(255,200,120,.25); }
+  .msg.rose{ text-shadow:
+      0 0 10px rgba(255,160,220,.55),
+      0 0 30px rgba(255,120,200,.35),
+      0 0 70px rgba(255,120,200,.25); }
+  .msg.violet{ text-shadow:
+      0 0 10px rgba(200,170,255,.55),
+      0 0 30px rgba(180,140,255,.35),
+      0 0 70px rgba(180,140,255,.25); }
+  .msg.mint{ text-shadow:
+      0 0 10px rgba(170,255,220,.55),
+      0 0 30px rgba(140,255,210,.35),
+      0 0 70px rgba(140,255,210,.25); }
   .sub{
     margin-top:10px; font-size:clamp(14px, 3.8vw, 20px); color:var(--muted);
     text-shadow:0 0 14px rgba(255,255,255,.18);
   }
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes twinkle{0%,100%{opacity:1} 40%{opacity:.85} 60%{opacity:1} 80%{opacity:.9}}
 
   /* Compliments orb */
   .orb{position:absolute; width:min(64vw, 380px); aspect-ratio:1; border-radius:50%;
@@ -89,11 +108,11 @@
 
   /* Music control pill */
   .music-pill{position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
-    background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.2); border-radius:999px;
-    padding:6px 12px; font-size:.9rem; display:flex; gap:10px; align-items:center;
-    box-shadow:0 10px 28px rgba(0,0,0,.35); z-index:5
+    background:rgba(0,0,0,.42); border:1px solid rgba(255,255,255,.22); border-radius:999px;
+    padding:6px 12px; font-size:.95rem; display:flex; gap:10px; align-items:center;
+    box-shadow:0 10px 28px rgba(0,0,0,.35); z-index:5; backdrop-filter:blur(4px)
   }
-  .music-pill button{background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:700}
+  .music-pill button{background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:800}
   .hidden{display:none}
 
   /* Finale shimmer & idle hearts */
@@ -123,7 +142,7 @@
     <!-- SCENE 1: Intro -->
     <section class="scene live" id="scene-intro">
       <div class="msgWrap pos-center">
-        <div class="msg">Here are the cute surprises for the cutest Guddu 💖</div>
+        <div class="msg rose">Here are the cute surprises for the cutest Guddu 💖</div>
         <div class="sub">Sit back and enjoy…</div>
       </div>
     </section>
@@ -132,67 +151,60 @@
     <section class="scene" id="scene-startext">
       <canvas id="cv-startext" class="scene-cv"></canvas>
       <div class="msgWrap pos-below-center">
-        <div class="sub">Your smile lights up the universe ✨</div>
+        <div class="msg gold">Happy Birthday, Guddu ✨</div>
+        <div class="sub">Your smile lights up the universe</div>
       </div>
     </section>
 
     <!-- SCENE 3: Shooting stars -->
     <section class="scene" id="scene-shoot">
       <canvas id="cv-shoot" class="scene-cv"></canvas>
-      <div class="msgWrap pos-bottom">
-        <div class="sub">Every wish I make is for your happiness 💫</div>
+      <div class="msgWrap pos-top">
+        <div class="msg violet">Every wish I make is for your happiness</div>
       </div>
     </section>
 
-    <!-- SCENE 4: Floating Lanterns -->
-    <section class="scene" id="scene-lanterns">
-      <canvas id="cv-lanterns" class="scene-cv"></canvas>
-      <div class="msgWrap pos-bottom">
-        <div class="sub">May your life always glow with joy 🏮✨</div>
-      </div>
-    </section>
-
-    <!-- SCENE 5: Hearts & Balloons -->
+    <!-- SCENE 4: Balloons & Hearts -->
     <section class="scene" id="scene-hearts">
       <canvas id="cv-hearts" class="scene-cv"></canvas>
       <div class="msgWrap pos-bottom">
-        <div class="sub">Because you deserve endless love 💕</div>
+        <div class="msg rose">Endless love floating your way 💕</div>
       </div>
     </section>
 
-    <!-- SCENE 6: Aurora waves -->
+    <!-- SCENE 5: Aurora waves -->
     <section class="scene" id="scene-aurora">
       <canvas id="cv-aurora" class="scene-cv"></canvas>
       <div class="msgWrap pos-top">
-        <div class="sub">The world is more colorful with you in it 🌈</div>
+        <div class="msg mint">Life is more colorful with you in it</div>
       </div>
     </section>
 
-    <!-- SCENE 7: Compliments mirror -->
+    <!-- SCENE 6: Compliments mirror -->
     <section class="scene" id="scene-mirror">
       <div class="orb" id="orb">You are starlight ✨</div>
-      <div class="msgWrap pos-bottom">
-        <div class="sub">And still, words are never enough to describe you ✨</div>
+      <div class="msgWrap pos-above-bottom">
+        <div class="msg gold">Words can’t capture your magic</div>
       </div>
     </section>
 
-    <!-- SCENE 8: Secret letter -->
+    <!-- SCENE 7: Secret letter -->
     <section class="scene" id="scene-letter">
       <div class="letterWrap"><div class="paper"><div id="typeArea"></div></div></div>
       <div class="msgWrap pos-bottom">
-        <div class="sub">Forever yours, with love 💌</div>
+        <div class="msg violet">From my heart to yours 💌</div>
       </div>
     </section>
 
-    <!-- SCENE 9: Fireworks phrases -->
+    <!-- SCENE 8: Fireworks phrases -->
     <section class="scene" id="scene-fire">
       <canvas id="cv-fire" class="scene-cv"></canvas>
       <div class="msgWrap pos-top">
-        <div class="sub">You are loved, today and always 🎆</div>
+        <div class="msg rose">You are loved, today and always 🎆</div>
       </div>
     </section>
 
-    <!-- SCENE 10: Finale message -->
+    <!-- SCENE 9: Finale message -->
     <section class="scene" id="scene-finale">
       <div class="msgWrap pos-center">
         <div class="msg shimmer">Guddu, you are the most special part of our lives 💖<br/>Forever with love, always.</div>
@@ -201,14 +213,14 @@
   </div>
 
   <!-- Music (your link, autoplay with fallback + fade) -->
-  <audio id="bgm" src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Hum%20Mar%20Jayenge%20(Aashiqui%202)-(Mr-Jat.in).mp3" preload="auto" autoplay playsinline></audio>
+  <audio id="bgm" src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/hum%20marjayenge.mp3" preload="auto" autoplay playsinline></audio>
   <div id="musicCtl" class="music-pill">
     <span id="musicLabel">Sound: On</span>
     <button id="toggleMusic" aria-label="Toggle Sound">⏸︎</button>
     <button id="tapForSound" class="hidden">Tap for sound 🎵</button>
   </div>
 
-  <!-- GSAP + Particles.js (CDN) -->
+  <!-- Optional light libs: GSAP for smooth ending hearts, particles.js for star twinkles -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 
@@ -232,8 +244,8 @@ function fitCanvas(c){
 (function initSky(){
   const c=$('#sky'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
   addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
-  const stars=Array.from({length:700},()=>({x:rnd(0,w), y:rnd(0,h), r:rnd(.6,1.8), tw:rnd(0,6.28), hue:rInt(190,330)}));
-  const dust=Array.from({length:35},()=>({x:rnd(0,w), y:rnd(0,h), vx:rnd(-.06,.06), vy:rnd(-.03,.03), a:rnd(.05,.2)}));
+  const stars=Array.from({length:650},()=>({x:rnd(0,w), y:rnd(0,h), r:rnd(.6,1.8), tw:rnd(0,6.28), hue:rInt(190,330)}));
+  const dust=Array.from({length:30},()=>({x:rnd(0,w), y:rnd(0,h), vx:rnd(-.06,.06), vy:rnd(-.03,.03), a:rnd(.05,.2)}));
   (function loop(){
     ctx.clearRect(0,0,w,h);
     const g=ctx.createRadialGradient(w*0.5,h*0.2,10, w*0.5,h*0.2, Math.max(w,h));
@@ -254,7 +266,7 @@ function fitCanvas(c){
 })();
 
 /* ================== MUSIC (autoplay + fallback + fade) ================== */
-const bgm=$('#bgm'), musicCtl=$('#musicCtl'), musicLabel=$('#musicLabel'),
+const bgm=$('#bgm'), musicLabel=$('#musicLabel'),
       toggleBtn=$('#toggleMusic'), tapForSound=$('#tapForSound');
 
 async function startMusic(){
@@ -282,9 +294,10 @@ tapForSound.addEventListener('click', async ()=>{
 });
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && bgm.paused){ bgm.play().catch(()=>{}); }});
 function fadeMusicOut(ms){
-  const start=bgm.volume; const t0=performance.now();
+  const startVol=Math.min(1, bgm.volume || 1);
+  const t0=performance.now();
   (function f(t){
-    const k=Math.min(1,(t-t0)/ms); bgm.volume=start*(1-k);
+    const k=Math.min(1,(t-t0)/ms); bgm.volume=startVol*(1-k);
     if(k<1) requestAnimationFrame(f); else { bgm.volume=0; bgm.pause(); }
   })(performance.now());
 }
@@ -294,13 +307,12 @@ const SCENES=[
   { id:'scene-intro',    dur: 8000 },   // 0-8
   { id:'scene-startext', dur: 12000 },  // 8-20
   { id:'scene-shoot',    dur: 9000 },   // 20-29
-  { id:'scene-lanterns', dur: 10000 },  // 29-39
-  { id:'scene-hearts',   dur: 9000 },   // 39-48
-  { id:'scene-aurora',   dur: 10000 },  // 48-58
-  { id:'scene-mirror',   dur: 9000 },   // 58-67
-  { id:'scene-letter',   dur: 14000 },  // 67-81
-  { id:'scene-fire',     dur: 14000 },  // 81-95
-  { id:'scene-finale',   dur: 7000 }    // 95-102
+  { id:'scene-hearts',   dur: 10000 },  // 29-39
+  { id:'scene-aurora',   dur: 10000 },  // 39-49
+  { id:'scene-mirror',   dur: 9000 },   // 49-58
+  { id:'scene-letter',   dur: 14000 },  // 58-72
+  { id:'scene-fire',     dur: 18000 },  // 72-90
+  { id:'scene-finale',   dur: 12000 }   // 90-102 (music fades out)
 ];
 let step=0, timer=null, started=new Set();
 function showScene(i){
@@ -322,7 +334,6 @@ function initScene(id){
   const map={
     'scene-startext': initStarText,
     'scene-shoot': initShoot,
-    'scene-lanterns': initLanterns,
     'scene-hearts': initHearts,
     'scene-aurora': initAurora,
     'scene-mirror': initMirror,
@@ -343,7 +354,7 @@ function initStarText(){
     const oc=document.createElement('canvas'); const octx=oc.getContext('2d');
     oc.width=w; oc.height=h; octx.clearRect(0,0,w,h);
     octx.fillStyle='#fff';
-    const size=Math.max(26, Math.min(60, w/14));
+    const size=Math.max(28, Math.min(62, w/12));
     octx.font=`900 ${size}px system-ui, -apple-system, Segoe UI, Roboto`;
     octx.textAlign='center'; octx.textBaseline='middle';
     octx.fillText('HAPPY BIRTHDAY GUDDU', w/2, h*0.45);
@@ -398,43 +409,7 @@ function initShoot(){
   })();
 }
 
-/* ================== SCENE 4: Floating Lanterns ================== */
-function initLanterns(){
-  const c=$('#cv-lanterns'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
-  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
-  const lanterns=[];
-  function addLantern(){
-    const x=rnd(w*0.12,w*0.88), y=h+60+rnd(0,80), vy=rnd(-0.6,-0.4), sway=rnd(0.6,1.2), hue=rInt(22,48);
-    lanterns.push({x,y,vy,sway,t:rnd(0,6.28), hue});
-  }
-  for(let i=0;i<26;i++) setTimeout(addLantern, i*260);
-  function drawLantern(L){
-    const grd=ctx.createRadialGradient(L.x,L.y-16,4, L.x,L.y,40);
-    grd.addColorStop(0,`hsla(${L.hue}, 100%, 85%, .95)`);
-    grd.addColorStop(1,`hsla(${L.hue}, 100%, 60%, .9)`);
-    ctx.fillStyle=grd;
-    ctx.beginPath();
-    roundRect(ctx, L.x-18, L.y-24, 36, 48, 10);
-    ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(L.x-10, L.y-18, 8, 32);
-    ctx.beginPath(); ctx.fillStyle='rgba(255,210,120,.35)'; ctx.arc(L.x, L.y+8, 18, 0, Math.PI*2); ctx.fill();
-  }
-  function roundRect(ctx,x,y,wid,hei,r){
-    ctx.moveTo(x+r,y); ctx.arcTo(x+wid,y,x+wid,y+hei,r);
-    ctx.arcTo(x+wid,y+hei,x,y+hei,r); ctx.arcTo(x,y+hei,x,y,r); ctx.arcTo(x,y,x+wid,y,r);
-    ctx.closePath();
-  }
-  (function loop(){
-    ctx.clearRect(0,0,w, h);
-    for(const L of lanterns){
-      L.t+=.02; L.y+=L.vy; L.x+=Math.sin(L.t)*L.sway;
-      drawLantern(L);
-    }
-    requestAnimationFrame(loop);
-  })();
-}
-
-/* ================== SCENE 5: Hearts & Balloons ================== */
+/* ================== SCENE 4: Hearts & Balloons ================== */
 function initHearts(){
   const c=$('#cv-hearts'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
   addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
@@ -470,7 +445,7 @@ function initHearts(){
       parts.push({x,y,vx:Math.cos(i/90*Math.PI*2)*rnd(1.6,2.6), vy:Math.sin(i/90*Math.PI*2)*rnd(1.6,2.6), life:rInt(50,80), color:`hsl(${hue},90%,70%)`});
     }
   }
-  for(let i=0;i<22;i++) setTimeout(addHeart, i*300);
+  for(let i=0;i<20;i++) setTimeout(addHeart, i*300);
   for(let i=0;i<12;i++) setTimeout(addBalloon, 800+i*650);
 
   (function loop(){
@@ -488,7 +463,7 @@ function initHearts(){
   })();
 }
 
-/* ================== SCENE 6: Aurora waves ================== */
+/* ================== SCENE 5: Aurora waves ================== */
 function initAurora(){
   const c=$('#cv-aurora'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
   addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
@@ -514,7 +489,7 @@ function initAurora(){
   })();
 }
 
-/* ================== SCENE 7: Compliments mirror ================== */
+/* ================== SCENE 6: Compliments mirror ================== */
 function initMirror(){
   const orb=$('#orb');
   const lines=[
@@ -524,13 +499,15 @@ function initMirror(){
     'You are my favorite miracle 🔮',
     'Unstoppable, brilliant, loved 💫'
   ];
-  let i=0; setInterval(()=>{ i=(i+1)%lines.length; orb.textContent=lines[i];
+  let i=0;
+  setInterval(()=>{
+    i=(i+1)%lines.length; orb.textContent=lines[i];
     orb.style.boxShadow='0 0 110px rgba(255,255,255,.95), inset 0 0 60px rgba(255,255,255,.9)';
     setTimeout(()=>orb.style.boxShadow='0 0 110px rgba(160,200,255,.6), inset 0 0 60px rgba(255,255,255,.9)',420);
   }, 1600);
 }
 
-/* ================== SCENE 8: Secret letter (auto-type) ================== */
+/* ================== SCENE 7: Secret letter (auto-type) ================== */
 function initLetter(){
   const area=$('#typeArea');
   const text=`My dearest Guddu,
@@ -548,7 +525,7 @@ Always yours. 💖`;
   const speed=22; const t=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(t); }, speed);
 }
 
-/* ================== SCENE 9: Fireworks phrases ================== */
+/* ================== SCENE 8: Fireworks phrases ================== */
 function initFire(){
   const c=$('#cv-fire'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
   addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
@@ -560,12 +537,13 @@ function initFire(){
     }
   }
   let t=0;
-  const words=['HAPPY BIRTHDAY','GUDDU','YOU ARE LOVED','FOREVER SPECIAL'];
+  const words=['HAPPY BIRTHDAY','GUDDU','YOU ARE LOVED','FOREVER SPECIAL','MY STAR'];
   const seq=setInterval(()=>{
     boom(rnd(w*.25,w*.75), rnd(h*.35,h*.6), rInt(0,360));
     t++;
+    // write a word every few booms
     if(t%3===0){
-      ctx.save(); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font=`900 ${Math.max(28, w/12)}px system-ui`;
+      ctx.save(); ctx.fillStyle='rgba(255,255,255,.98)'; ctx.font=`900 ${Math.max(28, w/10)}px system-ui`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       const word=words[(t/3-1)%words.length];
       ctx.fillText(word, w/2, h*.5);
@@ -586,10 +564,9 @@ function initFire(){
   })();
 }
 
-/* ================== SCENE 10: Finale ================== */
+/* ================== SCENE 9: Finale ================== */
 function initFinale(){
-  // Spawn a gentle loop of tiny hearts & sparkles forever under shimmering message
-  // Hearts spawned by spawnIdleHearts() when finale starts (and music fades).
+  // Idle hearts spawned below; shimmer text already in DOM.
 }
 
 /* ================== IDLE HEARTS AFTER FINALE ================== */
