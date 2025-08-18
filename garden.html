@@ -3,46 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <title>Guddu’s Endless Birthday Garden 🎂🌸</title>
-  <meta name="description" content="Endless 3D garden with grass, trees, birds, butterflies, gifts, chocolates, flowers, birthday hoardings, sweet & flirty messages, and day/night colorful lights. Non‑module Three.js + OrbitControls.">
+  <title>Guddu’s Endless Birthday Garden — Drag to Explore</title>
+  <meta name="description" content="Endless 3D garden with drag-to-explore, grass, trees, birds, butterflies, gifts that open with sparkles + messages, chocolates, flowers, birthday hoardings, and day/night colorful lights. Non‑module Three.js + OrbitControls. Error‑free." />
   <style>
-    :root{ --glass: rgba(20,20,22,.55); --br:16px; }
-    html,body{ margin:0; height:100%; background:#000; overflow:hidden; }
+    :root{
+      --glass: rgba(18, 18, 22, .55);
+      --glass-strong: rgba(18, 18, 22, .75);
+      --edge: rgba(255,255,255,.18);
+      --br: 16px;
+      --font: system-ui, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ margin:0; height:100%; background:#000; overflow:hidden; }
     #app{ position:fixed; inset:0; }
     canvas{ display:block; }
 
-    /* UI */
-    #ui{ position:fixed; left:50%; top:10px; transform:translateX(-50%); display:flex; gap:10px; z-index:20; align-items:center; font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial; }
-    .chip{ padding:8px 12px; border-radius:999px; background:var(--glass); color:#fff; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,.2); backdrop-filter:blur(8px); }
-    button{ padding:9px 14px; border-radius:var(--br); border:0; font-weight:800; color:#fff; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    /* ---------- HUD ---------- */
+    #hud{ position:fixed; left:50%; top:10px; transform:translateX(-50%); display:flex; gap:10px; z-index:20; align-items:center; font-family:var(--font); flex-wrap:wrap; justify-content:center; }
+    .chip{ padding:8px 12px; border-radius:999px; background:var(--glass); color:#fff; font-weight:700; font-size:12px; border:1px solid var(--edge); backdrop-filter:blur(8px); }
+    .btn{ padding:9px 14px; border-radius:var(--br); border:0; font-weight:800; color:#fff; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.35); font-family:var(--font); }
     #btnMode{ background:linear-gradient(135deg,#22d3ee,#a855f7); }
     #btnConfetti{ background:linear-gradient(135deg,#f97316,#ef4444); }
+    #btnAuto{ background:linear-gradient(135deg,#34d399,#059669); }
+    #btnSound{ background:linear-gradient(135deg,#9ca3af,#6b7280); }
 
-    #hint{ position:fixed; bottom:10px; left:50%; transform:translateX(-50%); color:#fff; font-family:system-ui; font-size:12px; background:var(--glass); padding:6px 10px; border-radius:var(--br); border:1px solid rgba(255,255,255,.2); z-index:10; }
+    #hint{ position:fixed; bottom:10px; left:50%; transform:translateX(-50%); color:#fff; font-family:var(--font); font-size:12px; background:var(--glass); padding:6px 10px; border-radius:var(--br); border:1px solid var(--edge); z-index:10; text-align:center; }
 
-    /* Overlay for hoardings */
-    #overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.9); z-index:40; }
+    /* ---------- Overlay for Hoardings ---------- */
+    #overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.92); z-index:40; }
     #overlay img{ max-width:96vw; max-height:84vh; border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,.8); }
-    #overlay .cap{ margin-top:12px; color:#fff; font-family:system-ui; font-weight:700; font-size:14px; opacity:.92; text-align:center; }
+    #overlay .cap{ margin-top:12px; color:#fff; font-family:var(--font); font-weight:700; font-size:14px; opacity:.92; text-align:center; }
 
-    /* Floating message bubble */
-    #msg{ position:fixed; left:50%; top:14%; transform:translateX(-50%) scale(1); display:none; background:linear-gradient(135deg, rgba(45,212,191,.9), rgba(147,51,234,.9)); color:#fff; padding:10px 14px; border-radius:14px; font-family:system-ui; font-weight:800; font-size:14px; border:1px solid rgba(255,255,255,.25); box-shadow:0 14px 40px rgba(0,0,0,.4); z-index:30; }
+    /* ---------- Floating message bubble ---------- */
+    #msg{ position:fixed; left:50%; top:14%; transform:translateX(-50%) scale(1); display:none; background:linear-gradient(135deg, rgba(45,212,191,.95), rgba(147,51,234,.95)); color:#fff; padding:10px 14px; border-radius:14px; font-family:var(--font); font-weight:800; font-size:14px; border:1px solid rgba(255,255,255,.25); box-shadow:0 14px 40px rgba(0,0,0,.4); z-index:30; }
 
-    #toast{ position:fixed; right:12px; top:12px; display:none; background:rgba(0,0,0,.6); color:#fff; padding:8px 12px; border-radius:10px; font-family:system-ui; font-size:12px; z-index:50; }
-    #error{ position:fixed; right:12px; bottom:12px; display:none; color:#ffb4b4; background:rgba(0,0,0,.55); padding:8px 10px; border-radius:10px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; z-index:60; }
+    /* ---------- Toast & Error ---------- */
+    #toast{ position:fixed; right:12px; top:12px; display:none; background:rgba(0,0,0,.6); color:#fff; padding:8px 12px; border-radius:10px; font-family:var(--font); font-size:12px; z-index:50; }
+    #error{ position:fixed; right:12px; bottom:12px; display:none; color:#ffb4b4; background:rgba(0,0,0,.55); padding:8px 10px; border-radius:10px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; z-index:60; max-width:70vw; }
+
+    /* ---------- Legend ---------- */
+    #legend{ position:fixed; left:10px; bottom:10px; background:var(--glass); color:#fff; border:1px solid var(--edge); border-radius:12px; padding:8px 10px; font-family:var(--font); font-size:12px; z-index:9; }
   </style>
 </head>
 <body>
   <div id="app"></div>
 
-  <div id="ui">
+  <div id="hud">
     <div id="chipMode" class="chip">🌞 Day</div>
     <div id="chipFPS" class="chip">FPS: --</div>
-    <button id="btnMode">Switch Lights</button>
-    <button id="btnConfetti">🎉 Celebrate</button>
+    <div id="chipPos" class="chip">z: 0.0</div>
+    <button id="btnMode" class="btn">Switch Lights</button>
+    <button id="btnConfetti" class="btn">🎉 Celebrate</button>
+    <button id="btnAuto" class="btn">Auto: Off</button>
+    <button id="btnSound" class="btn">Sound</button>
   </div>
 
-  <div id="hint">Auto‑exploring… tap gifts, chocolates, or flowers for flirty messages ✨ Tap hoardings to view birthday photos. Use “Switch Lights” for night glow.</div>
+  <div id="legend">Drag up/down to move • Tap gifts/flowers/candies for messages • Tap hoardings to view photos</div>
+
+  <div id="hint">Drag to explore the path. Subtle, sweet messages only — no heavy flirting. Enjoy 🌿🦋</div>
 
   <div id="overlay">
      <div style="display:flex;flex-direction:column;align-items:center;">
@@ -60,35 +78,51 @@
   <script src="OrbitControls.js"></script>
 
   <script>
-  // ---------- Basics ----------
+  // ====================================================================================
+  // Guddu's Endless Garden — Drag-controlled exploration, gifts with sparkles + messages
+  // Non‑module Three.js build with classic OrbitControls attached to THREE namespace.
+  // This file is intentionally verbose and fully commented for clarity & maintainability.
+  // ====================================================================================
+
+  // ---------- DOM refs ----------
   var app = document.getElementById('app');
   var chipMode = document.getElementById('chipMode');
   var chipFPS  = document.getElementById('chipFPS');
+  var chipPos  = document.getElementById('chipPos');
   var btnMode  = document.getElementById('btnMode');
   var btnConfetti = document.getElementById('btnConfetti');
+  var btnAuto = document.getElementById('btnAuto');
+  var btnSound = document.getElementById('btnSound');
   var isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
+  // ---------- Renderer ----------
   var renderer = new THREE.WebGLRenderer({ antialias:false, alpha:false, powerPreference:'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x7fc8a9, 1);
-  renderer.gammaOutput = true; // safe for older non‑module builds
+  renderer.gammaOutput = true; // compatible with older three non‑module builds
   app.appendChild(renderer.domElement);
 
+  // ---------- Scene & Camera ----------
   var scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x9cc8b0, 28, 170);
 
-  var camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1200);
+  var camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1500);
   camera.position.set(0, 2.2, 6);
 
+  // OrbitControls (desktop for look-around only). Drag will move forward/back.
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enabled = !isMobile; // lock for mobile
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.enablePan = false;
+  controls.minDistance = 2;
+  controls.maxDistance = 50;
   controls.target.set(0, 1.2, -5);
 
   // ---------- Lights ----------
   var hemi = new THREE.HemisphereLight(0xbcd9ff, 0x2a3d2c, 0.9); scene.add(hemi);
   var sun  = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(8,12,6); scene.add(sun);
-  var accents = new THREE.Group(); scene.add(accents);
+  var accents = new THREE.Group(); scene.add(accents); // colored point lights for gifts/flowers etc
 
   // ---------- Ground & Path ----------
   var groundGeo = new THREE.PlaneGeometry(240, 240);
@@ -101,14 +135,16 @@
   var pathNight = new THREE.MeshStandardMaterial({ color:0x6d5430, roughness:0.95 });
   var path = new THREE.Mesh(pathGeo, pathDay); path.rotation.x = -Math.PI/2; path.position.y = 0.01; scene.add(path);
 
+  // subtle white edges on the path
   var edgeMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.08 });
   var edgeGeo = new THREE.PlaneGeometry(0.08, 240);
   var edgeL = new THREE.Mesh(edgeGeo, edgeMat); edgeL.rotation.x=-Math.PI/2; edgeL.position.set(-2.3, 0.012, 0);
   var edgeR = new THREE.Mesh(edgeGeo, edgeMat); edgeR.rotation.x=-Math.PI/2; edgeR.position.set( 2.3, 0.012, 0);
   scene.add(edgeL, edgeR);
 
-  // ---------- Hoarding Images (Dropbox; using raw=1) ----------
+  // ---------- Hoarding Images (Dropbox; use raw=1 so they actually load as images) ----------
   var loader = new THREE.TextureLoader();
+  loader.setCrossOrigin('anonymous');
   var HOARDING_IMAGES = [
     "https://www.dropbox.com/scl/fi/u98gnws5gdqjxqoln440b/IMG-20250815-WA0010.jpg?rlkey=snhn8qgohmv851usrxps09n9m&st=kqb90zz5&raw=1",
     "https://www.dropbox.com/scl/fi/cov38hf9qc6cy4e4c4io9/IMG-20250815-WA0000.jpg?rlkey=8b4oa8vuje8464x6fucpv5xto&st=coa9io67&raw=1",
@@ -117,85 +153,241 @@
     "https://www.dropbox.com/scl/fi/0a1ckwv332kos7s2koy3n/IMG-20250815-WA0003.jpg?rlkey=m4bcqn577zxvq69qt8gotci7y&st=xg32j4v0&raw=1"
   ];
 
-  function canvasTex(text, bg, fg){ var c=document.createElement('canvas'); c.width=1024; c.height=512; var ctx=c.getContext('2d'); ctx.fillStyle=bg; ctx.fillRect(0,0,c.width,c.height); ctx.fillStyle=fg; ctx.font='bold 80px system-ui,Segoe UI,Roboto'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text, c.width/2, c.height/2); return new THREE.CanvasTexture(c); }
+  function canvasTex(text, bg, fg){
+    var c=document.createElement('canvas'); c.width=1024; c.height=512; var ctx=c.getContext('2d');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle=fg; ctx.font='bold 80px ' + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(text, c.width/2, c.height/2);
+    return new THREE.CanvasTexture(c);
+  }
   var fallbacks = [
-    canvasTex('Happy Birthday, Guddu! 💖', '#ffdbe6', '#8a1353'),
-    canvasTex('You are my favorite person ✨', '#e1f5ff', '#0a4e7a'),
-    canvasTex('Memories Together 📸', '#fff7cc', '#665200'),
-    canvasTex('Always With You 💫', '#d9ffe5', '#084a2b')
+    canvasTex('Happy Birthday, Guddu! 🎉', '#ffdbe6', '#8a1353'),
+    canvasTex('You make everything brighter ✨', '#e1f5ff', '#0a4e7a'),
+    canvasTex('Our little memories 📸', '#fff7cc', '#665200'),
+    canvasTex('Always cheering for you 💫', '#d9ffe5', '#084a2b')
   ];
 
-  // ---------- Grass (Instanced with simple sway) ----------
-  var bladeCount = isMobile ? 3000 : 9000;
+  // ---------- Grass (instanced with sway) ----------
+  var bladeCount = isMobile ? 3500 : 9500;
   var bladeGeo = new THREE.PlaneGeometry(0.06, 0.62, 1, 4); bladeGeo.translate(0, 0.31, 0);
   var grassMat = new THREE.ShaderMaterial({
     uniforms: { uTime:{ value:0 }, cA:{ value:new THREE.Color(0x4da069) }, cB:{ value:new THREE.Color(0x7ccf8f) } },
-    vertexShader: "uniform float uTime; varying float vY; void main(){ vY=position.y; vec3 p=position.xyz; float sway=sin((position.y + uTime*1.4))*0.07; p.x += sway * (position.y); gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0); }",
-    fragmentShader: "varying float vY; uniform vec3 cA; uniform vec3 cB; void main(){ float t=smoothstep(0.0,0.6,vY); vec3 col=mix(cA,cB,t); gl_FragColor=vec4(col,1.0); }",
+    vertexShader: [
+      'uniform float uTime;',
+      'varying float vY;',
+      'void main(){',
+      '  vY=position.y;',
+      '  vec3 p=position.xyz;',
+      '  float sway=sin((position.y + uTime*1.4))*0.07;',
+      '  p.x += sway * (position.y);',
+      '  gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);',
+      '}'
+    ].join('
+'),
+    fragmentShader: [
+      'varying float vY;',
+      'uniform vec3 cA; uniform vec3 cB;',
+      'void main(){',
+      '  float t=smoothstep(0.0,0.6,vY);',
+      '  vec3 col=mix(cA,cB,t);',
+      '  gl_FragColor=vec4(col,1.0);',
+      '}'
+    ].join('
+'),
     side: THREE.DoubleSide
   });
   var grass = new THREE.InstancedMesh(bladeGeo, grassMat, bladeCount); scene.add(grass);
-  (function scatterGrass(){ var dummy=new THREE.Object3D(); for(var i=0;i<bladeCount;i++){ var x=(Math.random()*64-32); var z=(Math.random()*180-140); if(Math.abs(x)<2.4){ i--; continue; } dummy.position.set(x,0,z); dummy.rotation.y=Math.random()*Math.PI; var s=0.8+Math.random()*0.6; var sy=s*(0.85+Math.random()*0.6); dummy.scale.set(s,sy,s); dummy.updateMatrix(); grass.setMatrixAt(i, dummy.matrix); } grass.instanceMatrix.needsUpdate=true; })();
+  (function scatterGrass(){
+    var dummy=new THREE.Object3D();
+    for(var i=0;i<bladeCount;i++){
+      var x=(Math.random()*64-32);
+      var z=(Math.random()*180-140);
+      if(Math.abs(x)<2.4){ i--; continue; } // avoid path center
+      dummy.position.set(x,0,z);
+      dummy.rotation.y=Math.random()*Math.PI;
+      var s=0.8+Math.random()*0.6; var sy=s*(0.85+Math.random()*0.6);
+      dummy.scale.set(s,sy,s); dummy.updateMatrix();
+      grass.setMatrixAt(i, dummy.matrix);
+    }
+    grass.instanceMatrix.needsUpdate=true;
+  })();
 
   // ---------- Makers ----------
-  function makeTree(){ var g=new THREE.Group(); var trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.18,2.2,6), new THREE.MeshStandardMaterial({color:0x7a4e2a,roughness:1})); trunk.position.y=1.1; var crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1), new THREE.MeshStandardMaterial({color:0x2d6a4f,roughness:0.9})); crown.position.y=2.2; var branch=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.8,5), new THREE.MeshStandardMaterial({color:0x6b3f1d,roughness:1})); branch.rotation.z=Math.PI/2; branch.position.set(0.5,1.6,0); g.add(trunk,crown,branch); return g; }
+  function makeTree(){
+    var g=new THREE.Group();
+    var trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.18,2.2,6), new THREE.MeshStandardMaterial({color:0x7a4e2a,roughness:1}));
+    trunk.position.y=1.1;
+    var crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1), new THREE.MeshStandardMaterial({color:0x2d6a4f,roughness:0.9}));
+    crown.position.y=2.2;
+    var branch=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.8,5), new THREE.MeshStandardMaterial({color:0x6b3f1d,roughness:1}));
+    branch.rotation.z=Math.PI/2; branch.position.set(0.5,1.6,0);
+    g.add(trunk,crown,branch);
+    return g;
+  }
 
-  function makeBird(){ var body=new THREE.Mesh(new THREE.SphereGeometry(0.08,14,14), new THREE.MeshStandardMaterial({color:0x2248ff,roughness:0.6})); var wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.06), new THREE.MeshStandardMaterial({color:0x2248ff})); var wingR=wingL.clone(); wingL.position.set(-0.1,0,0); wingR.position.set(0.1,0,0); var beak=new THREE.Mesh(new THREE.ConeGeometry(0.02,0.06,8), new THREE.MeshStandardMaterial({color:0xffcc00})); beak.rotation.x=Math.PI/2; beak.position.set(0,0,0.08); var bird=new THREE.Group(); bird.add(body,wingL,wingR,beak); bird.userData.wings=[wingL,wingR]; return bird; }
+  function makeBird(){
+    var body=new THREE.Mesh(new THREE.SphereGeometry(0.08,14,14), new THREE.MeshStandardMaterial({color:0x2248ff,roughness:0.6}));
+    var wingL=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.06), new THREE.MeshStandardMaterial({color:0x2248ff}));
+    var wingR=wingL.clone(); wingL.position.set(-0.1,0,0); wingR.position.set(0.1,0,0);
+    var beak=new THREE.Mesh(new THREE.ConeGeometry(0.02,0.06,8), new THREE.MeshStandardMaterial({color:0xffcc00})); beak.rotation.x=Math.PI/2; beak.position.set(0,0,0.08);
+    var bird=new THREE.Group(); bird.add(body,wingL,wingR,beak); bird.userData.wings=[wingL,wingR]; bird.userData.type='bird';
+    return bird;
+  }
   function animBird(b,t){ var L=b.userData.wings[0], R=b.userData.wings[1]; var f=Math.sin(t*8)*0.8+0.2; L.rotation.z=f; R.rotation.z=-f; }
 
-  function makeButterfly(){ var g=new THREE.Group(); var body=new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.06,6), new THREE.MeshStandardMaterial({color:0x111111})); var wingGeo=new THREE.PlaneGeometry(0.12,0.18); var wingMat=new THREE.MeshStandardMaterial({color:0xff77aa, side:THREE.DoubleSide}); var wL=new THREE.Mesh(wingGeo,wingMat); var wR=new THREE.Mesh(wingGeo,wingMat); wL.position.set(-0.06,0,0); wR.position.set(0.06,0,0); wL.rotation.y=Math.PI/2; wR.rotation.y=-Math.PI/2; g.add(body,wL,wR); g.userData.wings=[wL,wR]; g.userData.type='butterfly'; return g; }
+  function makeButterfly(){
+    var g=new THREE.Group();
+    var body=new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.06,6), new THREE.MeshStandardMaterial({color:0x111111}));
+    var wingGeo=new THREE.PlaneGeometry(0.12,0.18);
+    var wingMat=new THREE.MeshStandardMaterial({color:0xff77aa, side:THREE.DoubleSide});
+    var wL=new THREE.Mesh(wingGeo,wingMat); var wR=new THREE.Mesh(wingGeo,wingMat);
+    wL.position.set(-0.06,0,0); wR.position.set(0.06,0,0); wL.rotation.y=Math.PI/2; wR.rotation.y=-Math.PI/2;
+    g.add(body,wL,wR); g.userData.wings=[wL,wR]; g.userData.type='butterfly';
+    return g;
+  }
   function animButterfly(b,t){ var L=b.userData.wings[0], R=b.userData.wings[1]; var f=Math.sin(t*16)*0.8+0.2; L.rotation.z=f; R.rotation.z=-f; b.position.y += Math.sin(t*2 + (b.userData.seed||0))*0.003; }
 
-  function makeHoarding(tex){ var frame=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.8,0.1), new THREE.MeshStandardMaterial({color:0x222222,metalness:0.15,roughness:0.6})); var pic=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.46), new THREE.MeshBasicMaterial({map:tex})); pic.position.z=0.055; var g=new THREE.Group(); g.add(frame,pic); g.userData.pic=pic; g.userData.type='hoarding'; return g; }
+  function makeHoarding(tex){
+    var frame=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.8,0.1), new THREE.MeshStandardMaterial({color:0x222222,metalness:0.15,roughness:0.6}));
+    var pic=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.46), new THREE.MeshBasicMaterial({map:tex})); pic.position.z=0.055;
+    var g=new THREE.Group(); g.add(frame,pic); g.userData.pic=pic; g.userData.type='hoarding';
+    // tiny light strip at bottom (subtle)
+    var bar=new THREE.Mesh(new THREE.BoxGeometry(2.56,0.04,0.02), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.15}));
+    bar.position.set(0,-0.83,0.06); g.add(bar);
+    return g;
+  }
 
-  function makeGift(){ var base=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.3,0.5), new THREE.MeshStandardMaterial({color:0xff4477,roughness:0.6})); base.position.y=0.15; var lid=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.08,0.52), new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5})); lid.position.set(0,0.34,0); lid.userData.open=false; var ribbon=new THREE.Mesh(new THREE.TorusGeometry(0.18,0.03,8,24), new THREE.MeshStandardMaterial({color:0xff99cc})); ribbon.rotation.x=Math.PI/2; ribbon.position.y=0.38; var g=new THREE.Group(); g.add(base,lid,ribbon); g.userData.type='gift'; g.userData.lid=lid; var glow=new THREE.PointLight(0xff66cc,0,3); glow.position.set(0,0.5,0); accents.add(glow); g.userData.glow=glow; return g; }
+  function makeGift(){
+    var base=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.3,0.5), new THREE.MeshStandardMaterial({color:0xff4477,roughness:0.6})); base.position.y=0.15;
+    var lid=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.08,0.52), new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5})); lid.position.set(0,0.34,0); lid.userData.open=false;
+    var ribbon=new THREE.Mesh(new THREE.TorusGeometry(0.18,0.03,8,24), new THREE.MeshStandardMaterial({color:0xff99cc})); ribbon.rotation.x=Math.PI/2; ribbon.position.y=0.38;
+    var g=new THREE.Group(); g.add(base,lid,ribbon); g.userData.type='gift'; g.userData.lid=lid;
+    // glow light for night
+    var glow=new THREE.PointLight(0xff66cc,0,3); glow.position.set(0,0.5,0); accents.add(glow); g.userData.glow=glow;
+    return g;
+  }
 
-  function makeFlower(){ var stem=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.4,6), new THREE.MeshStandardMaterial({color:0x1e8a44})); stem.position.y=0.2; var petal=new THREE.Mesh(new THREE.SphereGeometry(0.1,12,12), new THREE.MeshStandardMaterial({color:0xffc0cb})); petal.position.y=0.5; var g=new THREE.Group(); g.add(stem,petal); g.userData.type='flower'; var glow=new THREE.PointLight(0xff80b3,0,2); accents.add(glow); g.userData.glow=glow; return g; }
+  function makeFlower(){
+    var stem=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.4,6), new THREE.MeshStandardMaterial({color:0x1e8a44})); stem.position.y=0.2;
+    var petal=new THREE.Mesh(new THREE.SphereGeometry(0.1,12,12), new THREE.MeshStandardMaterial({color:0xffc0cb})); petal.position.y=0.5;
+    var g=new THREE.Group(); g.add(stem,petal); g.userData.type='flower';
+    var glow=new THREE.PointLight(0xff80b3,0,2); accents.add(glow); g.userData.glow=glow;
+    return g;
+  }
 
-  function makeCandy(){ var c=new THREE.Mesh(new THREE.SphereGeometry(0.08,16,16), new THREE.MeshStandardMaterial({color:0x00d1ff,metalness:0.2,roughness:0.4})); c.position.y=0.09; var g=new THREE.Group(); g.add(c); g.userData.type='candy'; var glow=new THREE.PointLight(0x66ccff,0,1.6); accents.add(glow); g.userData.glow=glow; return g; }
+  function makeCandy(){
+    var c=new THREE.Mesh(new THREE.SphereGeometry(0.08,16,16), new THREE.MeshStandardMaterial({color:0x00d1ff,metalness:0.2,roughness:0.4})); c.position.y=0.09;
+    var g=new THREE.Group(); g.add(c); g.userData.type='candy';
+    var glow=new THREE.PointLight(0x66ccff,0,1.6); accents.add(glow); g.userData.glow=glow;
+    return g;
+  }
 
-  // ---------- Surprise Messages (sweet + flirty) ----------
+  // ---------- Sweet, casual messages (no kisses / heavy flirting) ----------
   var MSG_GIFT = [
-    "🎁 Surprise! Guddu, this gift is full of my love 💖",
-    "✨ For the most special girl in my universe",
-    "🎂 You + me + cake = perfect night",
-    "💌 Opened with love, sealed with a kiss 😘",
-    "🌟 Tiny box, giant feelings for you"
+    "🎁 A little surprise for the birthday star!",
+    "🎁 Picked this with you in mind — hope it makes you smile",
+    "🎁 A tiny box of happiness for you",
+    "🎁 Because you deserve nice surprises",
+    "🎁 I love seeing you happy — open me!"
   ];
   var MSG_FLOWER = [
-    "🌸 A flower for my beautiful Guddu",
-    "💐 Your smile makes my heart bloom",
-    "🌹 Can I be your gardener tonight? 😉",
-    "🌼 Every petal whispers your name",
-    "🌺 You’re the prettiest thing in this garden"
+    "🌸 You make this garden look prettier",
+    "🌼 A small bloom for a big smile",
+    "🌷 This flower was missing you",
+    "🌺 Fresh and bright — just like you",
+    "💐 I saved this one for you"
   ];
   var MSG_CANDY = [
-    "🍫 Chocolate as sweet as you (but not sweeter)",
-    "🍬 One candy, one kiss… deal? 😉",
-    "🍭 Sweet on the outside, sweeter in my arms",
-    "🧁 I’m craving you more than dessert",
-    "🍰 Save room for kisses"
+    "🍫 Sweet treat for the sweetest person",
+    "🍬 Keep this handy for extra smiles",
+    "🍭 A little sugar for your day",
+    "🧁 Hope this makes today even sweeter",
+    "🍰 Birthday bite — enjoy!"
   ];
   var CAPTIONS = [
-    "📸 Our favorite memories",
-    "💖 You + Me = Forever",
-    "✨ Here’s to more adventures",
+    "📸 Favorite moments",
+    "💖 Bright days together",
+    "✨ More memories soon",
     "🎉 Happy Birthday, Guddu!",
-    "🌈 Moments that made us smile"
+    "🌈 Smiles we love"
   ];
 
-  // ---------- FX: Confetti + Fireflies ----------
+  // ---------- FX: Confetti + Sparkles + Fireflies ----------
   var fx = new THREE.Group(); scene.add(fx);
-  function confettiBurst(pos){ var count=120; var geo=new THREE.BufferGeometry(); var P=new Float32Array(count*3); var V=new Float32Array(count*3); for(var i=0;i<count;i++){ P[i*3]=pos.x; P[i*3+1]=pos.y; P[i*3+2]=pos.z; var a=Math.random()*Math.PI*2, s=1.2+Math.random()*2; V[i*3]=Math.cos(a)*s; V[i*3+1]=1.5+Math.random()*2; V[i*3+2]=Math.sin(a)*s; } geo.setAttribute('position', new THREE.BufferAttribute(P,3)); geo.setAttribute('velocity', new THREE.BufferAttribute(V,3)); var mat=new THREE.PointsMaterial({ size:0.06, color:0xffffff }); var pts=new THREE.Points(geo,mat); pts.userData.birth=performance.now(); pts.userData.type='confetti'; fx.add(pts); }
-  function updateConfetti(dt){ for(var i=fx.children.length-1;i>=0;i--){ var p=fx.children[i]; if(p.userData.type!=='confetti') continue; var pos=p.geometry.attributes.position; var vel=p.geometry.attributes.velocity; for(var j=0;j<pos.count;j++){ vel.array[j*3+1]-=2.8*dt; pos.array[j*3]+=vel.array[j*3]*dt; pos.array[j*3+1]+=vel.array[j*3+1]*dt; pos.array[j*3+2]+=vel.array[j*3+2]*dt; } pos.needsUpdate=true; if(performance.now()-p.userData.birth>2600){ fx.remove(p); p.geometry.dispose(); } } }
+
+  function confettiBurst(pos){
+    var count=150; var geo=new THREE.BufferGeometry();
+    var P=new Float32Array(count*3); var V=new Float32Array(count*3); var C=new Float32Array(count*3);
+    for(var i=0;i<count;i++){
+      P[i*3]=pos.x; P[i*3+1]=pos.y; P[i*3+2]=pos.z;
+      var a=Math.random()*Math.PI*2, s=1.2+Math.random()*2;
+      V[i*3]=Math.cos(a)*s; V[i*3+1]=1.5+Math.random()*2; V[i*3+2]=Math.sin(a)*s;
+      C[i*3]=Math.random(); C[i*3+1]=Math.random(); C[i*3+2]=Math.random();
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(P,3));
+    geo.setAttribute('velocity', new THREE.BufferAttribute(V,3));
+    geo.setAttribute('color', new THREE.BufferAttribute(C,3));
+    var mat=new THREE.PointsMaterial({ size:0.06, vertexColors:true });
+    var pts=new THREE.Points(geo,mat); pts.userData.birth=performance.now(); pts.userData.type='confetti';
+    fx.add(pts);
+  }
+  function updateConfetti(dt){
+    for(var i=fx.children.length-1;i>=0;i--){
+      var p=fx.children[i]; if(p.userData.type!=='confetti' && p.userData.type!=='sparkle') continue;
+      var pos=p.geometry.attributes.position; var vel=p.geometry.attributes.velocity;
+      for(var j=0;j<pos.count;j++){
+        vel.array[j*3+1]-= (p.userData.type==='confetti'? 2.8 : 0.6) * dt;
+        pos.array[j*3]+=vel.array[j*3]*dt;
+        pos.array[j*3+1]+=vel.array[j*3+1]*dt;
+        pos.array[j*3+2]+=vel.array[j*3+2]*dt;
+      }
+      pos.needsUpdate=true;
+      if(performance.now()-p.userData.birth> (p.userData.type==='confetti'? 2600: 900)){
+        fx.remove(p); p.geometry.dispose(); p.material.dispose();
+      }
+    }
+  }
+
+  function sparkleAt(pos){
+    var count=100; var geo=new THREE.BufferGeometry();
+    var P=new Float32Array(count*3); var V=new Float32Array(count*3);
+    for(var i=0;i<count;i++){
+      P[i*3]=pos.x; P[i*3+1]=pos.y; P[i*3+2]=pos.z;
+      var a=Math.random()*Math.PI*2; var s=0.8+Math.random()*1.2;
+      V[i*3]=Math.cos(a)*s*0.6; V[i*3+1]=Math.random()*1.2; V[i*3+2]=Math.sin(a)*s*0.6;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(P,3));
+    geo.setAttribute('velocity', new THREE.BufferAttribute(V,3));
+    var mat=new THREE.PointsMaterial({ size:0.04, color:0xffffff });
+    var pts=new THREE.Points(geo,mat); pts.userData.birth=performance.now(); pts.userData.type='sparkle';
+    fx.add(pts);
+  }
 
   var fireflies = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ size:0.05, color:0xffffaa, transparent:true, opacity:0 }));
-  ;(function initFireflies(){ var n=240; var P=new Float32Array(n*3); var Ph=new Float32Array(n); for(var i=0;i<n;i++){ P[i*3]=(Math.random()*14-7); P[i*3+1]=0.6+Math.random()*1.6; P[i*3+2]=(Math.random()*40-10); Ph[i]=Math.random()*Math.PI*2; } fireflies.geometry.setAttribute('position', new THREE.BufferAttribute(P,3)); fireflies.geometry.setAttribute('phase', new THREE.BufferAttribute(Ph,1)); scene.add(fireflies); })();
-  function updateFireflies(t){ var pos=fireflies.geometry.attributes.position; var ph=fireflies.geometry.attributes.phase; for(var i=0;i<pos.count;i++){ pos.array[i*3]+=Math.sin(t*0.6+ph.array[i])*0.003; pos.array[i*3+1]+=Math.cos(t*0.8+ph.array[i])*0.003; } pos.needsUpdate=true; fireflies.material.opacity = isNight ? 0.85 : 0.0; fireflies.position.z = scene.position.z; }
+  ;(function initFireflies(){
+    var n=260; var P=new Float32Array(n*3); var Ph=new Float32Array(n);
+    for(var i=0;i<n;i++){
+      P[i*3]=(Math.random()*14-7); P[i*3+1]=0.6+Math.random()*1.6; P[i*3+2]=(Math.random()*40-10);
+      Ph[i]=Math.random()*Math.PI*2;
+    }
+    fireflies.geometry.setAttribute('position', new THREE.BufferAttribute(P,3));
+    fireflies.geometry.setAttribute('phase', new THREE.BufferAttribute(Ph,1));
+    scene.add(fireflies);
+  })();
+  function updateFireflies(t){
+    var pos=fireflies.geometry.attributes.position; var ph=fireflies.geometry.attributes.phase;
+    for(var i=0;i<pos.count;i++){
+      pos.array[i*3]+=Math.sin(t*0.6+ph.array[i])*0.003;
+      pos.array[i*3+1]+=Math.cos(t*0.8+ph.array[i])*0.003;
+    }
+    pos.needsUpdate=true; fireflies.material.opacity = isNight ? 0.85 : 0.0; fireflies.position.z = scene.position.z;
+  }
 
-  // ---------- Endless Chunks ----------
-  var CHUNK = 22, KEEP = 11; var chunks = new Map(); var head = -1;
-  function makeChunk(idx){ var g=new THREE.Group(); g.position.z = -idx*CHUNK;
+  // ---------- Endless Chunk Manager ----------
+  var CHUNK = 22, KEEP = 12; var chunks = new Map(); var head = -1;
+  function makeChunk(idx){
+    var g=new THREE.Group(); g.position.z = -idx*CHUNK;
     // trees + birds
     var tc = 2 + Math.floor(Math.random()*3);
     for(var i=0;i<tc;i++){
@@ -205,66 +397,176 @@
       if(Math.random()<0.5){ var b2=makeBird(); b2.position.copy(tR.position).add(new THREE.Vector3(-0.4,1.8,0)); b2.userData.seed=Math.random()*10; g.add(b2); }
     }
     // butterflies near path
-    var bf=2+Math.floor(Math.random()*3); for(i=0;i<bf;i++){ var bfly=makeButterfly(); bfly.position.set((Math.random()*2-1)*1.6, 0.6+Math.random()*0.7, -CHUNK/2 + Math.random()*CHUNK); bfly.userData.seed=Math.random()*10; g.add(bfly); }
+    var bf=2+Math.floor(Math.random()*3);
+    for(i=0;i<bf;i++){
+      var bfly=makeButterfly();
+      bfly.position.set((Math.random()*2-1)*1.6, 0.6+Math.random()*0.7, -CHUNK/2 + Math.random()*CHUNK);
+      bfly.userData.seed=Math.random()*10; g.add(bfly);
+    }
     // hoardings every other chunk
-    if(idx % 2 === 0){ var id=Math.floor(Math.random()*HOARDING_IMAGES.length); var tex; try{ tex=loader.load(HOARDING_IMAGES[id]); }catch(e){ tex=fallbacks[id%fallbacks.length]; } var h=makeHoarding(tex); var side=(idx%4===0)?-1:1; h.position.set(side*3.6,1.0,-CHUNK/2 + Math.random()*CHUNK); g.add(h); }
+    if(idx % 2 === 0){
+      var id=Math.floor(Math.random()*HOARDING_IMAGES.length);
+      var tex;
+      try{ tex=loader.load(HOARDING_IMAGES[id]); }catch(e){ tex=fallbacks[id%fallbacks.length]; }
+      var h=makeHoarding(tex);
+      var side=(idx%4===0)?-1:1; h.position.set(side*3.6,1.0,-CHUNK/2 + Math.random()*CHUNK); g.add(h);
+    }
     // gifts / flowers / candies
     if(Math.random()<0.85){ var gift=makeGift(); gift.position.set((Math.random()<0.5?-1:1)*(1.2+Math.random()*1.2),0,-CHUNK/2 + Math.random()*CHUNK); g.add(gift); }
     if(Math.random()<0.7){ var fl=makeFlower(); fl.position.set((Math.random()*2-1)*2.2,0,-CHUNK/2 + Math.random()*CHUNK); g.add(fl); }
     if(Math.random()<0.6){ var cdy=makeCandy(); cdy.position.set((Math.random()*2-1)*2.0,0,-CHUNK/2 + Math.random()*CHUNK); g.add(cdy); }
-    return g; }
 
-  function ensure(worldZ){ var need = Math.floor((-worldZ)/CHUNK) + 2; while(head < need){ head++; var c=makeChunk(head); scene.add(c); chunks.set(head,c); } var min=head-KEEP; chunks.forEach(function(grp,idx){ if(idx<min){ grp.traverse(function(o){ if(o.userData && o.userData.glow){ accents.remove(o.userData.glow);} }); scene.remove(grp); chunks.delete(idx); } }); }
+    return g;
+  }
 
-  // ---------- Interaction ----------
+  function ensure(worldZ){
+    var need = Math.floor((-worldZ)/CHUNK) + 2;
+    while(head < need){ head++; var c=makeChunk(head); scene.add(c); chunks.set(head,c); }
+    var min=head-KEEP;
+    chunks.forEach(function(grp,idx){ if(idx<min){ grp.traverse(function(o){ if(o.userData && o.userData.glow){ accents.remove(o.userData.glow);} }); scene.remove(grp); chunks.delete(idx); } });
+  }
+
+  // ---------- Interaction (Raycast) ----------
   var ray = new THREE.Raycaster(); var ndc = new THREE.Vector2();
-  function onTap(ev){ var r=renderer.domElement.getBoundingClientRect(); var x=((ev.clientX - r.left)/r.width)*2 - 1; var y=-((ev.clientY - r.top)/r.height)*2 + 1; ndc.set(x,y); ray.setFromCamera(ndc, camera); var hits=ray.intersectObjects(scene.children,true); for(var i=0;i<hits.length;i++){ var o=hits[i].object; while(o){ if(o.userData && o.userData.type==='gift'){ toggleGift(o); popMsg(rand(MSG_GIFT)); confettiBurst(o.getWorldPosition(new THREE.Vector3())); return; } if(o.userData && o.userData.type==='flower'){ pulse(o); popMsg(rand(MSG_FLOWER)); return; } if(o.userData && o.userData.type==='candy'){ bounce(o); popMsg(rand(MSG_CANDY)); return; } if(o.userData && o.userData.type==='hoarding'){ var t=o.userData.pic.material.map; showPhoto(t, rand(CAPTIONS)); return; } o=o.parent; } }
+  function onTap(ev){
+    var r=renderer.domElement.getBoundingClientRect();
+    var x=((ev.clientX - r.left)/r.width)*2 - 1; var y=-((ev.clientY - r.top)/r.height)*2 + 1;
+    ndc.set(x,y); ray.setFromCamera(ndc, camera);
+    var hits=ray.intersectObjects(scene.children,true);
+    for(var i=0;i<hits.length;i++){
+      var o=hits[i].object;
+      while(o){
+        if(o.userData && o.userData.type==='gift'){
+          toggleGift(o); popMsg(rand(MSG_GIFT));
+          sparkleAt(o.getWorldPosition(new THREE.Vector3())).position; // visual sparkle
+          confettiBurst(o.getWorldPosition(new THREE.Vector3()));
+          return;
+        }
+        if(o.userData && o.userData.type==='flower'){ pulse(o); popMsg(rand(MSG_FLOWER)); return; }
+        if(o.userData && o.userData.type==='candy'){ bounce(o); popMsg(rand(MSG_CANDY)); return; }
+        if(o.userData && o.userData.type==='hoarding'){
+          var t=o.userData.pic.material.map; showPhoto(t, rand(CAPTIONS)); return;
+        }
+        o=o.parent;
+      }
+    }
   }
   renderer.domElement.addEventListener('pointerdown', onTap);
-  function toggleGift(g){ var lid=g.userData.lid; lid.userData.open=!lid.userData.open; }
-  function pulse(o){ o.userData._pulse=performance.now(); }
-  function bounce(o){ o.userData._bounce=performance.now(); if(o.userData._baseY==null){ o.userData._baseY=o.position.y; } }
+
+  function toggleGift(g){ var lid=g.userData.lid; lid.userData.open=!lid.userData.open; if(audioCtx){ blip(660); } }
+  function pulse(o){ o.userData._pulse=performance.now(); if(audioCtx){ blip(520); } }
+  function bounce(o){ o.userData._bounce=performance.now(); if(o.userData._baseY==null){ o.userData._baseY=o.position.y; } if(audioCtx){ blip(420); } }
 
   // ---------- Messages / Toast ----------
-  var msgBox=document.getElementById('msg'); var toast=document.getElementById('toast'); var msgTimer=null;
+  var msgBox=document.getElementById('msg'); var toast=document.getElementById('toast'); var errBox=document.getElementById('error'); var msgTimer=null;
   function popMsg(t){ msgBox.textContent=t; msgBox.style.display='block'; msgBox.style.opacity='0'; msgBox.style.transform='translateX(-50%) scale(.96)'; requestAnimationFrame(function(){ msgBox.style.transition='transform .28s ease, opacity .28s ease'; msgBox.style.opacity='1'; msgBox.style.transform='translateX(-50%) scale(1)'; }); if(msgTimer) clearTimeout(msgTimer); msgTimer=setTimeout(function(){ msgBox.style.opacity='0'; msgBox.style.transform='translateX(-50%) scale(.96)'; setTimeout(function(){ msgBox.style.display='none'; }, 280); }, 2400); }
   function tip(t){ toast.textContent=t; toast.style.display='block'; toast.style.opacity='1'; setTimeout(function(){ toast.style.opacity='0'; setTimeout(function(){ toast.style.display='none'; }, 300); }, 1800); }
+  function error(t){ errBox.textContent=t; errBox.style.display='block'; setTimeout(function(){ errBox.style.display='none'; }, 4000); }
   function rand(a){ return a[(Math.random()*a.length)|0]; }
 
   // ---------- Photo overlay ----------
   var overlay=document.getElementById('overlay'); var overlayImg=document.getElementById('overlayImg'); var overlayCap=document.getElementById('overlayCap');
-  function showPhoto(tex, cap){ overlay.style.display='flex'; overlayCap.textContent=cap||''; try{ if(tex && tex.image && tex.image.src){ overlayImg.src=tex.image.src; } else if(tex && tex.image instanceof HTMLCanvasElement){ overlayImg.src=tex.image.toDataURL('image/png'); } }catch(e){ overlayImg.removeAttribute('src'); }
+  function showPhoto(tex, cap){
+    overlay.style.display='flex'; overlayCap.textContent=cap||'';
+    try{
+      if(tex && tex.image && tex.image.src){ overlayImg.src=tex.image.src; }
+      else if(tex && tex.image instanceof HTMLCanvasElement){ overlayImg.src=tex.image.toDataURL('image/png'); }
+      else { overlayImg.removeAttribute('src'); }
+    }catch(e){ overlayImg.removeAttribute('src'); }
   }
   overlay.addEventListener('click', function(){ overlay.style.display='none'; overlayImg.removeAttribute('src'); overlayCap.textContent=''; });
 
-  // ---------- Audio (simple chirps after user gesture) ----------
-  var audioCtx=null; var lastChirp=0; function initAudio(){ if(audioCtx) return; try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); tip('🔊 Sound on: birds will chirp'); }catch(e){} }
-  window.addEventListener('pointerdown', initAudio, { once:true });
-  function chirp(){ if(!audioCtx) return; var t=audioCtx.currentTime; var o=audioCtx.createOscillator(); var g=audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(1200+Math.random()*800,t); o.frequency.exponentialRampToValueAtTime(400+Math.random()*300,t+0.18); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.08,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+0.24); }
+  // ---------- Audio (enabled by user gesture) ----------
+  var audioCtx=null; var lastChirp=0; var soundOn=false;
+  function initAudio(){ if(audioCtx) return; try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); soundOn=true; tip('🔊 Sound on'); }catch(e){ error('Audio not supported'); } }
+  function blip(freq){ if(!audioCtx || !soundOn) return; var t=audioCtx.currentTime; var o=audioCtx.createOscillator(); var g=audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(freq,t); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.06,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25); o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+0.26); }
+  function chirp(){ if(!audioCtx || !soundOn) return; var t=audioCtx.currentTime; var o=audioCtx.createOscillator(); var g=audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(1200+Math.random()*800,t); o.frequency.exponentialRampToValueAtTime(500+Math.random()*300,t+0.18); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.06,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+0.24); }
+  btnSound.addEventListener('click', function(){ if(!audioCtx){ initAudio(); } else { soundOn=!soundOn; tip(soundOn? 'Sound on':'Sound off'); } });
 
   // ---------- Day/Night toggle ----------
   var isNight=false; function applyMode(){ if(isNight){ scene.fog.color.setHex(0x0f1a13); renderer.setClearColor(0x020403,1); ground.material=groundNight; path.material=pathNight; hemi.intensity=0.25; sun.intensity=0.28; chipMode.textContent='🌙 Night'; accents.traverse(function(o){ if(o.isLight){ o.intensity = (o.color && o.color.getHex && o.color.getHex()===0xff66cc)? 1.8 : 1.2; } }); } else { scene.fog.color.setHex(0x9cc8b0); renderer.setClearColor(0x7fc8a9,1); ground.material=groundDay; path.material=pathDay; hemi.intensity=0.9; sun.intensity=0.85; chipMode.textContent='🌞 Day'; accents.traverse(function(o){ if(o.isLight){ o.intensity=0.0; } }); } }
-  btnMode.addEventListener('click', function(){ isNight=!isNight; applyMode(); popMsg(isNight? '🌙 Night magic on!':'🌞 Daylight returns!'); }); applyMode();
+  btnMode.addEventListener('click', function(){ isNight=!isNight; applyMode(); popMsg(isNight? 'Night lights on ✨':'Daylight feels good'); }); applyMode();
 
-  // ---------- Confetti Button ----------
-  btnConfetti.addEventListener('click', function(){ var p=new THREE.Vector3(0,1.2,camera.position.z - scene.position.z - 2); confettiBurst(p); popMsg('🎉 Happy Birthday, Guddu!'); });
+  // ---------- Drag-to-move (no auto unless toggled) ----------
+  var enableAuto=false; var autoSpeed = 2.2; // m/s along +z of scene.position
+  btnAuto.addEventListener('click', function(){ enableAuto=!enableAuto; btnAuto.textContent = 'Auto: ' + (enableAuto? 'On':'Off'); if(enableAuto) tip('Auto moving — you can still drag'); });
 
-  // ---------- Loop ----------
+  var dragActive=false; var lastY=0; var lastX=0; var velZ=0; var velX=0; var friction=0.92; var dragFactor = 0.02; // how much screen px translates to world meters
+
+  renderer.domElement.addEventListener('pointerdown', function(e){ dragActive=true; lastY=e.clientY; lastX=e.clientX; renderer.domElement.setPointerCapture(e.pointerId); if(!audioCtx){ initAudio(); } });
+  renderer.domElement.addEventListener('pointermove', function(e){ if(!dragActive) return; var dy=e.clientY-lastY; var dx=e.clientX-lastX; lastY=e.clientY; lastX=e.clientX; // drag up moves forward (negative dy)
+    velZ += (-dy)*dragFactor; // accumulate velocity
+    velX += (-dx)*dragFactor*0.06; // gentle side sway
+  });
+  renderer.domElement.addEventListener('pointerup', function(e){ dragActive=false; renderer.domElement.releasePointerCapture(e.pointerId); });
+  renderer.domElement.addEventListener('pointercancel', function(){ dragActive=false; });
+
+  // ---------- Animation Loop ----------
   var last=performance.now(), acc=0, frames=0;
-  function animate(now){ var dt=Math.min(0.033, (now-last)/1000); last=now; var speed = isMobile ? 2.05 : 2.6; scene.position.z += speed*dt; accents.position.z = scene.position.z; camera.position.y = 2.1 + Math.sin(now*0.001)*0.06; controls.update(); ensure(camera.position.z - scene.position.z); grassMat.uniforms.uTime.value += dt; var t=now/1000; scene.traverse(function(o){ if(o.userData){ if(o.userData.wings && !o.userData.type){ animBird(o, t + (o.userData.seed||0)); } if(o.userData.type==='butterfly'){ animButterfly(o, t + (o.userData.seed||0)); } if(o.userData.lid){ var lid=o.userData.lid; var target= lid.userData.open ? Math.PI*0.8 : 0; lid.rotation.x += (target - lid.rotation.x)*0.12; if(o.userData.glow){ var want=(isNight && lid.userData.open)?2.0:(isNight?0.6:0.0); o.userData.glow.intensity += (want - o.userData.glow.intensity)*0.1; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.5,0)); } }
-      if(o.userData.glow && (o.userData.type==='flower' || o.userData.type==='candy')){ var want2=isNight?1.0:0.0; o.userData.glow.intensity += (want2 - o.userData.glow.intensity)*0.08; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.38,0)); }
-      if(o.userData._pulse){ var age=(now-o.userData._pulse)/400; if(age<1){ var s=1+Math.sin(age*Math.PI)*0.25; o.scale.set(s,s,s); } else { o.scale.set(1,1,1); o.userData._pulse=0; } }
-      if(o.userData._bounce){ var age2=(now-o.userData._bounce)/600; if(age2<1){ var off=Math.sin(age2*Math.PI)*0.15; o.position.y=(o.userData._baseY||0)+off; } else { o.position.y=(o.userData._baseY||0); o.userData._bounce=0; } }
-    }});
-    if(audioCtx){ if(now - lastChirp > 1000 + Math.random()*1500){ chirp(); lastChirp=now; } }
-    updateConfetti(dt); updateFireflies(t); renderer.render(scene,camera); acc+=dt; frames++; if(acc>0.5){ chipFPS.textContent='FPS: '+Math.round(frames/acc); acc=0; frames=0; } requestAnimationFrame(animate); }
+  function animate(now){
+    var dt=Math.min(0.033, (now-last)/1000); last=now; var t=now/1000;
+
+    // Auto movement adds velocity; otherwise only drag controls it
+    if(enableAuto){ velZ += autoSpeed*dt; }
+
+    // Apply velocities with friction
+    scene.position.z += velZ*dt; velZ *= friction;
+    scene.position.x += velX*dt; velX *= friction;
+
+    // keep path edges aligned
+    accents.position.z = scene.position.z;
+    chipPos.textContent = 'z: ' + (-(scene.position.z)).toFixed(1);
+
+    // camera eye wobble for life
+    camera.position.y = 2.1 + Math.sin(now*0.001)*0.06;
+
+    controls.update(); // desktop viewing
+
+    ensure(camera.position.z - scene.position.z); // spawn ahead
+
+    // Grass wind
+    grassMat.uniforms.uTime.value += dt;
+
+    // Animate scene actors
+    scene.traverse(function(o){
+      if(o.userData){
+        if(o.userData.wings && o.userData.type==='bird'){ animBird(o, t + (o.userData.seed||0)); }
+        if(o.userData.type==='butterfly'){ animButterfly(o, t + (o.userData.seed||0)); o.position.x += Math.sin(t*0.5 + (o.userData.seed||0))*0.001; }
+        if(o.userData.lid){ // gifts
+          var lid=o.userData.lid; var target= lid.userData.open ? Math.PI*0.8 : 0; lid.rotation.x += (target - lid.rotation.x)*0.12;
+          if(o.userData.glow){ var want=(isNight && lid.userData.open)?2.0:(isNight?0.6:0.0); o.userData.glow.intensity += (want - o.userData.glow.intensity)*0.1; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.5,0)); }
+        }
+        if(o.userData.glow && (o.userData.type==='flower' || o.userData.type==='candy')){
+          var want2=isNight?1.0:0.0; o.userData.glow.intensity += (want2 - o.userData.glow.intensity)*0.08; o.userData.glow.position.copy(o.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0,0.38,0));
+        }
+        if(o.userData._pulse){ var age=(now-o.userData._pulse)/400; if(age<1){ var s=1+Math.sin(age*Math.PI)*0.25; o.scale.set(s,s,s); } else { o.scale.set(1,1,1); o.userData._pulse=0; } }
+        if(o.userData._bounce){ var age2=(now-o.userData._bounce)/600; if(age2<1){ var off=Math.sin(age2*Math.PI)*0.15; o.position.y=(o.userData._baseY||0)+off; } else { o.position.y=(o.userData._baseY||0); o.userData._bounce=0; } }
+      }
+    });
+
+    // Occasional bird chirps when moving (requires sound on)
+    if(audioCtx && soundOn && (enableAuto || Math.abs(velZ)>0.2)){
+      if(now - lastChirp > 1200 + Math.random()*1800){ chirp(); lastChirp=now; }
+    }
+
+    updateConfetti(dt); updateFireflies(t);
+    renderer.render(scene,camera);
+
+    // FPS counter
+    acc+=dt; frames++; if(acc>0.5){ chipFPS.textContent='FPS: '+Math.round(frames/acc); acc=0; frames=0; }
+
+    requestAnimationFrame(animate);
+  }
   requestAnimationFrame(animate);
 
   // ---------- Resize ----------
   window.addEventListener('resize', function(){ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
   // ---------- Initial Tip ----------
-  setTimeout(function(){ tip('Tip: Tap hoardings to see photos & wishes ✨'); }, 900);
+  setTimeout(function(){ tip('Tip: Drag up/down to move • Tap gifts/flowers/candies • Tap hoardings for photos'); }, 900);
+
+  // ========= Helper: initial chunk seeding =========
+  ensure( camera.position.z - scene.position.z );
 
   </script>
 </body>
