@@ -26,17 +26,18 @@
 <body>
   <div id="loading">🌱 Growing your magical garden...</div>
 
-  <!-- ✅ Load Three.js first -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+  <!-- ✅ Three.js + OrbitControls from reliable CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
-  <!-- ✅ Run code only AFTER Three.js has loaded -->
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      let scene, camera, renderer, composer, heart, controls;
+      if (typeof THREE === 'undefined') {
+        alert("❌ Three.js failed to load. Try checking internet/CDN.");
+        return;
+      }
+
+      let scene, camera, renderer, controls, heart;
 
       // Scene
       scene = new THREE.Scene();
@@ -54,8 +55,7 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
 
       // Lights
-      const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-      scene.add(ambient);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
       const point = new THREE.PointLight(0xffffff, 1.2);
       point.position.set(5, 5, 5);
       scene.add(point);
@@ -63,10 +63,10 @@
       // Heart Shape
       const heartShape = new THREE.Shape();
       heartShape.moveTo(0, 0.25);
-      heartShape.bezierCurveTo(0, 0.25, -0.3, 0, -0.6, 0.25);
-      heartShape.bezierCurveTo(-0.9, 0.55, -0.6, 0.9, 0, 1.1);
-      heartShape.bezierCurveTo(0.6, 0.9, 0.9, 0.55, 0.6, 0.25);
-      heartShape.bezierCurveTo(0.3, 0, 0, 0.25, 0, 0.25);
+      heartShape.bezierCurveTo(0,0.25, -0.3,0, -0.6,0.25);
+      heartShape.bezierCurveTo(-0.9,0.55, -0.6,0.9, 0,1.1);
+      heartShape.bezierCurveTo(0.6,0.9, 0.9,0.55, 0.6,0.25);
+      heartShape.bezierCurveTo(0.3,0, 0,0.25, 0,0.25);
 
       const geometry = new THREE.ExtrudeGeometry(heartShape, {
         depth: 0.3,
@@ -87,32 +87,21 @@
       ground.position.y = -1;
       scene.add(ground);
 
-      // Bloom effect
-      const renderScene = new THREE.RenderPass(scene, camera);
-      const bloomPass = new THREE.UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        1.2, 0.4, 0.85
-      );
-      composer = new THREE.EffectComposer(renderer);
-      composer.addPass(renderScene);
-      composer.addPass(bloomPass);
-
-      // Resize
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-      });
-
       // Animate
       function animate() {
         requestAnimationFrame(animate);
         heart.rotation.y += 0.01;
         controls.update();
-        composer.render();
+        renderer.render(scene, camera);
       }
       animate();
+
+      // Resize handler
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
       // Hide loading
       document.getElementById("loading").style.display = "none";
