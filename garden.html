@@ -221,28 +221,28 @@
   var bladeGeo = new THREE.PlaneGeometry(0.06, 0.62, 1, 4); bladeGeo.translate(0, 0.31, 0);
   var grassMat = new THREE.ShaderMaterial({
     uniforms: { uTime:{ value:0 }, cA:{ value:new THREE.Color(0x4da069) }, cB:{ value:new THREE.Color(0x7ccf8f) } },
-    vertexShader: [
-      'uniform float uTime;',
-      'varying float vY;',
-      'void main(){',
-      '  vY=position.y;',
-      '  vec3 p=position.xyz;',
-      '  float sway=sin((position.y + uTime*1.4))*0.07;',
-      '  p.x += sway * (position.y);',
-      '  gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);',
-      '}'
-    ].join('
-'),
-    fragmentShader: [
-      'varying float vY;',
-      'uniform vec3 cA; uniform vec3 cB;',
-      'void main(){',
-      '  float t=smoothstep(0.0,0.6,vY);',
-      '  vec3 col=mix(cA,cB,t);',
-      '  gl_FragColor=vec4(col,1.0);',
-      '}'
-    ].join('
-'),
+   
+     vertexShader: [
+  'uniform float uTime;',
+  'varying float vY;',
+  'void main(){',
+  '  vY=position.y;',
+  '  vec3 p=position.xyz;',
+  '  float sway=sin((position.y + uTime*1.4))*0.07;',
+  '  p.x += sway * (position.y);',
+  '  gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);',
+  '}'
+].join('\n'),
+
+fragmentShader: [
+  'varying float vY;',
+  'uniform vec3 cA; uniform vec3 cB;',
+  'void main(){',
+  '  float t=smoothstep(0.0,0.6,vY);',
+  '  vec3 col=mix(cA,cB,t);',
+  '  gl_FragColor=vec4(col,1.0);',
+  '}'
+].join('\n'),
     side: THREE.DoubleSide
   });
   var grass = new THREE.InstancedMesh(bladeGeo, grassMat, bladeCount); scene.add(grass);
