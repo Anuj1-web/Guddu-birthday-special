@@ -4,12 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Guddu — Magical Birthday Show ✨</title>
-<meta name="description" content="A continuous, mobile-perfect sky show with music for Guddu: stars forming text, shooting stars, floating lanterns, hearts & balloons, aurora, compliments, secret letter, fireworks, and a warm finale.">
+<meta name="description" content="A 100-second mobile-friendly sky show for Guddu: stars forming text, shooting stars, lanterns, balloons, aurora, compliments, secret letter, fireworks messages, shimmering finale — with music and gentle fade-out.">
 <style>
   :root{
     --ink:#eef2ff; --muted:#c8d1ff; --deep:#030616; --deep2:#0a0f2b;
     --rose:#ff92dc; --gold:#ffd98a; --aqua:#89f3ff; --vio:#c0a2ff; --mint:#9ff9cf;
-    --glass:rgba(255,255,255,.08);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -20,7 +19,7 @@
     overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   }
 
-  /* Ambient aurora glow (soft) */
+  /* Ambient aurora glow (soft background blurs) */
   .aurora{position:fixed; inset:-18% -10% -10% -10%; z-index:0; filter: blur(44px) saturate(120%); pointer-events:none}
   .a{position:absolute; width:70vw; height:70vw; border-radius:50%; mix-blend-mode:screen;}
   .a1{left:-8vw; top:-6vh; background: radial-gradient(circle, #3ae1ff60, #6a54ff36, #0000 70%); animation: drift 18s ease-in-out infinite}
@@ -48,30 +47,28 @@
   .msgWrap{position:absolute; left:50%; transform:translateX(-50%); max-width:min(92vw, 880px); text-align:center; padding:0 4vw; z-index:4}
   .pos-bottom{bottom:30px}
   .pos-top{top:36px}
-  .pos-below-center{bottom:18vh} /* used for star text so it doesn't clash */
-  .pos-above-bottom{bottom:18vh} /* general safe zone */
+  .pos-center{top:50%; transform:translate(-50%, -50%)}
+  .pos-below-center{bottom:18vh}
+  .pos-above-bottom{bottom:18vh}
   .msg{
     font-family: Georgia, "Times New Roman", ui-serif, system-ui;
     font-weight:800; letter-spacing:.3px;
-    font-size:clamp(18px, 5.2vw, 44px);
+    font-size:clamp(20px, 5.6vw, 46px);
     line-height:1.2;
     background:linear-gradient(90deg, #ffe4a6 0%, #ffb6e5 45%, #ffffff 100%);
     -webkit-background-clip:text; background-clip:text; color:transparent;
     text-shadow:0 0 18px rgba(255,230,170,.35), 0 0 36px rgba(255,200,200,.22);
-    animation:fadeIn 1200ms ease both, floaty 6s ease-in-out infinite;
+    animation:floaty 6s ease-in-out infinite;
   }
   .sub{
     margin-top:10px; font-size:clamp(14px, 3.8vw, 20px); color:var(--muted);
     text-shadow:0 0 14px rgba(255,255,255,.18);
-    animation:fadeIn 1400ms 200ms ease both, twinkle 2.6s ease-in-out infinite;
   }
-  @keyframes fadeIn{from{opacity:0; transform:translate(-50%,6px)}to{opacity:1; transform:translate(-50%,0)}}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-  @keyframes twinkle{0%,100%{filter:none}50%{filter:drop-shadow(0 0 14px rgba(255,255,255,.45))}}
 
   /* Compliments orb */
   .orb{position:absolute; width:min(64vw, 380px); aspect-ratio:1; border-radius:50%;
-    left:50%; top:46%; transform:translate(-50%,-50%); /* lowered a bit to avoid overlay */
+    left:50%; top:48%; transform:translate(-50%,-50%);
     background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.98), rgba(180,215,255,.82) 40%, rgba(120,160,255,.5) 65%, rgba(60,90,220,.28) 80%, rgba(30,40,120,.12));
     border:1px solid rgba(255,255,255,.55);
     box-shadow:0 0 110px rgba(160,200,255,.6), inset 0 0 60px rgba(255,255,255,.9);
@@ -81,7 +78,7 @@
   /* Secret letter */
   .letterWrap{position:absolute; inset:0; display:grid; place-items:center}
   .paper{
-    width:min(92vw,780px); min-height:50vh; padding:22px 18px; line-height:1.75;
+    width:min(92vw,780px); min-height:48vh; padding:22px 18px; line-height:1.75;
     background:linear-gradient(180deg,#fff,#f7fbff); color:#0b1a35; border-radius:14px;
     border:1px solid rgba(0,0,0,.06); box-shadow:0 35px 80px rgba(0,0,0,.35);
     transform:perspective(1200px) rotateX(6deg) translateY(6px); opacity:.98;
@@ -98,6 +95,19 @@
   }
   .music-pill button{background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:700}
   .hidden{display:none}
+
+  /* Finale shimmer & idle hearts */
+  .shimmer {
+    background: linear-gradient(90deg, #fff, #ff66cc, #fff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 4s infinite;
+    text-shadow:none;
+  }
+  @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  .idleHeart{position:fixed; font-size:clamp(16px,5vw,24px); opacity:.85; pointer-events:none; z-index:3}
 </style>
 </head>
 <body>
@@ -112,7 +122,7 @@
 
     <!-- SCENE 1: Intro -->
     <section class="scene live" id="scene-intro">
-      <div class="msgWrap pos-above-bottom">
+      <div class="msgWrap pos-center">
         <div class="msg">Here are the cute surprises for the cutest Guddu 💖</div>
         <div class="sub">Sit back and enjoy…</div>
       </div>
@@ -134,7 +144,7 @@
       </div>
     </section>
 
-    <!-- SCENE 4: NEW Floating Lanterns -->
+    <!-- SCENE 4: Floating Lanterns -->
     <section class="scene" id="scene-lanterns">
       <canvas id="cv-lanterns" class="scene-cv"></canvas>
       <div class="msgWrap pos-bottom">
@@ -184,41 +194,46 @@
 
     <!-- SCENE 10: Finale message -->
     <section class="scene" id="scene-finale">
-      <div class="msgWrap pos-above-bottom">
-        <div class="msg">Guddu, you are the most special part of our lives 💖</div>
-        <div class="sub">Forever with love, always.</div>
+      <div class="msgWrap pos-center">
+        <div class="msg shimmer">Guddu, you are the most special part of our lives 💖<br/>Forever with love, always.</div>
       </div>
     </section>
   </div>
 
-  <!-- Music (your link, autoplay with fallback) -->
-  <audio id="bgm" src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Hum%20Mar%20Jayenge%20(Aashiqui%202)-(Mr-Jat.in).mp3" preload="auto" autoplay loop playsinline></audio>
+  <!-- Music (your link, autoplay with fallback + fade) -->
+  <audio id="bgm" src="https://github.com/Anuj1-web/Guddu-birthday-special/raw/refs/heads/main/Hum%20Mar%20Jayenge%20(Aashiqui%202)-(Mr-Jat.in).mp3" preload="auto" autoplay playsinline></audio>
   <div id="musicCtl" class="music-pill">
     <span id="musicLabel">Sound: On</span>
     <button id="toggleMusic" aria-label="Toggle Sound">⏸︎</button>
     <button id="tapForSound" class="hidden">Tap for sound 🎵</button>
   </div>
 
+  <!-- GSAP + Particles.js (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
 <script>
-/* =============== UTILITIES =============== */
-const $=(s,el=document)=>el.querySelector(s), $$=(s,el=document)=>[...el.querySelectorAll(s)];
-const rand=(a,b)=>Math.random()*(b-a)+a, rInt=(a,b)=>Math.floor(rand(a,b));
+/* ================== UTILITIES ================== */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const rnd=(a,b)=>Math.random()*(b-a)+a;
+const rInt=(a,b)=>Math.floor(rnd(a,b));
 function fitCanvas(c){
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
   const w = innerWidth, h = innerHeight;
   c.width = Math.floor(w * dpr);
   c.height = Math.floor(h * dpr);
   const ctx = c.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0); // draw using CSS pixels
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   return {ctx, w, h, dpr};
 }
 
-/* =============== STAR SKY BACKGROUND =============== */
+/* ================== STAR SKY BACKGROUND ================== */
 (function initSky(){
-  const c=$('#sky'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
-  const stars=Array.from({length:700},()=>({x:rand(0,w), y:rand(0,h), r:rand(.6,1.8), tw:rand(0,6.28), hue:rInt(190,330)}));
-  const dust=Array.from({length:35},()=>({x:rand(0,w), y:rand(0,h), vx:rand(-.06,.06), vy:rand(-.03,.03), a:rand(.05,.2)}));
+  const c=$('#sky'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
+  const stars=Array.from({length:700},()=>({x:rnd(0,w), y:rnd(0,h), r:rnd(.6,1.8), tw:rnd(0,6.28), hue:rInt(190,330)}));
+  const dust=Array.from({length:35},()=>({x:rnd(0,w), y:rnd(0,h), vx:rnd(-.06,.06), vy:rnd(-.03,.03), a:rnd(.05,.2)}));
   (function loop(){
     ctx.clearRect(0,0,w,h);
     const g=ctx.createRadialGradient(w*0.5,h*0.2,10, w*0.5,h*0.2, Math.max(w,h));
@@ -230,26 +245,62 @@ function fitCanvas(c){
     for(const d of dust){
       d.x+=d.vx; d.y+=d.vy;
       if(d.x<-40) d.x=w+40; if(d.x>w+40) d.x=-40; if(d.y<-40) d.y=h+40; if(d.y>h+40) d.y=-40;
-      const r=rand(30,80); const gr=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,r);
+      const rr=rnd(30,80); const gr=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,rr);
       gr.addColorStop(0,`rgba(255,255,255,${d.a})`); gr.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(d.x,d.y,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(d.x,d.y,rr,0,Math.PI*2); ctx.fill();
     }
     requestAnimationFrame(loop);
   })();
 })();
 
-/* =============== TIMELINE (≈ 102s) =============== */
+/* ================== MUSIC (autoplay + fallback + fade) ================== */
+const bgm=$('#bgm'), musicCtl=$('#musicCtl'), musicLabel=$('#musicLabel'),
+      toggleBtn=$('#toggleMusic'), tapForSound=$('#tapForSound');
+
+async function startMusic(){
+  try{
+    bgm.muted=true; // allow autoplay on mobile
+    await bgm.play();
+    setTimeout(()=>{ bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; }, 200);
+  }catch(e){
+    tapForSound.classList.remove('hidden');
+    musicLabel.textContent='Sound: Off';
+    toggleBtn.textContent='▶︎';
+  }
+}
+startMusic();
+
+toggleBtn.addEventListener('click', async ()=>{
+  if(bgm.paused){
+    try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; tapForSound.classList.add('hidden'); }catch(e){}
+  } else {
+    bgm.pause(); musicLabel.textContent='Sound: Off'; toggleBtn.textContent='▶︎';
+  }
+});
+tapForSound.addEventListener('click', async ()=>{
+  try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; tapForSound.classList.add('hidden'); toggleBtn.textContent='⏸︎'; }catch(e){}
+});
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && bgm.paused){ bgm.play().catch(()=>{}); }});
+function fadeMusicOut(ms){
+  const start=bgm.volume; const t0=performance.now();
+  (function f(t){
+    const k=Math.min(1,(t-t0)/ms); bgm.volume=start*(1-k);
+    if(k<1) requestAnimationFrame(f); else { bgm.volume=0; bgm.pause(); }
+  })(performance.now());
+}
+
+/* ================== TIMELINE (≈ 100s) ================== */
 const SCENES=[
-  { id:'scene-intro',    dur: 6000 },
-  { id:'scene-startext', dur: 12000 },
-  { id:'scene-shoot',    dur: 8000 },
-  { id:'scene-lanterns', dur: 10000 },
-  { id:'scene-hearts',   dur: 8000 },
-  { id:'scene-aurora',   dur: 10000 },
-  { id:'scene-mirror',   dur: 10000 },
-  { id:'scene-letter',   dur: 14000 },
-  { id:'scene-fire',     dur: 14000 },
-  { id:'scene-finale',   dur: 10000 }
+  { id:'scene-intro',    dur: 8000 },   // 0-8
+  { id:'scene-startext', dur: 12000 },  // 8-20
+  { id:'scene-shoot',    dur: 9000 },   // 20-29
+  { id:'scene-lanterns', dur: 10000 },  // 29-39
+  { id:'scene-hearts',   dur: 9000 },   // 39-48
+  { id:'scene-aurora',   dur: 10000 },  // 48-58
+  { id:'scene-mirror',   dur: 9000 },   // 58-67
+  { id:'scene-letter',   dur: 14000 },  // 67-81
+  { id:'scene-fire',     dur: 14000 },  // 81-95
+  { id:'scene-finale',   dur: 7000 }    // 95-102
 ];
 let step=0, timer=null, started=new Set();
 function showScene(i){
@@ -261,47 +312,14 @@ function showScene(i){
   timer=setTimeout(()=>{
     step=(step+1)%SCENES.length;
     showScene(step);
-    if(step===SCENES.length-1){ fadeMusicOut(7000); }
+    if(step===SCENES.length-1){ fadeMusicOut(6500); spawnIdleHearts(); }
   }, item.dur);
 }
 document.addEventListener('DOMContentLoaded', ()=>showScene(0));
 
-/* =============== MUSIC (autoplay + fallback) =============== */
-const bgm=$('#bgm'), musicCtl=$('#musicCtl'), musicLabel=$('#musicLabel'),
-      toggleBtn=$('#toggleMusic'), tapForSound=$('#tapForSound');
-
-async function startMusic(){
-  try{
-    bgm.muted=true; // allow autoplay on mobile
-    await bgm.play();
-    setTimeout(()=>{ bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; }, 250);
-  }catch(e){
-    tapForSound.classList.remove('hidden');
-    musicLabel.textContent='Sound: Off';
-    toggleBtn.textContent='▶︎';
-  }
-}
-startMusic();
-
-toggleBtn.addEventListener('click', async ()=>{
-  if(bgm.paused){ try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; tapForSound.classList.add('hidden'); }catch(e){} }
-  else { bgm.pause(); musicLabel.textContent='Sound: Off'; toggleBtn.textContent='▶︎'; }
-});
-tapForSound.addEventListener('click', async ()=>{
-  try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; tapForSound.classList.add('hidden'); toggleBtn.textContent='⏸︎'; }catch(e){}
-});
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && bgm.paused){ bgm.play().catch(()=>{}); }});
-function fadeMusicOut(ms){
-  const start=bgm.volume, t0=performance.now();
-  (function f(t){
-    const k=Math.min(1,(t-t0)/ms); bgm.volume=start*(1-k);
-    if(k<1) requestAnimationFrame(f); else bgm.volume=0;
-  })(performance.now());
-}
-
-/* =============== SCENE DISPATCH =============== */
+/* ================== SCENE DISPATCH ================== */
 function initScene(id){
-  ({
+  const map={
     'scene-startext': initStarText,
     'scene-shoot': initShoot,
     'scene-lanterns': initLanterns,
@@ -311,20 +329,21 @@ function initScene(id){
     'scene-letter': initLetter,
     'scene-fire': initFire,
     'scene-finale': initFinale
-  }[id]||(()=>{}))();
+  };
+  if(map[id]) map[id]();
 }
 
-/* =============== SCENE 2: Stars form text =============== */
+/* ================== SCENE 2: Stars form text ================== */
 function initStarText(){
-  const c=$('#cv-startext'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
-  const P=Array.from({length:820},()=>({x:rand(0,w), y:rand(0,h), vx:0, vy:0, hue:rInt(200,340)}));
+  const c=$('#cv-startext'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; buildTargets(); });
+  const particles=Array.from({length:900},()=>({x:rnd(0,w), y:rnd(0,h), vx:0, vy:0, hue:rInt(200,340)}));
   let targets=[];
   function buildTargets(){
-    const oc=document.createElement('canvas'), octx=oc.getContext('2d');
+    const oc=document.createElement('canvas'); const octx=oc.getContext('2d');
     oc.width=w; oc.height=h; octx.clearRect(0,0,w,h);
     octx.fillStyle='#fff';
-    const size=Math.max(24, Math.min(56, w/14));
+    const size=Math.max(26, Math.min(60, w/14));
     octx.font=`900 ${size}px system-ui, -apple-system, Segoe UI, Roboto`;
     octx.textAlign='center'; octx.textBaseline='middle';
     octx.fillText('HAPPY BIRTHDAY GUDDU', w/2, h*0.45);
@@ -336,41 +355,38 @@ function initStarText(){
         const a=img[(y*w+x)*4+3]; if(a>200) pts.push({x,y});
       }
     }
-    targets=[]; for(let i=0;i<P.length;i++) targets.push(pts[rInt(0,pts.length)]);
+    targets=[]; for(let i=0;i<particles.length;i++) targets.push(pts[rInt(0,pts.length)]);
   }
   buildTargets();
   (function loop(){
     ctx.fillStyle='rgba(5,6,18,.22)'; ctx.fillRect(0,0,w,h);
-    for(let i=0;i<P.length;i++){
-      const p=P[i], t=targets[i];
-      const ax=(t.x - p.x)*0.026, ay=(t.y - p.y)*0.026;
+    for(let i=0;i<particles.length;i++){
+      const p=particles[i], t=targets[i];
+      const ax=(t.x - p.x)*0.024, ay=(t.y - p.y)*0.024;
       p.vx=(p.vx+ax)*0.9; p.vy=(p.vy+ay)*0.9; p.x+=p.vx; p.y+=p.vy;
       ctx.beginPath(); ctx.globalAlpha=.95; ctx.fillStyle=`hsl(${p.hue},90%,70%)`;
-      ctx.arc(p.x,p.y,1.4,0,Math.PI*2); ctx.fill();
+      ctx.arc(p.x,p.y,1.35,0,Math.PI*2); ctx.fill();
     }
-    // gentle star shimmer across text
-    ctx.globalAlpha=.35; ctx.beginPath(); ctx.arc(w*0.5,h*0.45, rInt(40,60), 0, Math.PI*2); ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; ctx.stroke();
     requestAnimationFrame(loop);
   })();
 }
 
-/* =============== SCENE 3: Shooting stars =============== */
+/* ================== SCENE 3: Shooting stars ================== */
 function initShoot(){
-  const c=$('#cv-shoot'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
+  const c=$('#cv-shoot'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
   const trails=[];
   function addTrail(){
-    const y=rand(h*0.25,h*0.6), dir=Math.random()<.5?1:-1;
-    const x=dir===1?-50:w+50, vx=dir*rand(5,7), vy=rand(-1.2,1.2);
+    const y=rnd(h*0.25,h*0.6), dir=Math.random()<.5?1:-1;
+    const x=dir===1?-50:w+50, vx=dir*rnd(5,7), vy=rnd(-1.2,1.2);
     const life=rInt(70,110); trails.push({x,y,vx,vy,life});
   }
-  for(let i=0;i<12;i++) setTimeout(addTrail, i*700);
+  for(let i=0;i<14;i++) setTimeout(addTrail, i*600);
   (function loop(){
     ctx.fillStyle='rgba(5,6,18,.25)'; ctx.fillRect(0,0,w,h);
     for(let i=trails.length-1;i>=0;i--){
       const t=trails[i];
       t.x+=t.vx; t.y+=t.vy; t.life--;
-      // trail
       const lg=ctx.createLinearGradient(t.x,t.y,t.x-t.vx*12,t.y-t.vy*12);
       lg.addColorStop(0,'rgba(255,255,255,.95)'); lg.addColorStop(1,'rgba(255,255,255,0)');
       ctx.strokeStyle=lg; ctx.lineWidth=2; ctx.beginPath();
@@ -382,30 +398,34 @@ function initShoot(){
   })();
 }
 
-/* =============== SCENE 4: Floating Lanterns (NEW) =============== */
+/* ================== SCENE 4: Floating Lanterns ================== */
 function initLanterns(){
-  const c=$('#cv-lanterns'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
+  const c=$('#cv-lanterns'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
   const lanterns=[];
-  function addLantern(i){
-    const x=rand(w*0.12,w*0.88), y=h+60+rand(0,80), vy=rand(-0.7,-0.45), sway=rand(0.6,1.2), hue=rInt(22,48);
-    lanterns.push({x,y,vy,sway,t:rand(0,6.28), hue});
+  function addLantern(){
+    const x=rnd(w*0.12,w*0.88), y=h+60+rnd(0,80), vy=rnd(-0.6,-0.4), sway=rnd(0.6,1.2), hue=rInt(22,48);
+    lanterns.push({x,y,vy,sway,t:rnd(0,6.28), hue});
   }
-  for(let i=0;i<24;i++) setTimeout(()=>addLantern(i), i*250);
+  for(let i=0;i<26;i++) setTimeout(addLantern, i*260);
   function drawLantern(L){
     const grd=ctx.createRadialGradient(L.x,L.y-16,4, L.x,L.y,40);
     grd.addColorStop(0,`hsla(${L.hue}, 100%, 85%, .95)`);
     grd.addColorStop(1,`hsla(${L.hue}, 100%, 60%, .9)`);
     ctx.fillStyle=grd;
-    ctx.beginPath(); ctx.roundRect(L.x-18, L.y-24, 36, 48, 10); ctx.fill();
-    // inner paper highlight
-    ctx.fillStyle='rgba(255,255,255,.28)';
-    ctx.fillRect(L.x-10, L.y-18, 8, 32);
-    // glow
+    ctx.beginPath();
+    roundRect(ctx, L.x-18, L.y-24, 36, 48, 10);
+    ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(L.x-10, L.y-18, 8, 32);
     ctx.beginPath(); ctx.fillStyle='rgba(255,210,120,.35)'; ctx.arc(L.x, L.y+8, 18, 0, Math.PI*2); ctx.fill();
   }
+  function roundRect(ctx,x,y,wid,hei,r){
+    ctx.moveTo(x+r,y); ctx.arcTo(x+wid,y,x+wid,y+hei,r);
+    ctx.arcTo(x+wid,y+hei,x,y+hei,r); ctx.arcTo(x,y+hei,x,y,r); ctx.arcTo(x,y,x+wid,y,r);
+    ctx.closePath();
+  }
   (function loop(){
-    ctx.clearRect(0,0,w,h);
+    ctx.clearRect(0,0,w, h);
     for(const L of lanterns){
       L.t+=.02; L.y+=L.vy; L.x+=Math.sin(L.t)*L.sway;
       drawLantern(L);
@@ -414,17 +434,17 @@ function initLanterns(){
   })();
 }
 
-/* =============== SCENE 5: Hearts & Balloons (cinematic) =============== */
+/* ================== SCENE 5: Hearts & Balloons ================== */
 function initHearts(){
-  const c=$('#cv-hearts'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
+  const c=$('#cv-hearts'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
   const items=[]; const parts=[];
   function addHeart(){
-    const x=rand(w*0.15, w*0.85), size=rand(10,16), vy=rand(-1.6,-0.9), rot=rand(-.02,.02);
+    const x=rnd(w*0.15, w*0.85), size=rnd(10,16), vy=rnd(-1.6,-0.9), rot=rnd(-.02,.02);
     items.push({type:'heart', x, y:h+40, size, vy, rot});
   }
   function addBalloon(){
-    const x=rand(w*0.15, w*0.85), vy=rand(-1.1,-0.7), hue=rInt(0,360), t:0;
+    const x=rnd(w*0.15, w*0.85), vy=rnd(-1.1,-0.7), hue=rInt(0,360);
     items.push({type:'balloon', x, y:h+60, vy, hue, burst:false, t:0});
   }
   function drawHeart(x,y,s,rot){
@@ -447,16 +467,16 @@ function initHearts(){
   }
   function burst(x,y,hue){
     for(let i=0;i<90;i++){
-      parts.push({x,y,vx:Math.cos(i/90*Math.PI*2)*rand(1.6,2.6), vy:Math.sin(i/90*Math.PI*2)*rand(1.6,2.6), life:rInt(50,80), color:`hsl(${hue},90%,70%)`});
+      parts.push({x,y,vx:Math.cos(i/90*Math.PI*2)*rnd(1.6,2.6), vy:Math.sin(i/90*Math.PI*2)*rnd(1.6,2.6), life:rInt(50,80), color:`hsl(${hue},90%,70%)`});
     }
   }
-  for(let i=0;i<20;i++) setTimeout(addHeart, i*320);
-  for(let i=0;i<12;i++) setTimeout(addBalloon, 800+i*700);
+  for(let i=0;i<22;i++) setTimeout(addHeart, i*300);
+  for(let i=0;i<12;i++) setTimeout(addBalloon, 800+i*650);
 
   (function loop(){
     ctx.fillStyle='rgba(5,6,18,.25)'; ctx.fillRect(0,0,w,h);
     for(const it of items){
-      if(it.type==='heart'){ it.y+=it.vy; it.rot+=rand(-.002,.002); drawHeart(it.x,it.y,it.size,it.rot); }
+      if(it.type==='heart'){ it.y+=it.vy; it.rot+=rnd(-.002,.002); drawHeart(it.x,it.y,it.size,it.rot); }
       else{ it.y+=it.vy; it.t++; drawBalloon(it.x,it.y,it.hue); if(!it.burst && it.t>rInt(70,120)){ it.burst=true; burst(it.x,it.y-2,it.hue); } }
     }
     for(let i=parts.length-1;i>=0;i--){
@@ -468,11 +488,11 @@ function initHearts(){
   })();
 }
 
-/* =============== SCENE 6: Aurora waves =============== */
+/* ================== SCENE 6: Aurora waves ================== */
 function initAurora(){
-  const c=$('#cv-aurora'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
-  const waves=Array.from({length:5},(_,i)=>({y:h*0.4+i*40, t:rand(0,10), hue:180+i*30}));
+  const c=$('#cv-aurora'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
+  const waves=Array.from({length:5},(_,i)=>({y:h*0.4+i*40, t:rnd(0,10), hue:180+i*30}));
   (function loop(){
     ctx.clearRect(0,0,w,h);
     for(const a of waves){
@@ -494,7 +514,7 @@ function initAurora(){
   })();
 }
 
-/* =============== SCENE 7: Compliments mirror (no overlap) =============== */
+/* ================== SCENE 7: Compliments mirror ================== */
 function initMirror(){
   const orb=$('#orb');
   const lines=[
@@ -510,7 +530,7 @@ function initMirror(){
   }, 1600);
 }
 
-/* =============== SCENE 8: Secret letter (auto-type) =============== */
+/* ================== SCENE 8: Secret letter (auto-type) ================== */
 function initLetter(){
   const area=$('#typeArea');
   const text=`My dearest Guddu,
@@ -528,21 +548,21 @@ Always yours. 💖`;
   const speed=22; const t=setInterval(()=>{ i++; render(); if(i>=text.length) clearInterval(t); }, speed);
 }
 
-/* =============== SCENE 9: Fireworks phrases =============== */
+/* ================== SCENE 9: Fireworks phrases ================== */
 function initFire(){
-  const c=$('#cv-fire'); let {ctx,w,h}=fitCanvas(c);
-  addEventListener('resize', ()=>({ctx,w,h}=fitCanvas(c)));
+  const c=$('#cv-fire'); let pack=fitCanvas(c); let ctx=pack.ctx, w=pack.w, h=pack.h;
+  addEventListener('resize', ()=>{ pack=fitCanvas(c); ctx=pack.ctx; w=pack.w; h=pack.h; });
   const parts=[];
   function boom(x,y,hue){
     for(let i=0;i<170;i++){
-      const a=Math.PI*2*(i/170)+rand(-.02,.02); const s=rand(2.2,3.4);
-      parts.push({x,y,vx:Math.cos(a)*s*rand(.6,1.4), vy:Math.sin(a)*s*rand(.6,1.4), life:rInt(70,100), color:`hsl(${hue},90%,60%)`});
+      const a=Math.PI*2*(i/170)+rnd(-.02,.02); const s=rnd(2.2,3.4);
+      parts.push({x,y,vx:Math.cos(a)*s*rnd(.6,1.4), vy:Math.sin(a)*s*rnd(.6,1.4), life:rInt(70,100), color:`hsl(${hue},90%,60%)`});
     }
   }
   let t=0;
   const words=['HAPPY BIRTHDAY','GUDDU','YOU ARE LOVED','FOREVER SPECIAL'];
   const seq=setInterval(()=>{
-    boom(rand(w*.25,w*.75), rand(h*.35,h*.6), rInt(0,360));
+    boom(rnd(w*.25,w*.75), rnd(h*.35,h*.6), rInt(0,360));
     t++;
     if(t%3===0){
       ctx.save(); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font=`900 ${Math.max(28, w/12)}px system-ui`;
@@ -566,8 +586,42 @@ function initFire(){
   })();
 }
 
-/* =============== SCENE 10: Finale =============== */
-function initFinale(){ /* Message already in HTML; music fades via timeline */ }
+/* ================== SCENE 10: Finale ================== */
+function initFinale(){
+  // Spawn a gentle loop of tiny hearts & sparkles forever under shimmering message
+  // Hearts spawned by spawnIdleHearts() when finale starts (and music fades).
+}
+
+/* ================== IDLE HEARTS AFTER FINALE ================== */
+function spawnIdleHearts(){
+  function addHeart(){
+    const el=document.createElement('div');
+    el.className='idleHeart';
+    el.textContent=Math.random()<.5?'💖':'✨';
+    el.style.left=rInt(8,92)+'vw';
+    el.style.top=rInt(60,88)+'vh';
+    document.body.appendChild(el);
+    const dur=rnd(5,9);
+    gsap.fromTo(el,{y:0,opacity:0.0,scale:0.8},{y:-rInt(30,80),opacity:1,scale:1,duration:dur/2,ease:"power2.out",
+      onComplete:()=>gsap.to(el,{y:-rInt(90,140),opacity:0.0,duration:dur/2,ease:"power2.in",onComplete:()=>el.remove()})
+    });
+  }
+  setInterval(addHeart, 1200);
+}
+
+/* ================== PARTICLES.JS (twinkling stars behind everything) ================== */
+particlesJS("sky", {
+  "particles": {
+    "number": { "value": 80, "density": { "enable": true, "value_area": 900 }},
+    "color": { "value": "#ffffff" },
+    "shape": { "type": "circle" },
+    "opacity": { "value": 0.6, "random": true },
+    "size": { "value": 1.8, "random": true },
+    "move": { "enable": true, "speed": 0.4 }
+  },
+  "interactivity": { "events": { "onhover": { "enable": false }, "onclick": { "enable": false }}},
+  "retina_detect": true
+});
 </script>
 </body>
 </html>
