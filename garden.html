@@ -55,11 +55,13 @@
   #loading{position:fixed;inset:0;display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:.3px;z-index:10;
     background: radial-gradient(800px 600px at 20% -5%, rgba(120,100,255,.20), transparent 60%)}
 </style>
-<!-- Load Three.js from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
-<!-- Optional: OrbitControls for moving/dragging in the garden -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+<!-- ✅ Use ONE consistent Three.js version for core + examples -->
+<script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 </head>
 <body>
 <div id="loading">Preparing Guddu’s Garden… ✨</div>
@@ -86,16 +88,11 @@
   <button id="tapForSound" class="hidden">Tap for sound 🎵</button>
 </div>
 
-<!-- Three.js + extras -->
-<script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.161.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 /* --------- Helpers --------- */
 const $=s=>document.querySelector(s);
-const rawLink = url => url.replace(/\\?dl=0(?:$|)/,'?raw=1'); // convert Dropbox to direct image
+// ✅ Fix Dropbox direct-link regex (previously had an extra backslash)
+const rawLink = url => url.replace(/\?dl=0(?:$|)/,'?raw=1').replace(/\?dl=1(?:$|)/,'?raw=1');
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const rInt=(a,b)=>Math.floor(rnd(a,b));
 function show(el){ el.classList.remove('hidden'); }
@@ -210,7 +207,7 @@ function init(){
 const bgm = $('#bgm'), musicLabel=$('#musicLabel'), toggleBtn=$('#toggleMusic'), tapForSound=$('#tapForSound');
 async function setupMusic(){
   try{
-    bgm.muted=true;
+    bgm.muted=true; // allow autoplay
     await bgm.play();
     setTimeout(()=>{ bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; }, 150);
   }catch(e){
@@ -218,10 +215,12 @@ async function setupMusic(){
     musicLabel.textContent='Sound: Off'; toggleBtn.textContent='▶︎';
   }
 }
+
 toggleBtn.addEventListener('click', async ()=>{
   if(bgm.paused){ try{ await bgm.play(); bgm.muted=false; musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; tapForSound.classList.add('hidden'); }catch(e){} }
   else { bgm.pause(); musicLabel.textContent='Sound: Off'; toggleBtn.textContent='▶︎'; }
 });
+
 tapForSound.addEventListener('click', async ()=>{ try{ await bgm.play(); bgm.muted=false; tapForSound.classList.add('hidden'); musicLabel.textContent='Sound: On'; toggleBtn.textContent='⏸︎'; }catch(e){} });
 
 /* --------- Resize --------- */
@@ -359,6 +358,7 @@ function scatterGifts(n=6){
 function addHoardings(urls){
   const radius=14;
   const texLoader = new THREE.TextureLoader();
+  texLoader.setCrossOrigin('anonymous'); // ✅ help with Dropbox CORS
   urls.forEach((u,i)=>{
     const tex = texLoader.load(rawLink(u));
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -381,7 +381,7 @@ function addHoardings(urls){
     frame.position.copy(plane.position); frame.quaternion.copy(plane.quaternion);
     scene.add(frame);
 
-    // slow subtle breathing effect
+    // slow subtle breathing effect (initialized once)
     const s = 1 + Math.sin(performance.now()*0.001 + i)*0.02;
     plane.scale.set(s,s,1);
   });
@@ -390,6 +390,8 @@ function addHoardings(urls){
 /* --------- Interaction --------- */
 function onPointerDown(e){
   const rect = renderer.domElement.getBoundingClientRect();
+  pointer = pointer || new THREE.Vector2();
+  raycaster = raycaster || new THREE.Raycaster();
   pointer.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
   pointer.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
 
@@ -424,18 +426,17 @@ function onPointerDown(e){
 
 function animateRise(head, baseY){
   const targetY = baseY + 0.9;
-  head.userData._vy = 0.06;
-  const t0 = performance.now();
-  (function step(t){
-    const dt = (t - t0)/1000;
+  const tStart = performance.now();
+  (function step(){
+    const tNow = performance.now();
+    const dt = (tNow - tStart)/1000;
     head.position.y = THREE.MathUtils.lerp(head.position.y, targetY, 0.12);
-    if(Math.abs(head.position.y - targetY) < 0.01){ return; }
-    requestAnimationFrame(step);
-  })(performance.now());
+    if(Math.abs(head.position.y - targetY) > 0.01){ requestAnimationFrame(step); }
+  })();
 }
 
 function bump(obj){
-  const s0 = obj.scale.x;
+  const s0 = obj.scale.x || 1;
   let t=0;
   (function step(){
     t+=0.1; const s = 1 + Math.sin(t)*0.15;
@@ -467,17 +468,17 @@ function fairyDust(pos, count=80, color=0xffffff){
   const points = new THREE.Points(geo, mat);
   scene.add(points);
   const start = performance.now();
-  (function loop(t){
-    const dt=(t-start)/1000, arr=geo.attributes.position.array;
+  (function loop(){
+    const arr=geo.attributes.position.array;
     for(let i=0;i<count;i++){
       const v=velocities[i];
       arr[i*3]+=v.x*0.06; arr[i*3+1]+=v.y*0.06; arr[i*3+2]+=v.z*0.06;
       v.y -= 0.01;
     }
     geo.attributes.position.needsUpdate=true;
-    mat.opacity = Math.max(0, 1 - dt*1.4);
+    mat.opacity = Math.max(0, mat.opacity - 0.014);
     if(mat.opacity>0) requestAnimationFrame(loop); else { scene.remove(points); geo.dispose(); mat.dispose(); }
-  })(performance.now());
+  })();
 }
 
 function burst(pos, count=160){
@@ -520,10 +521,6 @@ function animate(){
   composer.render();
   requestAnimationFrame(animate);
 }
-
-/* --------- Interaction helpers --------- */
-// none beyond above
-
 </script>
 </body>
 </html>
