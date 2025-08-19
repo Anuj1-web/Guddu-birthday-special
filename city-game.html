@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Guddu’s Birthday City 🎂🏙️</title>
   <style>
     body { margin: 0; overflow: hidden; background: #000; }
@@ -16,37 +16,23 @@
       border-radius: 10px;
       display: none;
     }
-    /* Mobile joystick */
-    #joystick {
-      position: absolute;
-      bottom: 50px; left: 50px;
-      width: 100px; height: 100px;
-      border: 2px solid #fff; border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      touch-action: none;
-    }
-    #stick {
-      width: 50px; height: 50px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 50%; position: absolute;
-      top: 25px; left: 25px;
-    }
   </style>
 </head>
 <body>
   <div id="message"></div>
-  <div id="joystick"><div id="stick"></div></div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/PointerLockControls.js"></script>
+  <!-- ✅ Use stable Three.js r128 -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+
   <script>
-    // === SCENE SETUP ===
+    // === SCENE ===
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // === LIGHTING ===
+    // === LIGHTS ===
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
     hemiLight.position.set(0,200,0);
     scene.add(hemiLight);
@@ -72,28 +58,26 @@
     }
 
     // === PLAYER CONTROLS ===
-    const controls = new THREE.PointerLockControls(camera, renderer.domElement);
+    const controls = new THREE.PointerLockControls(camera, document.body);
     document.body.addEventListener('click', ()=>controls.lock());
     camera.position.set(0,10,50);
 
     // Movement
     let move = {forward:0,back:0,left:0,right:0};
-    const onKeyDown = e => {
+    document.addEventListener('keydown', e=>{
       if(e.code==="ArrowUp"||e.code==="KeyW") move.forward=1;
       if(e.code==="ArrowDown"||e.code==="KeyS") move.back=1;
       if(e.code==="ArrowLeft"||e.code==="KeyA") move.left=1;
       if(e.code==="ArrowRight"||e.code==="KeyD") move.right=1;
-    }
-    const onKeyUp = e => {
+    });
+    document.addEventListener('keyup', e=>{
       if(e.code==="ArrowUp"||e.code==="KeyW") move.forward=0;
       if(e.code==="ArrowDown"||e.code==="KeyS") move.back=0;
       if(e.code==="ArrowLeft"||e.code==="KeyA") move.left=0;
       if(e.code==="ArrowRight"||e.code==="KeyD") move.right=0;
-    }
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
+    });
 
-    // === HOARDINGS WITH SLIDESHOW ===
+    // === HOARDINGS ===
     const loader = new THREE.TextureLoader();
     const imageFiles = [
       "IMG-20250304-WA0006.jpg",
@@ -122,7 +106,7 @@
       hoardings.forEach(mat=>mat.map=loader.load(imageFiles[currentSlide]));
     },3000);
 
-    // === BALLOONS & BUTTERFLIES ===
+    // === BALLOONS ===
     const balloons=[];
     for(let i=0;i<10;i++){
       const geo=new THREE.SphereGeometry(3,16,16);
