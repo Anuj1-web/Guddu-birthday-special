@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Guddu’s Magical Storybook 🎁✨</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: #111;
       overflow: hidden;
       height: 100vh;
       display: flex;
@@ -19,9 +19,9 @@
 
     .storybook {
       position: relative;
-      width: 90%;
-      max-width: 800px;
-      height: 90%;
+      width: 95%;
+      max-width: 850px;
+      height: 95%;
       perspective: 2000px;
     }
 
@@ -29,19 +29,20 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      background: #fff;
       border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
-      padding: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      padding: 15px;
       text-align: center;
       backface-visibility: hidden;
       transform-style: preserve-3d;
-      transition: opacity 1s ease;
+      transition: opacity 0.8s ease;
       opacity: 0;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
+      background-size: cover;
+      background-position: center;
     }
 
     .page.active {
@@ -51,9 +52,9 @@
 
     .page img {
       max-width: 90%;
-      max-height: 60%;
+      max-height: 55%;
       border-radius: 15px;
-      box-shadow: 0 0 25px rgba(255, 182, 193, 0.8);
+      box-shadow: 0 0 25px rgba(255, 182, 193, 0.9);
       margin-top: 20px;
       transition: transform 0.3s ease;
     }
@@ -63,11 +64,12 @@
 
     .message {
       font-size: 1.3rem;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin-top: 15px;
+      margin-bottom: 15px;
       color: #ff2e63;
       text-shadow: 0 0 10px #fff, 0 0 20px #ff9a9e;
       animation: glow 2s infinite alternate;
+      padding: 0 10px;
     }
 
     @keyframes glow {
@@ -77,7 +79,7 @@
 
     .controls {
       margin-top: auto;
-      padding: 10px;
+      padding: 8px;
       z-index: 1000;
     }
 
@@ -85,7 +87,7 @@
       background: linear-gradient(45deg, #ff4e91, #ff9a9e);
       color: white;
       border: none;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border-radius: 20px;
       font-size: 1rem;
       margin: 5px;
@@ -99,20 +101,33 @@
       box-shadow: 0 0 25px rgba(255, 150, 200, 1);
     }
 
-    /* Sparkles */
+    /* Sparkles floating */
     .sparkle {
-      position: absolute;
+      position: fixed;
       width: 5px;
       height: 5px;
       background: white;
       border-radius: 50%;
       opacity: 0.8;
-      animation: sparkle 4s linear infinite;
+      pointer-events: none;
+      animation: sparkle 5s linear infinite;
     }
     @keyframes sparkle {
       from { transform: translateY(100vh) scale(0.5); opacity: 1; }
       to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
     }
+
+    /* Diary-style different backgrounds */
+    .page:nth-child(1) { background: linear-gradient(135deg, #fdfbfb, #ebedee); }
+    .page:nth-child(2) { background: linear-gradient(135deg, #fceabb, #f8b500); }
+    .page:nth-child(3) { background: linear-gradient(135deg, #e0c3fc, #8ec5fc); }
+    .page:nth-child(4) { background: linear-gradient(135deg, #fddb92, #d1fdff); }
+    .page:nth-child(5) { background: linear-gradient(135deg, #d9a7c7, #fffcdc); }
+    .page:nth-child(6) { background: linear-gradient(135deg, #f6d365, #fda085); }
+    .page:nth-child(7) { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); }
+    .page:nth-child(8) { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+    .page:nth-child(9) { background: linear-gradient(135deg, #cfd9df, #e2ebf0); }
+    .page:nth-child(10){ background: linear-gradient(135deg, #fbc2eb, #a6c1ee); }
   </style>
 </head>
 <body>
@@ -122,57 +137,48 @@
       <div class="message">🌸 Once upon a time, there was a beautiful, innocent girl, full of dreams and light... 🌸</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="IMG-20250815-WA0000.jpg" alt="Guddu 2">
+      <img src="IMG-20250304-WA0010.jpg" alt="Guddu 2">
       <div class="message">😍 Her smile could melt hearts, spreading joy to everyone around her... 😍</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="IMG-20250815-WA0003.jpg" alt="Guddu 3">
+      <img src="IMG-20250304-WA0011.jpg" alt="Guddu 3">
       <div class="message">🎶 Her laughter was like music, filling the air with happiness and love... 🎶</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="IMG-20250815-WA0008.jpg" alt="Guddu 4">
+      <img src="IMG-20250815-WA0000.jpg" alt="Guddu 4">
       <div class="message">🌈 Wherever she went, colors followed, painting the world brighter... 🌈</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="IMG-20250815-WA0010.jpg" alt="Guddu 5">
+      <img src="IMG-20250815-WA0001.jpg" alt="Guddu 5">
       <div class="message">☀️ She was like sunshine on a cloudy day, lifting spirits effortlessly... ☀️</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="1000145102.jpg" alt="Guddu 6">
+      <img src="IMG-20250815-WA0003.jpg" alt="Guddu 6">
       <div class="message">✨ Her kindness sparkled like fairy dust, touching every soul she met... ✨</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="1000145103.jpg" alt="Guddu 7">
+      <img src="IMG-20250815-WA0008.jpg" alt="Guddu 7">
       <div class="message">🌷 With every step, she bloomed like a flower, graceful and magical... 🌷</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="1000145104.jpg" alt="Guddu 8">
+      <img src="IMG-20250815-WA0009.jpg" alt="Guddu 8">
       <div class="message">🎁 Life with her was the most precious gift, wrapped in happiness and love... 🎁</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="1000145105.jpg" alt="Guddu 9">
+      <img src="IMG-20250815-WA0010.jpg" alt="Guddu 9">
       <div class="message">💫 The world felt lucky to have her, a true blessing beyond compare... 💫</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
-
     <div class="page">
-      <img src="1000145106.jpg" alt="Guddu 10">
+      <img src="IMG-20250815-WA0011.jpg" alt="Guddu 10">
       <div class="message">🎂🎉 And on this day, we celebrate her — Happy Birthday, dearest Guddu! 💖</div>
       <div class="controls"><button onclick="prevPage()">⬅️ Previous</button><button onclick="nextPage()">Next ➡️</button></div>
     </div>
@@ -208,21 +214,28 @@
         const sparkle = document.createElement("div");
         sparkle.className = "sparkle";
         sparkle.style.left = Math.random() * 100 + "vw";
-        sparkle.style.animationDuration = (2 + Math.random() * 3) + "s";
+        sparkle.style.animationDuration = (3 + Math.random() * 2) + "s";
         document.body.appendChild(sparkle);
-        setTimeout(() => sparkle.remove(), 4000);
+        setTimeout(() => sparkle.remove(), 5000);
       }
     }
 
-    // Start background music skipping first 15s
-    window.addEventListener("load", () => {
-      const music = document.getElementById("bg-music");
-      music.addEventListener("canplaythrough", () => {
-        music.currentTime = 15;
-        music.play().catch(() => {
-          console.log("Autoplay blocked — user must click first.");
-        });
-      });
+    // Background music (skip first 15s, play on first user interaction)
+    const music = document.getElementById("bg-music");
+    document.body.addEventListener("click", () => {
+      if (music.currentTime < 15) music.currentTime = 15;
+      music.play();
+    }, { once: true });
+
+    // Swipe support for mobile
+    let touchStartX = 0;
+    document.addEventListener("touchstart", e => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener("touchend", e => {
+      let touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) nextPage();
+      if (touchEndX > touchStartX + 50) prevPage();
     });
   </script>
 </body>
