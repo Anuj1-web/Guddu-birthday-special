@@ -2,74 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Guddu's City Game</title>
+  <title>Guddu’s Birthday City 🎂🏙️</title>
   <style>
-    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    body { margin: 0; overflow: hidden; background: #000; }
     canvas { display: block; }
-    #controls {
-      position: absolute; bottom: 20px; right: 20px; z-index: 10;
-      display: flex; flex-direction: column; gap: 10px;
+    #message {
+      position: absolute;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 25px;
+      background: rgba(0,0,0,0.7);
+      color: #fff; font-size: 20px;
+      border-radius: 10px;
+      display: none;
     }
-    .btn {
-      width: 50px; height: 50px; border-radius: 50%;
-      background: rgba(255,255,255,0.6); border: 2px solid #333;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; cursor: pointer; user-select: none;
+    /* Mobile joystick */
+    #joystick {
+      position: absolute;
+      bottom: 50px; left: 50px;
+      width: 100px; height: 100px;
+      border: 2px solid #fff; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      touch-action: none;
+    }
+    #stick {
+      width: 50px; height: 50px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%; position: absolute;
+      top: 25px; left: 25px;
     }
   </style>
 </head>
 <body>
-  <div id="controls">
-    <div class="btn" id="up">↑</div>
-    <div style="display:flex; gap:10px;">
-      <div class="btn" id="left">←</div>
-      <div class="btn" id="down">↓</div>
-      <div class="btn" id="right">→</div>
-    </div>
-  </div>
-
+  <div id="message"></div>
+  <div id="joystick"><div id="stick"></div></div>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/PointerLockControls.js"></script>
   <script>
-    let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    let renderer = new THREE.WebGLRenderer({antialias:true});
+    // === SCENE SETUP ===
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Lights
-    let ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambient);
-    let dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5,10,7);
+    // === LIGHTING ===
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+    hemiLight.position.set(0,200,0);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(-100, 200, 100);
     scene.add(dirLight);
 
-    // Ground
-    let groundGeo = new THREE.PlaneGeometry(200,200);
-    let groundMat = new THREE.MeshPhongMaterial({color:0x444444});
-    let ground = new THREE.Mesh(groundGeo, groundMat);
+    // === GROUND ===
+    const groundGeo = new THREE.PlaneGeometry(500,500);
+    const groundMat = new THREE.MeshPhongMaterial({color:0x444444});
+    const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI/2;
     scene.add(ground);
 
-    // Simple buildings
-    function addBuilding(x,z){
-      let h = 5+Math.random()*10;
-      let geo = new THREE.BoxGeometry(5,h,5);
-      let mat = new THREE.MeshPhongMaterial({color:0x8888ff});
-      let mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(x,h/2,z);
-      scene.add(mesh);
-    }
-    for(let i=-50;i<=50;i+=15){
-      for(let j=-50;j<=50;j+=15){
-        if(Math.random()>0.7) addBuilding(i,j);
-      }
+    // === BUILDINGS ===
+    for(let i=0;i<40;i++){
+      const geo = new THREE.BoxGeometry(20,Math.random()*100+40,20);
+      const mat = new THREE.MeshPhongMaterial({color:0x222222, emissive:0x111111});
+      const b = new THREE.Mesh(geo, mat);
+      b.position.set((Math.random()-0.5)*400, geo.parameters.height/2, (Math.random()-0.5)*400);
+      scene.add(b);
     }
 
-    // Hoardings with slideshow
-    const imagePaths = [
+    // === PLAYER CONTROLS ===
+    const controls = new THREE.PointerLockControls(camera, renderer.domElement);
+    document.body.addEventListener('click', ()=>controls.lock());
+    camera.position.set(0,10,50);
+
+    // Movement
+    let move = {forward:0,back:0,left:0,right:0};
+    const onKeyDown = e => {
+      if(e.code==="ArrowUp"||e.code==="KeyW") move.forward=1;
+      if(e.code==="ArrowDown"||e.code==="KeyS") move.back=1;
+      if(e.code==="ArrowLeft"||e.code==="KeyA") move.left=1;
+      if(e.code==="ArrowRight"||e.code==="KeyD") move.right=1;
+    }
+    const onKeyUp = e => {
+      if(e.code==="ArrowUp"||e.code==="KeyW") move.forward=0;
+      if(e.code==="ArrowDown"||e.code==="KeyS") move.back=0;
+      if(e.code==="ArrowLeft"||e.code==="KeyA") move.left=0;
+      if(e.code==="ArrowRight"||e.code==="KeyD") move.right=0;
+    }
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+
+    // === HOARDINGS WITH SLIDESHOW ===
+    const loader = new THREE.TextureLoader();
+    const imageFiles = [
       "IMG-20250304-WA0006.jpg",
       "IMG-20250304-WA0010.jpg",
       "IMG-20250304-WA0011.jpg",
@@ -81,97 +107,77 @@
       "IMG-20250815-WA0010.jpg",
       "IMG-20250815-WA0011.jpg"
     ];
-
-    let hoardings = [];
-    function createHoarding(x,z){
-      let geo = new THREE.PlaneGeometry(12,6);
-      let mat = new THREE.MeshBasicMaterial({map:null, side:THREE.DoubleSide});
-      let mesh = new THREE.Mesh(geo,mat);
-      mesh.position.set(x,5,z);
+    let currentSlide=0;
+    const hoardings=[];
+    for(let i=0;i<5;i++){
+      const mat = new THREE.MeshBasicMaterial({map:loader.load(imageFiles[currentSlide])});
+      const geo = new THREE.PlaneGeometry(40,25);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(i*80-160,30,-100);
       scene.add(mesh);
-      hoardings.push({mesh:mesh, idx:0});
+      hoardings.push(mat);
     }
+    setInterval(()=>{
+      currentSlide=(currentSlide+1)%imageFiles.length;
+      hoardings.forEach(mat=>mat.map=loader.load(imageFiles[currentSlide]));
+    },3000);
 
-    createHoarding(0,-20);
-    createHoarding(20,0);
-    createHoarding(-20,0);
-    createHoarding(0,20);
-    createHoarding(30,30);
-
-    let loader = new THREE.TextureLoader();
-    function updateHoardings(){
-      hoardings.forEach(h=>{
-        h.idx = (h.idx+1) % imagePaths.length;
-        loader.load(imagePaths[h.idx], tex=>{
-          h.mesh.material.map = tex;
-          h.mesh.material.needsUpdate = true;
-        });
-      });
-    }
-    setInterval(updateHoardings, 3000); // every 3s switch
-
-    // Floating balloons (simple spheres)
-    let balloons = [];
+    // === BALLOONS & BUTTERFLIES ===
+    const balloons=[];
     for(let i=0;i<10;i++){
-      let geo = new THREE.SphereGeometry(1,16,16);
-      let mat = new THREE.MeshPhongMaterial({color:0xff6666});
-      let s = new THREE.Mesh(geo,mat);
-      s.position.set(Math.random()*80-40, 3+Math.random()*5, Math.random()*80-40);
-      scene.add(s);
-      balloons.push(s);
+      const geo=new THREE.SphereGeometry(3,16,16);
+      const mat=new THREE.MeshPhongMaterial({color:0xff0000});
+      const b=new THREE.Mesh(geo,mat);
+      b.position.set((Math.random()-0.5)*200,30+Math.random()*20,(Math.random()-0.5)*200);
+      scene.add(b); balloons.push(b);
     }
 
-    // Player movement
-    let player = new THREE.Object3D();
-    scene.add(player);
-    camera.position.set(0,2,5);
-    player.add(camera);
+    // === GIFTS ===
+    const gifts=[];
+    for(let i=0;i<6;i++){
+      const geo=new THREE.BoxGeometry(5,5,5);
+      const mat=new THREE.MeshPhongMaterial({color:0xffd700});
+      const g=new THREE.Mesh(geo,mat);
+      g.position.set((Math.random()-0.5)*200,2.5,(Math.random()-0.5)*200);
+      scene.add(g); gifts.push(g);
+    }
+    const msg=document.getElementById("message");
 
-    let keys = {};
-    document.addEventListener("keydown",e=>keys[e.key]=true);
-    document.addEventListener("keyup",e=>keys[e.key]=false);
-
-    // Mobile controls
-    const btns = {up:false,down:false,left:false,right:false};
-    document.getElementById("up").ontouchstart=()=>btns.up=true;
-    document.getElementById("up").ontouchend=()=>btns.up=false;
-    document.getElementById("down").ontouchstart=()=>btns.down=true;
-    document.getElementById("down").ontouchend=()=>btns.down=false;
-    document.getElementById("left").ontouchstart=()=>btns.left=true;
-    document.getElementById("left").ontouchend=()=>btns.left=false;
-    document.getElementById("right").ontouchstart=()=>btns.right=true;
-    document.getElementById("right").ontouchend=()=>btns.right=false;
-
-    // Animate
-    let clock = new THREE.Clock();
+    // === RENDER LOOP ===
     function animate(){
       requestAnimationFrame(animate);
 
+      // Balloons float
+      balloons.forEach(b=>{ b.position.y+=Math.sin(Date.now()*0.001)*0.01; });
+
       // Movement
-      let speed = 0.2;
-      if(keys["w"]||keys["ArrowUp"]||btns.up) player.position.z -= speed;
-      if(keys["s"]||keys["ArrowDown"]||btns.down) player.position.z += speed;
-      if(keys["a"]||keys["ArrowLeft"]||btns.left) player.position.x -= speed;
-      if(keys["d"]||keys["ArrowRight"]||btns.right) player.position.x += speed;
+      const speed=0.5;
+      if(move.forward) controls.moveForward(speed);
+      if(move.back) controls.moveForward(-speed);
+      if(move.left) controls.moveRight(-speed);
+      if(move.right) controls.moveRight(speed);
 
-      // Balloons floating
-      balloons.forEach(b=>{
-        b.position.y += 0.01*Math.sin(clock.getElapsedTime());
+      // Gift collection
+      gifts.forEach((g,i)=>{
+        if(g.visible){
+          const dist=camera.position.distanceTo(g.position);
+          if(dist<10){
+            msg.innerText="🎁 Happy Birthday Guddu ❤️";
+            msg.style.display="block";
+            setTimeout(()=>msg.style.display="none",2000);
+            g.visible=false;
+          }
+        }
       });
-
-      // Day-night cycle
-      let t = (clock.getElapsedTime()*0.02) % 1;
-      let col = new THREE.Color().setHSL(0.6, 0.5, t*0.5+0.25);
-      renderer.setClearColor(col);
 
       renderer.render(scene,camera);
     }
     animate();
 
-    window.addEventListener("resize",()=>{
+    window.addEventListener('resize',()=>{
       camera.aspect=window.innerWidth/window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth,window.innerHeight);
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
   </script>
 </body>
