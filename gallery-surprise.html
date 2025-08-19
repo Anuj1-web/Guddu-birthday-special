@@ -8,12 +8,13 @@
     body {
       margin: 0;
       font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
       overflow: hidden;
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: white;
     }
 
     .storybook {
@@ -21,25 +22,27 @@
       width: 90%;
       max-width: 800px;
       height: 90%;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 0 50px rgba(255, 100, 150, 0.7);
-      overflow: hidden;
+      perspective: 2000px;
     }
 
     .page {
       position: absolute;
       width: 100%;
       height: 100%;
-      opacity: 0;
-      transition: opacity 1s;
-      text-align: center;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
       padding: 20px;
+      text-align: center;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+      transition: transform 1s ease;
+      opacity: 0;
     }
 
     .page.active {
       opacity: 1;
-      z-index: 1;
+      z-index: 2;
     }
 
     .page img {
@@ -48,6 +51,10 @@
       border-radius: 15px;
       box-shadow: 0 0 25px rgba(255, 182, 193, 0.8);
       margin-top: 30px;
+      transition: transform 0.3s ease;
+    }
+    .page img:hover {
+      transform: scale(1.05);
     }
 
     .message {
@@ -71,47 +78,36 @@
     }
 
     button {
-      background: #ff4e91;
+      background: linear-gradient(45deg, #ff4e91, #ff9a9e);
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 15px;
+      padding: 12px 24px;
+      border-radius: 20px;
       font-size: 1rem;
       margin: 5px;
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(255, 100, 150, 0.8);
-      transition: transform 0.2s;
+      box-shadow: 0 0 15px rgba(255, 100, 150, 0.8);
+      transition: transform 0.3s, box-shadow 0.3s;
     }
 
     button:hover {
       transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(255, 150, 200, 1);
     }
 
-    /* Floating magical hearts */
-    .heart {
+    /* Sparkles */
+    .sparkle {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      background: pink;
-      transform: rotate(45deg);
-      animation: float 8s infinite ease-in;
-    }
-
-    .heart:before, .heart:after {
-      content: "";
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: pink;
+      width: 5px;
+      height: 5px;
+      background: white;
       border-radius: 50%;
+      opacity: 0.8;
+      animation: sparkle 4s linear infinite;
     }
-
-    .heart:before { top: -10px; left: 0; }
-    .heart:after { left: -10px; top: 0; }
-
-    @keyframes float {
-      from { transform: translateY(100vh) rotate(45deg); opacity: 1; }
-      to { transform: translateY(-10vh) rotate(45deg); opacity: 0; }
+    @keyframes sparkle {
+      from { transform: translateY(100vh) scale(0.5); opacity: 1; }
+      to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
     }
   </style>
 </head>
@@ -148,21 +144,9 @@
     </div>
   </div>
 
-  <!-- Magical floating hearts -->
   <script>
-    function createHeart() {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.style.left = Math.random() * 100 + "vw";
-      heart.style.background = ["#ff4e91","#ff8fab","#ffc0cb"][Math.floor(Math.random()*3)];
-      heart.style.animationDuration = (5 + Math.random() * 5) + "s";
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 8000);
-    }
-    setInterval(createHeart, 800);
-
-    let current = 0;
     const pages = document.querySelectorAll(".page");
+    let current = 0;
 
     function showPage(index) {
       pages.forEach((p, i) => p.classList.toggle("active", i === index));
@@ -171,11 +155,25 @@
     function nextPage() {
       current = (current + 1) % pages.length;
       showPage(current);
+      confettiBurst();
     }
 
     function prevPage() {
       current = (current - 1 + pages.length) % pages.length;
       showPage(current);
+      confettiBurst();
+    }
+
+    // Confetti burst effect
+    function confettiBurst() {
+      for (let i = 0; i < 20; i++) {
+        const sparkle = document.createElement("div");
+        sparkle.className = "sparkle";
+        sparkle.style.left = Math.random() * 100 + "vw";
+        sparkle.style.animationDuration = (2 + Math.random() * 3) + "s";
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 4000);
+      }
     }
   </script>
 </body>
