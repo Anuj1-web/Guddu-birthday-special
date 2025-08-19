@@ -3,111 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guddu's Birthday Storybook 🎂💖</title>
+  <title>Guddu’s Magical Storybook 🎁✨</title>
   <style>
     body {
       margin: 0;
-      font-family: "Comic Sans MS", cursive, sans-serif;
-      background: linear-gradient(to bottom, #ffe6f0, #fff5e6);
-      overflow-x: hidden;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      font-size: 1.8em;
-      font-weight: bold;
-      color: #e60073;
-    }
-    .path {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      overflow: hidden;
+      height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 40px;
-      padding: 20px;
-    }
-    .gift {
-      width: 120px;
-      height: 120px;
-      background: gold;
-      border-radius: 20px;
-      display: flex;
       justify-content: center;
-      align-items: center;
-      font-size: 2em;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     }
-    .gift:hover {
-      transform: scale(1.1) rotate(5deg);
-    }
-    .card {
-      display: none;
+
+    .storybook {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      height: 90%;
       background: white;
       border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      padding: 20px;
-      max-width: 90%;
+      box-shadow: 0 0 50px rgba(255, 100, 150, 0.7);
+      overflow: hidden;
+    }
+
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1s;
       text-align: center;
-      animation: fadeIn 0.5s ease-in-out;
+      padding: 20px;
     }
-    .card img {
-      max-width: 100%;
+
+    .page.active {
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .page img {
+      max-width: 90%;
+      max-height: 60%;
       border-radius: 15px;
-      margin-bottom: 15px;
+      box-shadow: 0 0 25px rgba(255, 182, 193, 0.8);
+      margin-top: 30px;
     }
-    .card p {
-      font-size: 1.2em;
-      color: #444;
+
+    .message {
+      font-size: 1.4rem;
+      margin-top: 20px;
+      color: #ff2e63;
+      text-shadow: 0 0 10px #fff, 0 0 20px #ff9a9e;
+      animation: glow 2s infinite alternate;
     }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: scale(0.8);}
-      to {opacity: 1; transform: scale(1);}
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #ff9a9e; }
+      to   { text-shadow: 0 0 20px #ff2e63; }
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+    }
+
+    button {
+      background: #ff4e91;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 100, 150, 0.8);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    /* Floating magical hearts */
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      transform: rotate(45deg);
+      animation: float 8s infinite ease-in;
+    }
+
+    .heart:before, .heart:after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      border-radius: 50%;
+    }
+
+    .heart:before { top: -10px; left: 0; }
+    .heart:after { left: -10px; top: 0; }
+
+    @keyframes float {
+      from { transform: translateY(100vh) rotate(45deg); opacity: 1; }
+      to { transform: translateY(-10vh) rotate(45deg); opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <header>🎁 Walk the Path of Surprises for Guddu 💖</header>
-
-  <section class="path">
-    <div class="gift" onclick="showCard(0)">🎁</div>
-    <div class="card" id="card0">
-      <img src="images/1000145106.jpg" alt="Guddu 1">
-      <p>✨ To the most beautiful soul, may your smile shine brighter than ever ✨</p>
+  <div class="storybook">
+    <div class="page active">
+      <img src="IMG-20250304-WA0006.jpg" alt="Guddu 1">
+      <div class="message">🌸 Once upon a time, there was a girl full of grace and smiles... 🌸</div>
     </div>
 
-    <div class="gift" onclick="showCard(1)">🎁</div>
-    <div class="card" id="card1">
-      <img src="images/1000145103.jpg" alt="Guddu 2">
-      <p>🌸 Every moment with you feels like magic, Happy Birthday Guddu! 🌸</p>
+    <div class="page">
+      <img src="IMG-20250815-WA0000.jpg" alt="Guddu 2">
+      <div class="message">✨ Her laughter was magical, brighter than the stars in the sky... ✨</div>
     </div>
 
-    <div class="gift" onclick="showCard(2)">🎁</div>
-    <div class="card" id="card2">
-      <img src="images/1000145105.jpg" alt="Guddu 3">
-      <p>🎂 Wishing you endless happiness and sweet surprises 💕</p>
+    <div class="page">
+      <img src="IMG-20250815-WA0003.jpg" alt="Guddu 3">
+      <div class="message">🌷 Every moment with her was a gift wrapped in happiness... 🌷</div>
     </div>
 
-    <div class="gift" onclick="showCard(3)">🎁</div>
-    <div class="card" id="card3">
-      <img src="images/1000145102.jpg" alt="Guddu 4">
-      <p>🌈 You bring colors into my world, may your day be as vibrant as you! 🌈</p>
+    <div class="page">
+      <img src="IMG-20250815-WA0008.jpg" alt="Guddu 4">
+      <div class="message">💖 She brought colors to the world, making it shine with love... 💖</div>
     </div>
 
-    <div class="gift" onclick="showCard(4)">🎁</div>
-    <div class="card" id="card4">
-      <img src="images/1000145104.jpg" alt="Guddu 5">
-      <p>💖 Forever grateful for you, may all your dreams come true 💖</p>
+    <div class="page">
+      <img src="IMG-20250815-WA0010.jpg" alt="Guddu 5">
+      <div class="message">🎂 And on this day, the world celebrates the most special soul—Guddu! 🎂</div>
     </div>
-  </section>
 
+    <div class="controls">
+      <button onclick="prevPage()">⬅️ Previous</button>
+      <button onclick="nextPage()">Next ➡️</button>
+    </div>
+  </div>
+
+  <!-- Magical floating hearts -->
   <script>
-    function showCard(index) {
-      const cards = document.querySelectorAll('.card');
-      cards.forEach((c, i) => {
-        c.style.display = (i === index) ? 'block' : 'none';
-      });
-      window.scrollTo({ top: document.getElementById("card" + index).offsetTop - 20, behavior: "smooth" });
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.background = ["#ff4e91","#ff8fab","#ffc0cb"][Math.floor(Math.random()*3)];
+      heart.style.animationDuration = (5 + Math.random() * 5) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }
+    setInterval(createHeart, 800);
+
+    let current = 0;
+    const pages = document.querySelectorAll(".page");
+
+    function showPage(index) {
+      pages.forEach((p, i) => p.classList.toggle("active", i === index));
+    }
+
+    function nextPage() {
+      current = (current + 1) % pages.length;
+      showPage(current);
+    }
+
+    function prevPage() {
+      current = (current - 1 + pages.length) % pages.length;
+      showPage(current);
     }
   </script>
 </body>
