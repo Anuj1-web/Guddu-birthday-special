@@ -1,82 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Birthday Story — For Guddu</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guddu's Birthday Storybook 🎂💖</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg,#ffd8e1,#fff6d9);
-      margin:0; padding:0;
+      margin: 0;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: linear-gradient(to bottom, #ffe6f0, #fff5e6);
+      overflow-x: hidden;
     }
     header {
-      text-align:center;
-      padding:20px;
-      background:rgba(255,255,255,0.6);
-      backdrop-filter:blur(4px);
-      position:sticky;
-      top:0;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #e60073;
     }
-    .grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-      gap:20px;
-      padding:20px;
-      max-width:1100px;
-      margin:auto;
+    .path {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      padding: 20px;
+    }
+    .gift {
+      width: 120px;
+      height: 120px;
+      background: gold;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .gift:hover {
+      transform: scale(1.1) rotate(5deg);
     }
     .card {
-      background:rgba(255,255,255,0.8);
-      border-radius:15px;
-      overflow:hidden;
-      box-shadow:0 8px 20px rgba(0,0,0,.15);
-      transition: transform 0.3s ease;
-    }
-    .card:hover {
-      transform: scale(1.05);
+      display: none;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 20px;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
     }
     .card img {
-      width:100%;
-      display:block;
+      max-width: 100%;
+      border-radius: 15px;
+      margin-bottom: 15px;
     }
-    .msg {
-      padding:15px;
-      font-size:15px;
-      font-weight:600;
-      text-align:center;
+    .card p {
+      font-size: 1.2em;
+      color: #444;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.8);}
+      to {opacity: 1; transform: scale(1);}
     }
   </style>
 </head>
 <body>
-  <header><h1>💖 A Little Birthday Story for Guddu 💖</h1></header>
-  <div class="grid">
+  <header>🎁 Walk the Path of Surprises for Guddu 💖</header>
 
-    <div class="card">
-      <img src="images/1000145106.jpg" alt="Guddu photo 1">
-      <div class="msg">Happy Birthday, Guddu 🎂✨ May your smile always shine bright!</div>
+  <section class="path">
+    <div class="gift" onclick="showCard(0)">🎁</div>
+    <div class="card" id="card0">
+      <img src="images/1000145106.jpg" alt="Guddu 1">
+      <p>✨ To the most beautiful soul, may your smile shine brighter than ever ✨</p>
     </div>
 
-    <div class="card">
-      <img src="images/1000145105.jpg" alt="Guddu photo 2">
-      <div class="msg">You make every day more beautiful 🌸 Thank you for being you.</div>
+    <div class="gift" onclick="showCard(1)">🎁</div>
+    <div class="card" id="card1">
+      <img src="images/1000145103.jpg" alt="Guddu 2">
+      <p>🌸 Every moment with you feels like magic, Happy Birthday Guddu! 🌸</p>
     </div>
 
-    <div class="card">
-      <img src="images/1000145102.jpg" alt="Guddu photo 3">
-      <div class="msg">This day is special, just like you ⭐ Keep glowing always!</div>
+    <div class="gift" onclick="showCard(2)">🎁</div>
+    <div class="card" id="card2">
+      <img src="images/1000145105.jpg" alt="Guddu 3">
+      <p>🎂 Wishing you endless happiness and sweet surprises 💕</p>
     </div>
 
-    <div class="card">
-      <img src="images/1000145103.jpg" alt="Guddu photo 4">
-      <div class="msg">Wishing you endless happiness and sweet surprises today 🎁💖</div>
+    <div class="gift" onclick="showCard(3)">🎁</div>
+    <div class="card" id="card3">
+      <img src="images/1000145102.jpg" alt="Guddu 4">
+      <p>🌈 You bring colors into my world, may your day be as vibrant as you! 🌈</p>
     </div>
 
-    <div class="card">
-      <img src="images/1000145104.jpg" alt="Guddu photo 5">
-      <div class="msg">A wonderful soul deserves a wonderful birthday. Stay blessed! 🌈</div>
+    <div class="gift" onclick="showCard(4)">🎁</div>
+    <div class="card" id="card4">
+      <img src="images/1000145104.jpg" alt="Guddu 5">
+      <p>💖 Forever grateful for you, may all your dreams come true 💖</p>
     </div>
+  </section>
 
-  </div>
+  <script>
+    function showCard(index) {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((c, i) => {
+        c.style.display = (i === index) ? 'block' : 'none';
+      });
+      window.scrollTo({ top: document.getElementById("card" + index).offsetTop - 20, behavior: "smooth" });
+    }
+  </script>
 </body>
 </html>
