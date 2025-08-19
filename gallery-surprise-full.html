@@ -277,10 +277,34 @@
       if (touchEndX > touchStartX + 50) prevPage();
     });
 
-    // Force autoplay audio
-    const music = document.getElementById("bg-music");
-    window.addEventListener('load', () => { music.play().catch(()=>{}); });
-    document.addEventListener('pointerdown', () => { music.play().catch(()=>{}); }, { once: true });
+    // --- Force Autoplay Code with Skip ---
+const music = document.getElementById("bg-music");
+
+// Always start at 15s
+music.currentTime = 15;
+
+async function forcePlay() {
+  try {
+    music.muted = false;       // ensure sound
+    music.currentTime = 15;    // skip first 15 seconds
+    await music.play();
+    console.log("Music playing ✅");
+  } catch (err) {
+    console.log("Autoplay blocked, waiting for interaction...");
+  }
+}
+
+// Try autoplay on load
+window.addEventListener("load", () => {
+  forcePlay();
+});
+
+// Retry on any interaction (works on mobile/tablet/pc)
+["click","touchstart","touchend","keydown","scroll"].forEach(evt => {
+  document.addEventListener(evt, () => {
+    forcePlay();
+  }, { once:true });
+});
 
     showPage(current);
   </script>
