@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guddu’s Magical Storybook 🎁✨</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: #111;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .storybook {
+      position: relative;
+      width: 95%;
+      max-width: 850px;
+      height: 95%;
+      perspective: 2000px;
+    }
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      text-align: center;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+      transition: opacity 0.8s ease;
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      background-size: cover;
+      background-position: center;
+    }
+    .page.active { opacity: 1; z-index: 2; }
+    .page img {
+      width: 100%;
+      height: 60vh;
+      object-fit: cover;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(255, 182, 193, 0.9);
+      margin-top: 20px;
+      transition: transform 0.3s ease;
+    }
+    .page img:hover { transform: scale(1.05); }
+    .message {
+      font-size: 1.3rem;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      color: #ff2e63;
+      text-shadow: 0 0 10px #fff, 0 0 20px #ff9a9e;
+      animation: glow 2s infinite alternate;
+      padding: 0 10px;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #ff9a9e; }
+      to   { text-shadow: 0 0 20px #ff2e63; }
+    }
+    .controls {
+      margin-top: auto;
+      padding: 8px;
+      z-index: 1000;
+    }
+    button {
+      background: linear-gradient(45deg, #ff4e91, #ff9a9e);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 100, 150, 0.8);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(255, 150, 200, 1);
+    }
+    .sparkle {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+      pointer-events: none;
+      animation: sparkle 5s linear infinite;
+    }
+    @keyframes sparkle {
+      from { transform: translateY(100vh) scale(0.5); opacity: 1; }
+      to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="storybook">
+
+    <div class="page active">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Beige%20Pink%20Scrapbook%20Modern%20Birthday%20Photo%20Collage.png" alt="Guddu 1">
+      <div class="message">🌸 Once upon a time, there was a beautiful, innocent girl, full of dreams and light... 🌸</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Beige%20and%20Brown%20Vintage%20Aesthetic%20Blank%20Page%20Background%20Instagram%20Story_20250814_173602_0000.png" alt="Guddu 2">
+      <div class="message">😍 Her smile could melt hearts, spreading joy to everyone around her... 😍</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Black%20Modern%20Fashion%20Girl%20Photo%20Collage_20250815_175302_0000.png" alt="Guddu 3">
+      <div class="message">🎶 Her laughter was like music, filling the air with happiness and love... 🎶</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Brown%20Beige%20Aesthetic%20Trendy%20Torn%20Paper%20Photo%20Collage%20Portrait_20250815_174510_0000.png" alt="Guddu 4">
+      <div class="message">🌈 Wherever she went, colors followed, painting the world brighter... 🌈</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Brown%20Vintage%20Scrapbook%20Note%20Background%20Instagram%20Story_20250814_172354_0000.png" alt="Guddu 5">
+      <div class="message">☀️ She was like sunshine on a cloudy day, lifting spirits effortlessly... ☀️</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Brown%20Vintage%20Scrapbook%20Photo%20Collage_20250815_180114_0000.png" alt="Guddu 6">
+      <div class="message">✨ Her kindness sparkled like fairy dust, touching every soul she met... ✨</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Brown%20and%20Orange%20Simple%20Polaroid%20Aesthetic%20Phone%20Wallpaper_20250815_173819_0000.png" alt="Guddu 7">
+      <div class="message">🌷 With every step, she bloomed like a flower, graceful and magical... 🌷</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Cream%20and%20Brown%20Vintage%20Aesthetic%20Photo%20Collage_20250815_175520_0000.png" alt="Guddu 8">
+      <div class="message">🎁 Life with her was the most precious gift, wrapped in happiness and love... 🎁</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250304-WA0001.jpg" alt="Guddu 9">
+      <div class="message">💫 The world felt lucky to have her, a true blessing beyond compare... 💫</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250304-WA0006.jpg" alt="Guddu 10">
+      <div class="message">🎂🎉 And on this day, we celebrate her — Happy Birthday, dearest Guddu! 💖</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250304-WA0010.jpg" alt="Guddu 11">
+      <div class="message">📸 Every picture tells a story, and every story whispers her magic... ✨</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250304-WA0011.jpg" alt="Guddu 12">
+      <div class="message">🌟 She shines brighter than stars, filling nights with hope and light... 🌟</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0000.jpg" alt="Guddu 13">
+      <div class="message">💐 Like a flower in bloom, her soul radiates beauty in every shade... 💐</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0001.jpg" alt="Guddu 14">
+      <div class="message">🎀 Wrapped in grace and charm, she is life’s sweetest surprise... 🎀</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0003.jpg" alt="Guddu 15">
+      <div class="message">🌙 Even the moon envies her glow, soft and enchanting... 🌙</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0008.jpg" alt="Guddu 16">
+      <div class="message">🦋 Gentle as a butterfly, she brings peace wherever she goes... 🦋</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0009.jpg" alt="Guddu 17">
+      <div class="message">💖 Every memory with her is a treasure locked in the heart... 💖</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0010.jpg" alt="Guddu 18">
+      <div class="message">🌼 Happiness blossoms in her presence like springtime forever... 🌼</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/IMG-20250815-WA0011.jpg" alt="Guddu 19">
+      <div class="message">✨ A collage of love, joy, and magic — that’s her essence... ✨</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Minimalist%20Simple%20Elegant%20Photo%20Collage%20Couple%20Phone%20Wallpaper%20_20250815_173347_0000.png" alt="Guddu 20">
+      <div class="message">🎆 Fireworks of joy light up whenever she’s around... 🎆</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Screenshot_20250210_202702.jpg" alt="Guddu 21">
+      <div class="message">📖 A fairytale written in smiles, lived in laughter, bound by love... 📖</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/Screenshot_20250406_222558.jpg" alt="Guddu 22">
+      <div class="message">🌹 She is poetry in motion, a rhythm of beauty and kindness... 🌹</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+    <div class="page">
+      <img src="https://raw.githubusercontent.com/Anuj1-web/Guddu-birthday-special/main/Guddu-birthday-special-main/guddu-cake-og.png" alt="Guddu 23">
+      <div class="message">✨ Page 23: Another magical moment with Guddu... ✨</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <button onclick="nextPage()">Next ➡️</button>
+      </div>
+    </div>
+    
+  </div>
+  <audio id="bg-music" loop>
+    <source src="Apna%20Bana%20Le%20-%20(Raag.Fm).mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    const pages = document.querySelectorAll(".page");
+    let current = 0;
+    function showPage(index) { pages.forEach((p,i)=>p.classList.toggle("active", i===index)); }
+    function nextPage() { current = (current+1)%pages.length; showPage(current); confettiBurst(); }
+    function prevPage() { current = (current-1+pages.length)%pages.length; showPage(current); confettiBurst(); }
+    function confettiBurst() {
+      for(let i=0;i<20;i++){const s=document.createElement("div");s.className="sparkle";
+        s.style.left=Math.random()*100+"vw";s.style.animationDuration=(3+Math.random()*2)+"s";
+        document.body.appendChild(s);setTimeout(()=>s.remove(),5000);}
+    }
+    const music=document.getElementById("bg-music");
+    document.body.addEventListener("click",()=>{if(music.currentTime<15)music.currentTime=15;music.play();},{once:true});
+    let touchStartX=0;
+    document.addEventListener("touchstart",e=>{touchStartX=e.changedTouches[0].screenX;});
+    document.addEventListener("touchend",e=>{let touchEndX=e.changedTouches[0].screenX;
+      if(touchEndX<touchStartX-50)nextPage();if(touchEndX>touchStartX+50)prevPage();});
+  </script>
+</body>
+</html>
